@@ -547,7 +547,10 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_PRESSURE_PLATE);
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, ocean_overhaul tab.");
+		// Wire natural-deposit worldgen (configured/placed features -> biomes).
+		OceanStarterWorldgen.register();
+
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**

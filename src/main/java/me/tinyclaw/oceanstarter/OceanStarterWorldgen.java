@@ -1,0 +1,77 @@
+package me.tinyclaw.oceanstarter;
+
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.BiomeTags;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.GenerationStep;
+import net.minecraft.world.gen.feature.PlacedFeature;
+
+/**
+ * Ocean Overhaul — worldgen.
+ *
+ * <p>Wires the mod's placed features into ocean / deep-ocean / beach biomes via the
+ * Fabric {@code BiomeModifications} API. Each placed feature is defined as data JSON
+ * under {@code data/oceanstarter/worldgen/placed_feature/} (and its backing
+ * configured feature under {@code .../configured_feature/}); this class only attaches
+ * those already-loaded placed features to the right biomes at the right generation
+ * step so the mod's natural-looking blocks form real deposits in generated chunks.</p>
+ *
+ * <p>No new blocks/items/textures/mixins/entities are introduced — purely worldgen
+ * placement of the existing registered blocks.</p>
+ */
+public final class OceanStarterWorldgen {
+
+	private OceanStarterWorldgen() {
+	}
+
+	/**
+	 * Attach every ocean-deposit placed feature to its biome(s). Called once from
+	 * {@link OceanStarter#onInitialize()}.
+	 */
+	public static void register() {
+		// --- Common reef / rubble / shallow-floor deposits (all oceans) -------
+		// IS_OCEAN already includes the deep-ocean variants, so this single
+		// selector covers "ocean + deep_ocean".
+		addOceanFeature("abyssal_coral_deposit", GenerationStep.Feature.UNDERGROUND_ORES);
+		addOceanFeature("crushed_coral_deposit", GenerationStep.Feature.LOCAL_MODIFICATIONS);
+
+		// --- Barnacles: shallow seafloor AND the intertidal shoreline ---------
+		// Two selectors reusing the same placed feature: oceans + beaches.
+		addOceanFeature("barnacle_cluster", GenerationStep.Feature.LOCAL_MODIFICATIONS);
+		addBeachFeature("barnacle_cluster", GenerationStep.Feature.LOCAL_MODIFICATIONS);
+
+		// --- Beach-only evaporite salt flats ----------------------------------
+		addBeachFeature("salt_flat_deposit", GenerationStep.Feature.LOCAL_MODIFICATIONS);
+
+		// --- Deep-ocean-only deposits -----------------------------------------
+		addDeepOceanFeature("nautilus_shell_bed", GenerationStep.Feature.LOCAL_MODIFICATIONS);
+		addDeepOceanFeature("abyssal_pearl_vein", GenerationStep.Feature.UNDERGROUND_ORES);
+		addDeepOceanFeature("prismarine_crystal_geode", GenerationStep.Feature.UNDERGROUND_ORES);
+
+		// --- Rare pearl geode across all oceans -------------------------------
+		addOceanFeature("pearl_geode", GenerationStep.Feature.UNDERGROUND_ORES);
+	}
+
+	private static void addOceanFeature(String name, GenerationStep.Feature step) {
+		addFeature(BiomeTags.IS_OCEAN, name, step);
+	}
+
+	private static void addDeepOceanFeature(String name, GenerationStep.Feature step) {
+		addFeature(BiomeTags.IS_DEEP_OCEAN, name, step);
+	}
+
+	private static void addBeachFeature(String name, GenerationStep.Feature step) {
+		addFeature(BiomeTags.IS_BEACH, name, step);
+	}
+
+	private static void addFeature(TagKey<Biome> biomeTag, String name, GenerationStep.Feature step) {
+		RegistryKey<PlacedFeature> placedKey =
+				RegistryKey.of(RegistryKeys.PLACED_FEATURE, OceanStarter.id(name));
+		BiomeModifications.addFeature(BiomeSelectors.tag(biomeTag), step, placedKey);
+	}
+}
