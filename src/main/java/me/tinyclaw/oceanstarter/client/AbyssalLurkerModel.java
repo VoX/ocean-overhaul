@@ -141,7 +141,9 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 		this.tail.yaw = MathHelper.cos(animationProgress * 0.1F) * 0.2F;
 		// Lazy chomp on the lower jaw (oscillates around the wide-open pose).
 		this.lowerJaw.pitch = 0.7F + MathHelper.cos(animationProgress * 0.12F) * 0.15F;
-		// The lure arcs forward over the gape (-0.9 rad) and bobs gently on its stalk.
-		this.lureStalk.pitch = -0.9F + MathHelper.cos(animationProgress * 0.08F) * 0.12F;
+		// The lure arcs FORWARD so the bulb dangles out over the gape/face. The stalk
+		// extends up (-Y), so a POSITIVE pitch tips its tip toward -Z (forward); the
+		// old -0.9 wrongly swung it BACK over the body (pindyj: "wrong direction").
+		this.lureStalk.pitch = 2.0F + MathHelper.cos(animationProgress * 0.08F) * 0.12F;
 	}
 }
