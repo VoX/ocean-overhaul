@@ -1,0 +1,47 @@
+# Run the headless server-side Fabric GameTests on every push and PR to main.
+# `./gradlew runGametest` boots a dedicated-server world with -Dfabric-api.gametest,
+# runs every @GameTest (the Megalodon suite), and exits non-zero if any fail — so a
+# red job here means a real in-game regression. The JUnit XML report is uploaded as
+# an artifact for inspection. (The dedicated-server smoke harness in
+# scripts/playtest-server.sh is a LOCAL tool — it downloads the Fabric installer +
+# vanilla server jar at runtime, too heavy/network-flaky for a push job — run it by
+# hand: `bash scripts/playtest-server.sh`.)
+
+name: gametest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Runs tests + uploads an artifact; never publishes — read-only token is enough.
+permissions:
+  contents: read
+
+jobs:
+  gametest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Run GameTests
+        run: chmod +x gradlew && ./gradlew runGametest --no-daemon
+
+      - name: Upload GameTest report
+        # Upload the report even when the tests fail, so a red run still has the
+        # JUnit XML to dig into. Path must match the report-file in build.gradle.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-report
+          path: build/gametest/report.xml
+          if-no-files-found: error

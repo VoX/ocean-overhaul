@@ -19,6 +19,9 @@
 		],
 		"client": [
 			"me.tinyclaw.oceanstarter.client.OceanStarterClient"
+		],
+		"fabric-gametest": [
+			"me.tinyclaw.oceanstarter.gametest.MegalodonGameTest"
 		]
 	},
 	"depends": {

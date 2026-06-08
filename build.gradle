@@ -10,6 +10,26 @@ base {
 	archivesName = project.archives_base_name
 }
 
+// Headless server-side GameTest run config.
+// Loom registers a Gradle task named `runGametest` from this block (run<CapitalizedName>).
+// `server()` sets the dedicated-server main class; `-Dfabric-api.gametest` flips the
+// fabric-gametest-api-v1 module into test-runner mode (boot world, run every @GameTest,
+// then exit code 0 on all-pass / non-zero on any failure). The report-file property
+// also makes it emit a JUnit XML report we can parse.
+def gametestReport = "${projectDir}/build/gametest/report.xml"
+loom {
+	runs {
+		gametest {
+			server()
+			name = "Game Test"
+			source sourceSets.main
+			runDir "build/gametest/run"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${gametestReport}"
+		}
+	}
+}
+
 repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
