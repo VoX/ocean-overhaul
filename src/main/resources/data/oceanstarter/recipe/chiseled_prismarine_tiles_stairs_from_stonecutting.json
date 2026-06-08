@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "oceanstarter:chiseled_prismarine_tiles"
+  },
+  "result": {
+    "count": 1,
+    "id": "oceanstarter:chiseled_prismarine_tiles_stairs"
+  }
+}

@@ -40,5 +40,13 @@
 	"item.oceanstarter.crushed_coral": "Crushed Coral",
 	"item.oceanstarter.sea_urchin": "Sea Urchin",
 	"item.oceanstarter.salted_cod": "Salted Cod",
+	"block.oceanstarter.chiseled_prismarine_tiles": "Chiseled Prismarine Tiles",
+	"block.oceanstarter.chiseled_prismarine_tiles_stairs": "Chiseled Prismarine Tile Stairs",
+	"block.oceanstarter.chiseled_prismarine_tiles_slab": "Chiseled Prismarine Tile Slab",
+	"block.oceanstarter.chiseled_prismarine_tiles_wall": "Chiseled Prismarine Tile Wall",
+	"block.oceanstarter.cracked_kelp_bricks": "Cracked Kelp Bricks",
+	"block.oceanstarter.cracked_kelp_bricks_stairs": "Cracked Kelp Brick Stairs",
+	"block.oceanstarter.cracked_kelp_bricks_slab": "Cracked Kelp Brick Slab",
+	"block.oceanstarter.cracked_kelp_bricks_wall": "Cracked Kelp Brick Wall",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

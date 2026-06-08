@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "oceanstarter:block/chiseled_prismarine_tiles_slab"
+    },
+    "type=double": {
+      "model": "oceanstarter:block/chiseled_prismarine_tiles"
+    },
+    "type=top": {
+      "model": "oceanstarter:block/chiseled_prismarine_tiles_slab_top"
+    }
+  }
+}

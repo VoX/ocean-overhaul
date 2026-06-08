@@ -38,10 +38,11 @@ import org.slf4j.LoggerFactory;
  *
  * <p>A revamped-ocean content mod for Minecraft 1.21.1 (Fabric). Registers a set of
  * sea-themed decorative blocks (Abyssal Coral Block, Sea Glass, Polished Prismarine
- * Bricks, Driftwood Plank, Pearl Block), driftwood functional blocks (Driftwood
- * Fence, Button, Pressure Plate), a set of ocean items (Tide Pearl, Coral Shard,
- * Sea Salt), and a dedicated "Ocean Overhaul" creative tab that holds them all —
- * wired up with the Minecraft 1.21.1 Fabric registry API.</p>
+ * Bricks, Chiseled Prismarine Tiles, Driftwood Plank, Pearl Block, Kelp Brick,
+ * Cracked Kelp Bricks), driftwood functional blocks (Driftwood Fence, Button,
+ * Pressure Plate), a set of ocean items (Tide Pearl, Coral Shard, Sea Salt), and a
+ * dedicated "Ocean Overhaul" creative tab that holds them all — wired up with the
+ * Minecraft 1.21.1 Fabric registry API.</p>
  */
 public class OceanStarter implements ModInitializer {
 	public static final String MOD_ID = "oceanstarter";
@@ -237,6 +238,48 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem KELP_BRICK_WALL_ITEM = new BlockItem(
 			KELP_BRICK_WALL, new Item.Settings());
 
+	// --- Block: Chiseled Prismarine Tiles ---------------------------------
+	public static final Block CHISELED_PRISMARINE_TILES = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE_BRICKS));
+	public static final BlockItem CHISELED_PRISMARINE_TILES_ITEM = new BlockItem(
+			CHISELED_PRISMARINE_TILES, new Item.Settings());
+
+	// --- Building set: Chiseled Prismarine Tiles (stairs + slab + wall) ----
+	public static final Block CHISELED_PRISMARINE_TILES_STAIRS = new StairsBlock(
+			CHISELED_PRISMARINE_TILES.getDefaultState(),
+			AbstractBlock.Settings.copy(CHISELED_PRISMARINE_TILES)) {};
+	public static final BlockItem CHISELED_PRISMARINE_TILES_STAIRS_ITEM = new BlockItem(
+			CHISELED_PRISMARINE_TILES_STAIRS, new Item.Settings());
+	public static final Block CHISELED_PRISMARINE_TILES_SLAB = new SlabBlock(
+			AbstractBlock.Settings.copy(CHISELED_PRISMARINE_TILES));
+	public static final BlockItem CHISELED_PRISMARINE_TILES_SLAB_ITEM = new BlockItem(
+			CHISELED_PRISMARINE_TILES_SLAB, new Item.Settings());
+	public static final Block CHISELED_PRISMARINE_TILES_WALL = new WallBlock(
+			AbstractBlock.Settings.copy(CHISELED_PRISMARINE_TILES));
+	public static final BlockItem CHISELED_PRISMARINE_TILES_WALL_ITEM = new BlockItem(
+			CHISELED_PRISMARINE_TILES_WALL, new Item.Settings());
+
+	// --- Block: Cracked Kelp Bricks ---------------------------------------
+	public static final Block CRACKED_KELP_BRICKS = new Block(
+			AbstractBlock.Settings.copy(Blocks.STONE_BRICKS));
+	public static final BlockItem CRACKED_KELP_BRICKS_ITEM = new BlockItem(
+			CRACKED_KELP_BRICKS, new Item.Settings());
+
+	// --- Building set: Cracked Kelp Bricks (stairs + slab + wall) ----------
+	public static final Block CRACKED_KELP_BRICKS_STAIRS = new StairsBlock(
+			CRACKED_KELP_BRICKS.getDefaultState(),
+			AbstractBlock.Settings.copy(CRACKED_KELP_BRICKS)) {};
+	public static final BlockItem CRACKED_KELP_BRICKS_STAIRS_ITEM = new BlockItem(
+			CRACKED_KELP_BRICKS_STAIRS, new Item.Settings());
+	public static final Block CRACKED_KELP_BRICKS_SLAB = new SlabBlock(
+			AbstractBlock.Settings.copy(CRACKED_KELP_BRICKS));
+	public static final BlockItem CRACKED_KELP_BRICKS_SLAB_ITEM = new BlockItem(
+			CRACKED_KELP_BRICKS_SLAB, new Item.Settings());
+	public static final Block CRACKED_KELP_BRICKS_WALL = new WallBlock(
+			AbstractBlock.Settings.copy(CRACKED_KELP_BRICKS));
+	public static final BlockItem CRACKED_KELP_BRICKS_WALL_ITEM = new BlockItem(
+			CRACKED_KELP_BRICKS_WALL, new Item.Settings());
+
 	// --- Item: Tide Pearl -------------------------------------------------
 	public static final Item TIDE_PEARL = new Item(new Item.Settings());
 
@@ -309,6 +352,14 @@ public class OceanStarter implements ModInitializer {
 				entries.add(KELP_BRICK_STAIRS);
 				entries.add(KELP_BRICK_SLAB);
 				entries.add(KELP_BRICK_WALL);
+				entries.add(CHISELED_PRISMARINE_TILES);
+				entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
+				entries.add(CHISELED_PRISMARINE_TILES_SLAB);
+				entries.add(CHISELED_PRISMARINE_TILES_WALL);
+				entries.add(CRACKED_KELP_BRICKS);
+				entries.add(CRACKED_KELP_BRICKS_STAIRS);
+				entries.add(CRACKED_KELP_BRICKS_SLAB);
+				entries.add(CRACKED_KELP_BRICKS_WALL);
 				entries.add(TIDE_PEARL);
 				entries.add(CORAL_SHARD);
 				entries.add(SEA_SALT);
@@ -404,6 +455,24 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("kelp_brick_wall"), KELP_BRICK_WALL);
 		Registry.register(Registries.ITEM, id("kelp_brick_wall"), KELP_BRICK_WALL_ITEM);
 
+		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES);
+		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES_ITEM);
+		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_stairs"), CHISELED_PRISMARINE_TILES_STAIRS);
+		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles_stairs"), CHISELED_PRISMARINE_TILES_STAIRS_ITEM);
+		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_slab"), CHISELED_PRISMARINE_TILES_SLAB);
+		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles_slab"), CHISELED_PRISMARINE_TILES_SLAB_ITEM);
+		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL);
+		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL_ITEM);
+
+		Registry.register(Registries.BLOCK, id("cracked_kelp_bricks"), CRACKED_KELP_BRICKS);
+		Registry.register(Registries.ITEM, id("cracked_kelp_bricks"), CRACKED_KELP_BRICKS_ITEM);
+		Registry.register(Registries.BLOCK, id("cracked_kelp_bricks_stairs"), CRACKED_KELP_BRICKS_STAIRS);
+		Registry.register(Registries.ITEM, id("cracked_kelp_bricks_stairs"), CRACKED_KELP_BRICKS_STAIRS_ITEM);
+		Registry.register(Registries.BLOCK, id("cracked_kelp_bricks_slab"), CRACKED_KELP_BRICKS_SLAB);
+		Registry.register(Registries.ITEM, id("cracked_kelp_bricks_slab"), CRACKED_KELP_BRICKS_SLAB_ITEM);
+		Registry.register(Registries.BLOCK, id("cracked_kelp_bricks_wall"), CRACKED_KELP_BRICKS_WALL);
+		Registry.register(Registries.ITEM, id("cracked_kelp_bricks_wall"), CRACKED_KELP_BRICKS_WALL_ITEM);
+
 		// Register the standalone items.
 		Registry.register(Registries.ITEM, id("tide_pearl"), TIDE_PEARL);
 		Registry.register(Registries.ITEM, id("coral_shard"), CORAL_SHARD);
@@ -452,6 +521,14 @@ public class OceanStarter implements ModInitializer {
 			entries.add(KELP_BRICK_STAIRS);
 			entries.add(KELP_BRICK_SLAB);
 			entries.add(KELP_BRICK_WALL);
+			entries.add(CHISELED_PRISMARINE_TILES);
+			entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
+			entries.add(CHISELED_PRISMARINE_TILES_SLAB);
+			entries.add(CHISELED_PRISMARINE_TILES_WALL);
+			entries.add(CRACKED_KELP_BRICKS);
+			entries.add(CRACKED_KELP_BRICKS_STAIRS);
+			entries.add(CRACKED_KELP_BRICKS_SLAB);
+			entries.add(CRACKED_KELP_BRICKS_WALL);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
 			entries.add(TIDE_PEARL);
@@ -470,7 +547,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_PRESSURE_PLATE);
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 33 blocks, 8 items, ocean_overhaul tab.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, ocean_overhaul tab.");
 	}
 
 	/**
