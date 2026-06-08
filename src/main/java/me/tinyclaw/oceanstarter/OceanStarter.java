@@ -297,9 +297,6 @@ public class OceanStarter implements ModInitializer {
 	// --- Item: Sea Salt ---------------------------------------------------
 	public static final Item SEA_SALT = new Item(new Item.Settings());
 
-	// --- Item: Kelp Fiber (crafting ingredient) ---------------------------
-	public static final Item KELP_FIBER = new Item(new Item.Settings());
-
 	// --- Item: Abyssal Pearl (crafting ingredient) ------------------------
 	public static final Item ABYSSAL_PEARL = new Item(new Item.Settings());
 
@@ -542,7 +539,6 @@ public class OceanStarter implements ModInitializer {
 				entries.add(TIDE_PEARL);
 				entries.add(CORAL_SHARD);
 				entries.add(SEA_SALT);
-				entries.add(KELP_FIBER);
 				entries.add(ABYSSAL_PEARL);
 				entries.add(CRUSHED_CORAL);
 				entries.add(SEA_URCHIN);
@@ -653,7 +649,6 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("tide_pearl"), TIDE_PEARL);
 		Registry.register(Registries.ITEM, id("coral_shard"), CORAL_SHARD);
 		Registry.register(Registries.ITEM, id("sea_salt"), SEA_SALT);
-		Registry.register(Registries.ITEM, id("kelp_fiber"), KELP_FIBER);
 		Registry.register(Registries.ITEM, id("abyssal_pearl"), ABYSSAL_PEARL);
 		Registry.register(Registries.ITEM, id("crushed_coral"), CRUSHED_CORAL);
 		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
@@ -756,7 +751,6 @@ public class OceanStarter implements ModInitializer {
 			entries.add(TIDE_PEARL);
 			entries.add(CORAL_SHARD);
 			entries.add(SEA_SALT);
-			entries.add(KELP_FIBER);
 			entries.add(ABYSSAL_PEARL);
 			entries.add(CRUSHED_CORAL);
 		});
