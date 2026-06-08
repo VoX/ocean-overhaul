@@ -8,6 +8,7 @@ import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.MoveIntoWaterGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimAroundGoal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -60,6 +61,8 @@ public class AbyssalLurker extends HostileEntity {
 	@Override
 	protected void initGoals() {
 		// Movement / combat goals.
+		// MoveIntoWaterGoal bounces a beached lurker back into water (mirrors Jellyfish).
+		this.goalSelector.add(0, new MoveIntoWaterGoal(this));
 		this.goalSelector.add(0, new MeleeAttackGoal(this, 1.2D, true));
 		this.goalSelector.add(4, new SwimAroundGoal(this, 1.0D, 10));
 		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
@@ -92,13 +95,15 @@ public class AbyssalLurker extends HostileEntity {
 	 * its {@code EntityType} param is bound to {@code ? extends WaterCreatureEntity}
 	 * but ours is {@code ? extends HostileEntity}, so a method-ref won't compile
 	 * (verified via javap). This is a fresh {@link net.minecraft.entity.SpawnRestriction.SpawnPredicate}:
-	 * spawn only where this block and the one above are both water (submerged) —
-	 * a true deep lurker. No light check: it spawns regardless of day/night so the
-	 * deep ocean stays dangerous around the clock.
+	 * spawn only where this block and the one above are both water (submerged) and
+	 * at least 16 blocks below sea level — a true deep lurker. No light check: it
+	 * spawns regardless of day/night so the deep ocean stays dangerous around the
+	 * clock.
 	 */
 	public static boolean canSpawn(EntityType<? extends HostileEntity> type, ServerWorldAccess world,
 			SpawnReason reason, BlockPos pos, Random random) {
 		return world.getFluidState(pos).isIn(FluidTags.WATER)
-				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER);
+				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER)
+				&& pos.getY() <= world.getSeaLevel() - 16;
 	}
 }

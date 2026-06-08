@@ -14,6 +14,7 @@ import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.MoveIntoWaterGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimAroundGoal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -75,6 +76,8 @@ public class Megalodon extends HostileEntity {
 	@Override
 	protected void initGoals() {
 		// Movement / combat goals.
+		// MoveIntoWaterGoal bounces a beached boss back into water (mirrors Jellyfish).
+		this.goalSelector.add(0, new MoveIntoWaterGoal(this));
 		this.goalSelector.add(0, new MeleeAttackGoal(this, 1.2D, true));
 		this.goalSelector.add(4, new SwimAroundGoal(this, 1.0D, 10));
 		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
@@ -102,17 +105,28 @@ public class Megalodon extends HostileEntity {
 		return air;
 	}
 
+	@Override
+	public boolean canImmediatelyDespawn(double distanceSquared) {
+		// The wandering boss must stay findable: never despawn just because players
+		// moved away (vanilla HostileEntity despawns at distance once unseen).
+		return false;
+	}
+
 	/**
 	 * Natural-spawn predicate: only where this block and the one above are both
-	 * water (submerged). No darkness requirement — the apex shark roams deep water
-	 * day or night. Rarity comes from the very low spawn weight + deep-ocean-only
-	 * biome attachment in OceanStarterWorldgen (≈ one prowling a deep ocean, not a
-	 * pack; MC has no literal one-per-biome hook).
+	 * water (submerged), at least 16 blocks below sea level (deep water only), and
+	 * — to keep wild bosses rare so boss bars don't pile up — only ~1 in 12
+	 * otherwise-valid attempts. No darkness requirement — the apex shark roams deep
+	 * water day or night. Rarity comes from this gate plus the very low spawn weight
+	 * + deep-ocean-only biome attachment in OceanStarterWorldgen (≈ one prowling a
+	 * deep ocean, not a pack; MC has no literal one-per-biome hook).
 	 */
 	public static boolean canSpawn(EntityType<? extends HostileEntity> type, ServerWorldAccess world,
 			SpawnReason reason, BlockPos pos, Random random) {
 		return world.getFluidState(pos).isIn(FluidTags.WATER)
-				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER);
+				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER)
+				&& pos.getY() <= world.getSeaLevel() - 16
+				&& random.nextInt(12) == 0;
 	}
 
 	@Override
@@ -172,7 +186,10 @@ public class Megalodon extends HostileEntity {
 	 * reposition ourselves every server tick.
 	 */
 	private void updateSegments(ServerWorld world) {
-		boolean respawn = this.segments.isEmpty();
+		// Rebuild if the chain is missing or short — a partial spawn (some
+		// spawnEntity calls returned false) leaves fewer than the full set, and
+		// must retrigger the rebuild next tick rather than persist a stub chain.
+		boolean respawn = this.segments.size() != SEGMENT_OFFSETS.length;
 		for (MegalodonSegment seg : this.segments) {
 			if (seg.isRemoved()) {
 				respawn = true;
@@ -188,8 +205,11 @@ public class Megalodon extends HostileEntity {
 				MegalodonSegment seg = new MegalodonSegment(OceanStarter.MEGALODON_SEGMENT, world);
 				seg.setOwner(this);
 				seg.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), 0.0F);
-				world.spawnEntity(seg);
-				this.segments.add(seg);
+				// Only track a segment that actually spawned; a failed spawn leaves the
+				// list short of SEGMENT_OFFSETS.length, so the rebuild guard fires again next tick.
+				if (world.spawnEntity(seg)) {
+					this.segments.add(seg);
+				}
 			}
 		}
 		// String the segments along the shark's facing — including pitch, so the
@@ -213,6 +233,9 @@ public class Megalodon extends HostileEntity {
 			seg.discard();
 		}
 		this.segments.clear();
+		// Defensive bar cleanup: drop any tracked players so a removed boss can't
+		// leave a stale boss bar (onStoppedTrackingBy normally handles this).
+		this.bossBar.clearPlayers();
 		super.remove(reason);
 	}
 }

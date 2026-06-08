@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -30,7 +31,7 @@ import net.minecraft.util.Identifier;
 public class AbyssalLurkerRenderer extends MobEntityRenderer<AbyssalLurker, AbyssalLurkerModel> {
 
 	private static final Identifier TEXTURE =
-			Identifier.of("oceanstarter", "textures/entity/abyssal_lurker.png");
+			OceanStarter.id("textures/entity/abyssal_lurker.png");
 
 	public AbyssalLurkerRenderer(EntityRendererFactory.Context context) {
 		super(context, new AbyssalLurkerModel(context.getPart(AbyssalLurkerModel.LAYER)), 0.8F);

@@ -2,7 +2,7 @@
 
 Context for anyone (human or subagent) working on this repo. Read this before touching code — it captures the build/test/release flow and the load-bearing design decisions + gotchas that are NOT obvious from the source.
 
-/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, and two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), both natural-spawning in oceans with spawn eggs + loot.
+/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
 
 ## Toolchain (pin exactly — mismatches fail the build)
 
@@ -30,11 +30,12 @@ There is no GUI client on the build box, so **all testing is headless + server-s
 ```
 ./gradlew runGametest --no-daemon
 ```
-Boots a real headless dedicated server, runs `me.tinyclaw.oceanstarter.gametest.MegalodonGameTest`, writes JUnit to `build/gametest/report.xml`, exits non-zero on failure. The 4 tests:
+Boots a real headless dedicated server, runs ALL four gametest classes registered on the `fabric-gametest` entrypoint (`MegalodonGameTest`, `ReefLifeGameTest`, `DepthsGameTest`, `GearGameTest` — 14 tests total), writes JUnit to `build/gametest/report.xml`, exits non-zero on failure. The four boss tests in `MegalodonGameTest`:
 - `megalodonSpawnsAliveAtFullHealth` — spawn in water, tick 40, assert alive + HP ≥199 (catches crash-on-spawn).
 - `megalodonSpawnsFiveHitboxSegments` — assert exactly 5 segments owned by *this* boss (filtered via `isPartOf`, not radius — avoids cross-test pollution in the shared gametest world).
 - `megalodonDoesNotDrownInWater` — flood area, tick 120, assert HP ≥199 (`tickLimit=140` on this one; the default `@GameTest tickLimit` is 100).
 - `megalodonBiteDealsDamage` — anchor an AI-disabled target adjacent, drive `boss.tryAttack(prey)` directly, assert damage. (Direct tryAttack, NOT AI-timed — an AI-timed bite is flaky in a gametest world. The boss only auto-targets players, of which there are none headless.)
+The other three suites: `ReefLifeGameTest` (Reef Fish + Jellyfish spawn-liveness / no-drown), `DepthsGameTest` (the Abyssal Lurker — spawn liveness, the no-drown air-pin, and the melee bite dealing damage; same direct-tryAttack pattern as the boss), and `GearGameTest` (the Tidal diving set's worn full-set Water Breathing bonus — a real mock server player wearing all four pieces gets the effect, with partial-set + non-Tidal-head negative controls).
 Wiring: `loom { runs { gametest {...} } }` in `build.gradle` (creates the `runGametest` task + sets the `fabric-api.gametest` property + report path) and a `fabric-gametest` entrypoint in `fabric.mod.json`. The gametest API (`net.fabricmc.fabric.api.gametest.v1.FabricGameTest`, `FabricGameTest.EMPTY_STRUCTURE`) resolves transitively from fabric-api 0.116.5 — no extra dependency.
 
 ### 2. Dedicated-server smoke test (manual, deeper end-to-end)
@@ -98,16 +99,18 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 
 ## Repo layout
 
-- `src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment + ReefFish + Jellyfish `EntityType`s, spawn eggs, `FabricDefaultAttributeRegistry`, `SpawnRestriction` (the two passive mobs), worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
+- `src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment + ReefFish + Jellyfish + AbyssalLurker `EntityType`s, spawn eggs, `FabricDefaultAttributeRegistry`, `SpawnRestriction` (the two passive mobs + the Abyssal Lurker), the worn-Tidal-set Water Breathing `END_SERVER_TICK` handler, worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
 - `.../entity/Megalodon.java` — the boss (`extends HostileEntity`).
 - `.../entity/MegalodonSegment.java` — invisible body-following hitbox part (`extends Entity`).
 - `.../entity/ReefFish.java` — passive schooling fish (`extends SchoolingFishEntity`; only overrides getBucketItem + getFlopSound + getMaxGroupSize + sounds; AI/nav/flop/water-breathing all inherited).
 - `.../entity/Jellyfish.java` — passive drifter (`extends WaterCreatureEntity`; AquaticMoveControl + SwimNavigation, passive-only goals, no targets, no sting this round).
-- `.../client/OceanStarterClient.java` — `ClientModInitializer`: model layer + entity renderer registration (Megalodon, ReefFish, Jellyfish).
+- `.../entity/AbyssalLurker.java` — hostile deep-sea anglerfish (`extends HostileEntity`; aquatic move/nav, MeleeAttackGoal + ActiveTargetGoal on players, the `getNextAirUnderwater` no-drown air-pin).
+- `.../client/OceanStarterClient.java` — `ClientModInitializer`: model layer + entity renderer registration (Megalodon, ReefFish, Jellyfish, AbyssalLurker).
 - `.../client/MegalodonModel.java` / `MegalodonRenderer.java` / `NoopEntityRenderer.java` — boss model/renderer + the segment's invisible renderer.
 - `.../client/ReefFishModel.java` / `ReefFishRenderer.java` / `JellyfishModel.java` / `JellyfishRenderer.java` — the two passive mobs' `SinglePartEntityModel`s + `MobEntityRenderer`s (both on a 32x32 atlas; animated parts grabbed in the ctor).
-- `.../gametest/MegalodonGameTest.java` / `ReefLifeGameTest.java` — the gametests (4 boss + 3 Reef Life spawn/no-drown).
-- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [2 classes]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
+- `.../client/AbyssalLurkerModel.java` / `AbyssalLurkerRenderer.java` / `AbyssalLurkerEyesFeature.java` — the anglerfish model (128x128 atlas, built natively at ~2-block scale, no `scale()` override) + its renderer + an emissive feature that re-draws only the lure bulb/eye full-bright on the additive `RenderLayer.getEyes` layer (the glow mask is `textures/entity/abyssal_lurker_emissive.png`).
+- `.../gametest/MegalodonGameTest.java` / `ReefLifeGameTest.java` / `DepthsGameTest.java` / `GearGameTest.java` — the four gametest suites (14 tests): 4 boss, 4 Reef Life (fish + jelly) spawn/no-drown, 3 Abyssal Lurker (spawn/no-drown/bite), 3 Tidal gear (worn full-set water-breathing + negatives).
+- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [4 classes]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
 - `paint_reef_fish.py` / `paint_jellyfish.py` (repo root + /tmp) — the entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look).
 - `scripts/playtest-server.sh` — the smoke test. `paint_megalodon.py` (in repo root or /tmp) — the entity texture painter.
 

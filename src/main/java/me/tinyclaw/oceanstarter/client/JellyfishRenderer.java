@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -39,11 +40,11 @@ public class JellyfishRenderer extends MobEntityRenderer<Jellyfish, JellyfishMod
 
 	/** Variant index → texture. Order MUST match {@code Jellyfish} variant ordering. */
 	private static final Identifier[] TEXTURES = {
-			Identifier.of("oceanstarter", "textures/entity/jellyfish_green.png"),
-			Identifier.of("oceanstarter", "textures/entity/jellyfish_blue.png"),
-			Identifier.of("oceanstarter", "textures/entity/jellyfish_pink.png"),
-			Identifier.of("oceanstarter", "textures/entity/jellyfish_red.png"),
-			Identifier.of("oceanstarter", "textures/entity/jellyfish_orange.png"),
+			OceanStarter.id("textures/entity/jellyfish_green.png"),
+			OceanStarter.id("textures/entity/jellyfish_blue.png"),
+			OceanStarter.id("textures/entity/jellyfish_pink.png"),
+			OceanStarter.id("textures/entity/jellyfish_red.png"),
+			OceanStarter.id("textures/entity/jellyfish_orange.png"),
 	};
 
 	public JellyfishRenderer(EntityRendererFactory.Context context) {

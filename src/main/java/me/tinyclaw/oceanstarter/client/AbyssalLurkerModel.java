@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 
 import net.minecraft.client.model.ModelData;
@@ -10,7 +11,6 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -42,7 +42,7 @@ import net.minecraft.util.math.MathHelper;
 public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 
 	public static final EntityModelLayer LAYER =
-			new EntityModelLayer(Identifier.of("oceanstarter", "abyssal_lurker"), "main");
+			new EntityModelLayer(OceanStarter.id("abyssal_lurker"), "main");
 
 	private final ModelPart root;
 	private final ModelPart body;
@@ -52,7 +52,9 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 	private final ModelPart lureStalk;
 
 	public AbyssalLurkerModel(ModelPart root) {
-		// Default (opaque) layer — call super() with no arg, like Megalodon/ReefFish.
+		// Default (opaque) layer — relies on the implicit no-arg super(), like
+		// Megalodon/ReefFish. (Jellyfish instead overrides with an explicit
+		// super(RenderLayer::getEntityTranslucent) for its alpha-blended bell.)
 		this.root = root;
 		// Grab the animated parts once, here — a setAngles() getChild() on a nested
 		// part would crash the renderer + integrated server the moment it spawns.
@@ -73,7 +75,7 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 		// is lifted to mid-box). uv(0,0).
 		ModelPartData body = root.addChild("body",
 				ModelPartBuilder.create().uv(0, 0).cuboid(-13.0F, -22.0F, -10.0F, 26.0F, 30.0F, 20.0F),
-				ModelTransform.pivot(0.0F, 25.0F, 0.0F));
+				ModelTransform.pivot(0.0F, 18.0F, 0.0F));
 
 		// Head / upper jaw — the wide snout / forehead, mounted high on the front of the
 		// body so the top of the head meets the body top and the huge mouth opens

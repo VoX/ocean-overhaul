@@ -80,8 +80,8 @@ public class DepthsGameTest implements FabricGameTest {
 
 	/**
 	 * Bite: the lurker must actually deal its melee damage. Unlike the boss, the lurker
-	 * has no segments or custom attack box — its own 0.7x0.7 EntityType box <i>is</i> the
-	 * hitbox — so {@link AbyssalLurker#tryAttack} drives the plain {@code MobEntity}
+	 * has no segments or custom attack box — its own ~2x2 (1.9975) EntityType box
+	 * <i>is</i> the hitbox — so {@link AbyssalLurker#tryAttack} drives the plain {@code MobEntity}
 	 * attack path that applies {@code GENERIC_ATTACK_DAMAGE} (5.0) to the target. We bite
 	 * a low-HP salmon (~3 HP) placed adjacent in water; a 5-damage bite kills the fish.
 	 *

@@ -39,3 +39,6 @@ replay_*.log
 # Python bytecode (validator)
 __pycache__/
 *.pyc
+
+# downloaded reference images (not mod content)
+docs/refs/

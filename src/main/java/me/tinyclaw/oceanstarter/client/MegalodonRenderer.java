@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -14,7 +15,7 @@ import net.minecraft.util.Identifier;
 public class MegalodonRenderer extends MobEntityRenderer<Megalodon, MegalodonModel> {
 
 	private static final Identifier TEXTURE =
-			Identifier.of("oceanstarter", "textures/entity/megalodon.png");
+			OceanStarter.id("textures/entity/megalodon.png");
 
 	/** Render the whole model at this multiple so the boss reads as a big shark. */
 	private static final float RENDER_SCALE = 2.0F;

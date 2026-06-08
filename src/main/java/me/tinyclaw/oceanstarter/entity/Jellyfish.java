@@ -85,7 +85,7 @@ public class Jellyfish extends WaterCreatureEntity {
 
 	/** @return the color variant index, clamped 0..{@link #VARIANT_COUNT}-1. */
 	public int getVariant() {
-		return this.dataTracker.get(VARIANT);
+		return MathHelper.clamp(this.dataTracker.get(VARIANT), 0, VARIANT_COUNT - 1);
 	}
 
 	/** Set the color variant; clamped so a malformed value can never index past the texture array. */
@@ -104,6 +104,10 @@ public class Jellyfish extends WaterCreatureEntity {
 		super.readCustomDataFromNbt(nbt);
 		if (nbt.contains("Variant")) {
 			setVariant(nbt.getInt("Variant"));
+		} else {
+			// No saved variant (e.g. legacy/edge data): re-roll a random color rather
+			// than silently defaulting every such jelly to variant 0 (all green).
+			setVariant(this.getRandom().nextInt(VARIANT_COUNT));
 		}
 	}
 
@@ -131,12 +135,5 @@ public class Jellyfish extends WaterCreatureEntity {
 	@Override
 	protected EntityNavigation createNavigation(World world) {
 		return new SwimNavigation(this, world);
-	}
-
-	@Override
-	protected int getNextAirUnderwater(int air) {
-		// Belt-and-suspenders no-drown pin (the proven Megalodon idiom).
-		// WaterCreatureEntity already breathes water; this just guarantees it.
-		return air;
 	}
 }

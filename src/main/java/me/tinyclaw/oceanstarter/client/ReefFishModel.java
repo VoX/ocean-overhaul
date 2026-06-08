@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
 
 import net.minecraft.client.model.ModelData;
@@ -10,7 +11,6 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -23,7 +23,7 @@ import net.minecraft.util.math.MathHelper;
 public class ReefFishModel extends SinglePartEntityModel<ReefFish> {
 
 	public static final EntityModelLayer LAYER =
-			new EntityModelLayer(Identifier.of("oceanstarter", "reef_fish"), "main");
+			new EntityModelLayer(OceanStarter.id("reef_fish"), "main");
 
 	private final ModelPart root;
 	private final ModelPart tail;

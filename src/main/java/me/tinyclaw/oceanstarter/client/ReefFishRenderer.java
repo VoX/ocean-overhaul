@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -13,7 +14,7 @@ import net.minecraft.util.Identifier;
 public class ReefFishRenderer extends MobEntityRenderer<ReefFish, ReefFishModel> {
 
 	private static final Identifier TEXTURE =
-			Identifier.of("oceanstarter", "textures/entity/reef_fish.png");
+			OceanStarter.id("textures/entity/reef_fish.png");
 
 	public ReefFishRenderer(EntityRendererFactory.Context context) {
 		super(context, new ReefFishModel(context.getPart(ReefFishModel.LAYER)), 0.2F);

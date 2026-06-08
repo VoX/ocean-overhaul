@@ -376,14 +376,19 @@ public class OceanStarter implements ModInitializer {
 					0.0f  // knockback resistance
 			));
 
+	// Per-slot durability multiplier passed to ArmorItem.Type.getMaxDamage (each
+	// slot scales this by its own base, e.g. boots x13 / chestplate x16). Vanilla
+	// references: iron=15, diamond=33.
+	private static final int TIDAL_ARMOR_DURABILITY = 15;
+
 	public static final Item TIDAL_HELMET = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.HELMET,
-			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(15)));
+			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 	public static final Item TIDAL_CHESTPLATE = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.CHESTPLATE,
-			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(15)));
+			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 	public static final Item TIDAL_LEGGINGS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.LEGGINGS,
-			new Item.Settings().maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(15)));
+			new Item.Settings().maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 	public static final Item TIDAL_BOOTS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.BOOTS,
-			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(15)));
+			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 
 	// =====================================================================
 	// Gear of the Deep — Seafood foods
@@ -702,8 +707,9 @@ public class OceanStarter implements ModInitializer {
 		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
 		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
 		// so WaterCreatureEntity.canSpawn can't be reused (type-bound mismatch) — the
-		// lurker carries its own static canSpawn (submerged + dark). Natural-spawn
-		// biome attachment is wired in OceanStarterWorldgen.register().
+		// lurker carries its own static canSpawn (submerged, no light check — it
+		// spawns day or night so the deep stays dangerous). Natural-spawn biome
+		// attachment is wired in OceanStarterWorldgen.register().
 		Registry.register(Registries.ITEM, id("abyssal_lurker_spawn_egg"), ABYSSAL_LURKER_SPAWN_EGG);
 		FabricDefaultAttributeRegistry.register(ABYSSAL_LURKER, AbyssalLurker.createAttributes());
 		SpawnRestriction.register(ABYSSAL_LURKER, SpawnLocationTypes.IN_WATER,
@@ -802,13 +808,20 @@ public class OceanStarter implements ModInitializer {
 						&& player.getEquippedStack(EquipmentSlot.LEGS).getItem() == TIDAL_LEGGINGS
 						&& player.getEquippedStack(EquipmentSlot.FEET).getItem() == TIDAL_BOOTS;
 				if (fullSet) {
-					player.addStatusEffect(new StatusEffectInstance(
-							StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
+					// Only re-apply when the effect is absent or about to lapse, so we emit
+					// ~one status packet per refresh instead of one every tick (the 220-tick
+					// duration stays well above the <40 reapply threshold, so it never
+					// actually wears off for a full-set wearer).
+					var e = player.getStatusEffect(StatusEffects.WATER_BREATHING);
+					if (e == null || e.getDuration() < 40) {
+						player.addStatusEffect(new StatusEffectInstance(
+								StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
+					}
 				}
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 21 items (incl. Tidal tools/armor + seafood foods), 3 entities (Megalodon boss + Reef Fish + Jellyfish passive mobs), ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 21 items (incl. Tidal tools/armor + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**

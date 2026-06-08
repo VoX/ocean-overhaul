@@ -1,11 +1,11 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.feature.EyesFeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.util.Identifier;
 
 /**
  * True-emissive overlay for the {@link AbyssalLurker}: re-draws the model through a
@@ -31,7 +31,7 @@ public class AbyssalLurkerEyesFeature
 		extends EyesFeatureRenderer<AbyssalLurker, AbyssalLurkerModel> {
 
 	private static final RenderLayer LAYER = RenderLayer.getEyes(
-			Identifier.of("oceanstarter", "textures/entity/abyssal_lurker_emissive.png"));
+			OceanStarter.id("textures/entity/abyssal_lurker_emissive.png"));
 
 	public AbyssalLurkerEyesFeature(FeatureRendererContext<AbyssalLurker, AbyssalLurkerModel> context) {
 		super(context);

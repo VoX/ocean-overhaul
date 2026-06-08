@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter.client;
 
+import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -15,8 +16,11 @@ import net.minecraft.util.Identifier;
  */
 public class NoopEntityRenderer extends EntityRenderer<MegalodonSegment> {
 
+	// Throwaway id — never loaded as a texture. getTexture() is never consulted because
+	// render() draws nothing (the segment is invisible); EntityRenderer only binds a
+	// texture when something is actually drawn. The path need not point at a real PNG.
 	private static final Identifier TEXTURE =
-			Identifier.of("oceanstarter", "textures/entity/megalodon.png");
+			OceanStarter.id("textures/entity/megalodon_segment");
 
 	public NoopEntityRenderer(EntityRendererFactory.Context context) {
 		super(context);
