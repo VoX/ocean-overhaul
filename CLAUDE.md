@@ -43,9 +43,22 @@ bash scripts/playtest-server.sh
 ```
 Self-contained + re-runnable: builds the mod, downloads the Fabric installer (cached at `/tmp/fabric-installer-*.jar`), stands up a fresh **ephemeral** server in a `/tmp` scratch, stages fabric-api + the built jar, boots headless, drives the console over a FIFO, asserts 7 checks, then tears everything down (trap on EXIT/INT/TERM → `/stop` → SIGTERM → SIGKILL → `rm -rf` scratch). Asserts: boss summons, **segment count == 5**, boss HP ~200, bite deals damage, **segment hit forwards damage to the boss (200→175)** — the end-to-end proof the multipart hitbox works — segments self-clean to 0 after boss death, and no Exception/crash lines in the log.
 
-### 3. CI
+### 3. Static data/id validator (catches what `build` can't)
+```
+python3 scripts/validate-data.py
+```
+Resolves EVERY id referenced by the mod's data + asset JSON against the MC
+`--reports` registry dump (vanilla + oceanstarter ids, baked into
+`scripts/validation/registries-1.21.1.json` — self-contained, no regen per run).
+Catches dangling recipe/loot/worldgen/blockstate/model/tag refs, missing texture
+PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recipe
+bug class) — none of which `./gradlew build` sees. Pure Python, no JDK. Regen
+procedure + provenance: `scripts/validation/README.md` + `build-registries.py`.
+
+### 4. CI
 - `.github/workflows/gametest.yml` — runs `./gradlew runGametest` on every push + PR, uploads `build/gametest/report.xml`. **This is the regression net — keep it green.**
 - `.github/workflows/build.yml` — `./gradlew build` on push/PR.
+- `.github/workflows/validate.yml` — runs `python3 scripts/validate-data.py` on push/PR (data/id validator). Fast, pure-Python.
 - `.github/workflows/release.yml` — on a `v*` tag → build → `softprops/action-gh-release@v2` with `files: build/libs/*.jar`.
 
 ### SAFETY when running a local test server on this box
@@ -105,6 +118,6 @@ Vanilla multipart (`EnderDragonPart`) is **unusable** for a custom mob: `World`/
 
 - **`git add -A` before committing** — `git commit -am` silently skips NEW untracked files (blockstates/models/textures/recipes), shipping a half-broken jar. Always `git add -A` + verify the working tree is clean.
 - **`release.yml` needs exactly one jar** in `build/libs` — keep `withSourcesJar()` off and use `files: build/libs/*.jar` (no `!`-negation globs; they fail under `fail_on_unmatched_files`).
-- **Recipe/data categories are validated at datapack load**, not build — a bad enum (e.g. `category:"food"` on a `crafting_shapeless`, which is a *cooking* category) makes the recipe silently fail to load. The headless server smoke test / a server boot surfaces these in the log; `./gradlew build` does NOT.
+- **Recipe/data categories are validated at datapack load**, not build — a bad enum (e.g. `category:"food"` on a `crafting_shapeless`, which is a *cooking* category) makes the recipe silently fail to load. The headless server smoke test / a server boot surfaces these in the log; `./gradlew build` does NOT. `scripts/validate-data.py` now catches this (and all dangling id/texture refs) statically — run it / rely on the `validate-data` CI job.
 - **1.21.1 API specifics:** `Identifier.of(ns, path)` (not `new Identifier`); loot folder is `loot_table/` **singular**; `Entity.damage(DamageSource, float)` is the 2-arg form (became 3-arg with ServerWorld in 1.21.2+).
 - CI Actions currently warn about Node 20 deprecation (forced to Node 24 on 2026-06-16) — bump `actions/checkout` + `setup-java` + `upload-artifact` + `action-gh-release` versions before then. Non-breaking until then.

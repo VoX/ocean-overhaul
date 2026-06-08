@@ -35,3 +35,7 @@ replay_*.log
 # Keep the gradle wrapper jar tracked even though *.jar-style ignores are tempting.
 # (Do NOT ignore gradle/wrapper/gradle-wrapper.jar — it must be committed.)
 !gradle/wrapper/gradle-wrapper.jar
+
+# Python bytecode (validator)
+__pycache__/
+*.pyc

@@ -1,0 +1,35 @@
+# Static data/id validator — resolves every id referenced by the mod's data &
+# asset JSON against the MC `--reports` registry dump (vanilla + oceanstarter,
+# baked into scripts/validation/registries-1.21.1.json). Catches dangling recipe
+# /loot/worldgen/model/tag refs, missing texture PNGs, and bad recipe-category
+# enums — the silent datapack-load failures that `./gradlew build` does NOT see.
+#
+# Pure-Python, no JDK/gradle needed, so it's fast and runs alongside build +
+# gametest as a third line of defence.
+
+name: validate-data
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Read-only: this job publishes nothing.
+permissions:
+  contents: read
+
+jobs:
+  validate-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate mod data & asset ids
+        run: python3 scripts/validate-data.py
