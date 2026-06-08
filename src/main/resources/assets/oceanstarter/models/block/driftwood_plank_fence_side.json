@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/fence_side",
+  "textures": {
+    "texture": "oceanstarter:block/driftwood_plank"
+  }
+}

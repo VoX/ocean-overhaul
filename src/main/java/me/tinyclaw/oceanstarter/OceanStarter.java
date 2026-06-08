@@ -6,7 +6,11 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockSetType;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ButtonBlock;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.PressurePlateBlock;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
@@ -30,9 +34,10 @@ import org.slf4j.LoggerFactory;
  *
  * <p>A revamped-ocean content mod for Minecraft 1.21.1 (Fabric). Registers a set of
  * sea-themed decorative blocks (Abyssal Coral Block, Sea Glass, Polished Prismarine
- * Bricks, Driftwood Plank, Pearl Block), a set of ocean items (Tide Pearl, Coral
- * Shard, Sea Salt), and a dedicated "Ocean Overhaul" creative tab that holds them
- * all — wired up with the Minecraft 1.21.1 Fabric registry API.</p>
+ * Bricks, Driftwood Plank, Pearl Block), driftwood functional blocks (Driftwood
+ * Fence, Button, Pressure Plate), a set of ocean items (Tide Pearl, Coral Shard,
+ * Sea Salt), and a dedicated "Ocean Overhaul" creative tab that holds them all —
+ * wired up with the Minecraft 1.21.1 Fabric registry API.</p>
  */
 public class OceanStarter implements ModInitializer {
 	public static final String MOD_ID = "oceanstarter";
@@ -116,6 +121,24 @@ public class OceanStarter implements ModInitializer {
 			AbstractBlock.Settings.copy(DRIFTWOOD_PLANK));
 	public static final BlockItem DRIFTWOOD_PLANK_WALL_ITEM = new BlockItem(
 			DRIFTWOOD_PLANK_WALL, new Item.Settings());
+
+	// --- Functional set: Driftwood Plank (fence + button + pressure plate) -
+	// FenceBlock(Settings) is public; ButtonBlock/PressurePlateBlock ctors are
+	// protected -> anon subclass, same pattern as the stairs above.
+	public static final Block DRIFTWOOD_PLANK_FENCE = new FenceBlock(
+			AbstractBlock.Settings.copy(DRIFTWOOD_PLANK));
+	public static final BlockItem DRIFTWOOD_PLANK_FENCE_ITEM = new BlockItem(
+			DRIFTWOOD_PLANK_FENCE, new Item.Settings());
+	public static final Block DRIFTWOOD_BUTTON = new ButtonBlock(
+			BlockSetType.OAK, 30,
+			AbstractBlock.Settings.copy(Blocks.OAK_BUTTON)) {};
+	public static final BlockItem DRIFTWOOD_BUTTON_ITEM = new BlockItem(
+			DRIFTWOOD_BUTTON, new Item.Settings());
+	public static final Block DRIFTWOOD_PRESSURE_PLATE = new PressurePlateBlock(
+			BlockSetType.OAK,
+			AbstractBlock.Settings.copy(Blocks.OAK_PRESSURE_PLATE)) {};
+	public static final BlockItem DRIFTWOOD_PRESSURE_PLATE_ITEM = new BlockItem(
+			DRIFTWOOD_PRESSURE_PLATE, new Item.Settings());
 
 	// --- Building set: Sea Glass (stairs + slab only, no wall) ------------
 	public static final Block SEA_GLASS_STAIRS = new StairsBlock(
@@ -242,6 +265,9 @@ public class OceanStarter implements ModInitializer {
 				entries.add(DRIFTWOOD_PLANK_STAIRS);
 				entries.add(DRIFTWOOD_PLANK_SLAB);
 				entries.add(DRIFTWOOD_PLANK_WALL);
+				entries.add(DRIFTWOOD_PLANK_FENCE);
+				entries.add(DRIFTWOOD_BUTTON);
+				entries.add(DRIFTWOOD_PRESSURE_PLATE);
 				entries.add(PEARL_BLOCK);
 				entries.add(PEARL_BLOCK_STAIRS);
 				entries.add(PEARL_BLOCK_SLAB);
@@ -300,6 +326,12 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("driftwood_plank_slab"), DRIFTWOOD_PLANK_SLAB_ITEM);
 		Registry.register(Registries.BLOCK, id("driftwood_plank_wall"), DRIFTWOOD_PLANK_WALL);
 		Registry.register(Registries.ITEM, id("driftwood_plank_wall"), DRIFTWOOD_PLANK_WALL_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_plank_fence"), DRIFTWOOD_PLANK_FENCE);
+		Registry.register(Registries.ITEM, id("driftwood_plank_fence"), DRIFTWOOD_PLANK_FENCE_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_button"), DRIFTWOOD_BUTTON);
+		Registry.register(Registries.ITEM, id("driftwood_button"), DRIFTWOOD_BUTTON_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_pressure_plate"), DRIFTWOOD_PRESSURE_PLATE);
+		Registry.register(Registries.ITEM, id("driftwood_pressure_plate"), DRIFTWOOD_PRESSURE_PLATE_ITEM);
 
 		Registry.register(Registries.BLOCK, id("pearl_block"), PEARL_BLOCK);
 		Registry.register(Registries.ITEM, id("pearl_block"), PEARL_BLOCK_ITEM);
@@ -373,6 +405,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_PLANK_STAIRS);
 			entries.add(DRIFTWOOD_PLANK_SLAB);
 			entries.add(DRIFTWOOD_PLANK_WALL);
+			entries.add(DRIFTWOOD_PLANK_FENCE);
 			entries.add(PEARL_BLOCK);
 			entries.add(PEARL_BLOCK_STAIRS);
 			entries.add(PEARL_BLOCK_SLAB);
@@ -397,8 +430,12 @@ public class OceanStarter implements ModInitializer {
 			entries.add(SEA_URCHIN);
 			entries.add(SALTED_COD);
 		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
+			entries.add(DRIFTWOOD_BUTTON);
+			entries.add(DRIFTWOOD_PRESSURE_PLATE);
+		});
 
-		LOGGER.info("Ocean Overhaul loaded: 27 blocks, 8 items, ocean_overhaul tab.");
+		LOGGER.info("Ocean Overhaul loaded: 30 blocks, 8 items, ocean_overhaul tab.");
 	}
 
 	/**

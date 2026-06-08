@@ -4,6 +4,9 @@
     "oceanstarter:driftwood_plank",
     "oceanstarter:driftwood_plank_stairs",
     "oceanstarter:driftwood_plank_slab",
-    "oceanstarter:driftwood_plank_wall"
+    "oceanstarter:driftwood_plank_wall",
+    "oceanstarter:driftwood_plank_fence",
+    "oceanstarter:driftwood_button",
+    "oceanstarter:driftwood_pressure_plate"
   ]
 }
