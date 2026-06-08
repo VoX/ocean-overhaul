@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "minecraft:planks"
+    },
+    {
+      "item": "oceanstarter:sea_salt"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanstarter:driftwood_plank"
+  }
+}
