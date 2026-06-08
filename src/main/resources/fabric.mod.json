@@ -22,7 +22,8 @@
 		],
 		"fabric-gametest": [
 			"me.tinyclaw.oceanstarter.gametest.MegalodonGameTest",
-			"me.tinyclaw.oceanstarter.gametest.ReefLifeGameTest"
+			"me.tinyclaw.oceanstarter.gametest.ReefLifeGameTest",
+			"me.tinyclaw.oceanstarter.gametest.GearGameTest"
 		]
 	},
 	"depends": {
