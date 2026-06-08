@@ -133,15 +133,15 @@ public class RenderProbeClient implements ClientModInitializer {
 					}
 					return;
 				}
-				Entity shark = findMegalodon(client);
+				Entity shark = findTargetEntity(client);
 				if (shark != null) {
-					log("megalodon found at " + shark.getPos() + " (in-game) — posing camera");
+					log("target entity found at " + shark.getPos() + " (in-game) — posing camera");
 					setPhase(Phase.POSE);
 				} else if (phaseTicks > 600) {
-					// Boss STILL not synced after a long wait (chunk not sent).
+					// Entity STILL not synced after a long wait (chunk not sent).
 					// Pose toward the configured target coords as a last resort so
 					// we at least capture the arena rather than hang.
-					log("megalodon not in client world after " + phaseTicks
+					log("target entity not in client world after " + phaseTicks
 							+ " in-world ticks — posing toward target coords (fallback)");
 					setPhase(Phase.POSE);
 				}
@@ -200,15 +200,26 @@ public class RenderProbeClient implements ClientModInitializer {
 		setPhase(Phase.CONNECTING);
 	}
 
-	private Entity findMegalodon(MinecraftClient client) {
+	/**
+	 * Find the entity to frame. Prefers the Megalodon (the original target of this
+	 * probe), but falls back to ANY {@code oceanstarter:*} entity so the probe can
+	 * frame other mod mobs (e.g. the jellyfish/reef fish) when the harness summons
+	 * one of those instead — it advances past WAIT_WORLD immediately and aims at the
+	 * mob's real center rather than waiting out the fallback timer on raw coords.
+	 */
+	private Entity findTargetEntity(MinecraftClient client) {
 		if (client.world == null) return null;
+		Entity fallback = null;
 		for (Entity e : client.world.getEntities()) {
 			String id = net.minecraft.registry.Registries.ENTITY_TYPE.getId(e.getType()).toString();
 			if ("oceanstarter:megalodon".equals(id)) {
 				return e;
 			}
+			if (fallback == null && id.startsWith("oceanstarter:")) {
+				fallback = e;
+			}
 		}
-		return null;
+		return fallback;
 	}
 
 	private void pose(MinecraftClient client) {
@@ -231,7 +242,7 @@ public class RenderProbeClient implements ClientModInitializer {
 
 	private void aimAtShark(MinecraftClient client) {
 		if (client.player == null) return;
-		Entity shark = findMegalodon(client);
+		Entity shark = findTargetEntity(client);
 		Vec3d aim = shark != null ? shark.getPos().add(0, shark.getHeight() * 0.5, 0) : target;
 		Vec3d eye = client.player.getEyePos();
 		Vec3d dir = aim.subtract(eye);

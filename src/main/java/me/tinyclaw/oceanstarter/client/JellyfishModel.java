@@ -8,6 +8,7 @@ import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.Identifier;
@@ -37,6 +38,12 @@ public class JellyfishModel extends SinglePartEntityModel<Jellyfish> {
 	private final ModelPart[] tentacles = new ModelPart[4];
 
 	public JellyfishModel(ModelPart root) {
+		// Render on the TRANSLUCENT layer (alpha-blended), not the EntityModel default
+		// (RenderLayer::getEntityCutoutNoCull, which is alpha-TESTED — it discards low-alpha
+		// pixels and draws the rest fully opaque). The jellyfish texture bakes semi-transparent
+		// pixels (alpha ~150-200) for the see-through bell, so it needs real blending or it
+		// renders as a solid blob. (ReefFish/Megalodon keep the cutout default — opaque textures.)
+		super(RenderLayer::getEntityTranslucent);
 		this.root = root;
 		// Grab all animated parts here, in the constructor — a setAngles() getChild()
 		// would crash the client + integrated server on spawn (documented gotcha).

@@ -10,9 +10,11 @@ import net.minecraft.util.Identifier;
  * Renderer for the {@link Jellyfish}. Binds the {@link JellyfishModel} and the
  * hand-painted bell+tentacle texture.
  *
- * <p>The translucent look is baked into the PNG (semi-transparent pixels) rather than
- * a custom translucent {@code RenderLayer} — the default {@link MobEntityRenderer}
- * cutout/translucent path carries it, which keeps this renderer reliably buildable.</p>
+ * <p>The translucent look is baked into the PNG (semi-transparent pixels); the actual
+ * alpha-blending comes from {@link JellyfishModel} constructing itself on the
+ * {@code RenderLayer::getEntityTranslucent} layer. (The EntityModel default,
+ * {@code getEntityCutoutNoCull}, is alpha-TESTED — it would drop the soft pixels and
+ * draw a solid blob, so the layer must be set on the model, not left to default.)</p>
  */
 public class JellyfishRenderer extends MobEntityRenderer<Jellyfish, JellyfishModel> {
 
