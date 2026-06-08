@@ -27,6 +27,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 /**
@@ -101,6 +102,30 @@ public class Megalodon extends HostileEntity {
 		super.mobTick();
 		// Drive the boss bar from current health (server-side hook).
 		this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+	}
+
+	/**
+	 * Offensive bite reach. Vanilla {@code MobEntity.isInAttackRange} tests only
+	 * {@link #getAttackBox()} (the shark's own box) against the target — it never
+	 * consults the {@link MegalodonSegment} chain, which only restores the
+	 * being-hit hitbox. The shark's own box is intentionally tiny (1.6) so, left to
+	 * vanilla, the giant visual jaws would pass over players without biting. Extend
+	 * the attack box forward along the body's facing toward the visible snout so the
+	 * gape actually connects, while keeping the small-box + segments design intact.
+	 */
+	@Override
+	protected Box getAttackBox() {
+		Box base = super.getAttackBox();
+		// Forward horizontal unit vector from bodyYaw — same convention as
+		// updateSegments(): fx = -sin(yaw), fz = cos(yaw).
+		float yawRad = this.bodyYaw * ((float) Math.PI / 180.0F);
+		double fx = -Math.sin(yawRad);
+		double fz = Math.cos(yawRad);
+		// Stretch (forward-only) toward the snout to match the ~3-block visual jaw
+		// reach the v0.6.3 4.0-wide box used to give, plus a little vertical slack
+		// so the open jaws cover the player's height.
+		double reach = 2.5;
+		return base.stretch(fx * reach, 0.0, fz * reach).expand(0.0, 0.3, 0.0);
 	}
 
 	@Override

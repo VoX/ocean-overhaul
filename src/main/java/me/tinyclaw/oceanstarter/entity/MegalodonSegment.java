@@ -21,6 +21,7 @@ public class MegalodonSegment extends Entity {
 
 	private Megalodon owner;
 
+	@SuppressWarnings("this-escape")
 	public MegalodonSegment(EntityType<? extends MegalodonSegment> type, World world) {
 		super(type, world);
 		this.setNoGravity(true);

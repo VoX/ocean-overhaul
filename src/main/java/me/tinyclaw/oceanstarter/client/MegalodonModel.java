@@ -103,6 +103,6 @@ public class MegalodonModel extends SinglePartEntityModel<Megalodon> {
 		// Gentle tail sway so the shark looks alive.
 		this.tail.yaw = MathHelper.cos(animationProgress * 0.1F) * 0.2F;
 		// Slow open/close chomp on the lower jaw (oscillates around the open pose).
-		this.lowerJaw.pitch = 0.5F + MathHelper.cos(animationProgress * 0.12F) * 0.18F;
+		this.lowerJaw.pitch = 0.55F + MathHelper.cos(animationProgress * 0.12F) * 0.18F;
 	}
 }
