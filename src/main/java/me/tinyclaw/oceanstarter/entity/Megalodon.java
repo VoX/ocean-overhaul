@@ -8,6 +8,7 @@ import me.tinyclaw.oceanstarter.OceanStarter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.control.AquaticMoveControl;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -24,10 +25,14 @@ import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
 /**
@@ -95,6 +100,19 @@ public class Megalodon extends HostileEntity {
 		// HostileEntity is a land mob and canBreatheInWater() is final, so it would
 		// suffocate underwater. Pin its air supply so the boss never drowns at home.
 		return air;
+	}
+
+	/**
+	 * Natural-spawn predicate: only where this block and the one above are both
+	 * water (submerged). No darkness requirement — the apex shark roams deep water
+	 * day or night. Rarity comes from the very low spawn weight + deep-ocean-only
+	 * biome attachment in OceanStarterWorldgen (≈ one prowling a deep ocean, not a
+	 * pack; MC has no literal one-per-biome hook).
+	 */
+	public static boolean canSpawn(EntityType<? extends HostileEntity> type, ServerWorldAccess world,
+			SpawnReason reason, BlockPos pos, Random random) {
+		return world.getFluidState(pos).isIn(FluidTags.WATER)
+				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER);
 	}
 
 	@Override

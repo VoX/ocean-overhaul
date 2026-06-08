@@ -736,6 +736,10 @@ public class OceanStarter implements ModInitializer {
 		// (The EntityType itself is registered in its static-field initializer above.)
 		Registry.register(Registries.ITEM, id("megalodon_spawn_egg"), MEGALODON_SPAWN_EGG);
 		FabricDefaultAttributeRegistry.register(MEGALODON, Megalodon.createAttributes());
+		// Rare natural spawn in deep oceans (submerged water; biome attach + low
+		// weight in OceanStarterWorldgen make it rare). Boss is no longer egg-only.
+		SpawnRestriction.register(MEGALODON, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, Megalodon::canSpawn);
 
 		// Register the Reef Life passive mobs: spawn-egg items, default attributes,
 		// and natural-spawn placement restrictions. (EntityTypes are registered in

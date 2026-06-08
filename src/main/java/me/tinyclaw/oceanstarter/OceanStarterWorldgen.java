@@ -94,6 +94,17 @@ public final class OceanStarterWorldgen {
 				SpawnGroup.MONSTER,
 				OceanStarter.ABYSSAL_LURKER,
 				8, 1, 2);
+
+		// The Depths: a rare apex predator. The Megalodon boss now spawns naturally
+		// in deep oceans only, at a very low weight (1) in groups of exactly 1 — so
+		// you occasionally find a single shark prowling, not one-per-biome literally
+		// (MC has no such hook) but rare enough to read that way. canSpawn gates on
+		// submerged water.
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_DEEP_OCEAN),
+				SpawnGroup.MONSTER,
+				OceanStarter.MEGALODON,
+				1, 1, 1);
 	}
 
 	private static void addOceanFeature(String name, GenerationStep.Feature step) {
