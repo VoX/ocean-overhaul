@@ -77,6 +77,13 @@ public class Megalodon extends HostileEntity {
 	}
 
 	@Override
+	protected int getNextAirUnderwater(int air) {
+		// HostileEntity is a land mob and canBreatheInWater() is final, so it would
+		// suffocate underwater. Pin its air supply so the boss never drowns at home.
+		return air;
+	}
+
+	@Override
 	protected void mobTick() {
 		super.mobTick();
 		// Drive the boss bar from current health (server-side hook).

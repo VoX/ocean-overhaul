@@ -4,6 +4,7 @@ import me.tinyclaw.oceanstarter.entity.Megalodon;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 /**
@@ -15,8 +16,17 @@ public class MegalodonRenderer extends MobEntityRenderer<Megalodon, MegalodonMod
 	private static final Identifier TEXTURE =
 			Identifier.of("oceanstarter", "textures/entity/megalodon.png");
 
+	/** Render the whole model at this multiple so the boss reads as a big shark. */
+	private static final float RENDER_SCALE = 1.6F;
+
 	public MegalodonRenderer(EntityRendererFactory.Context context) {
-		super(context, new MegalodonModel(context.getPart(MegalodonModel.LAYER)), 1.5F);
+		super(context, new MegalodonModel(context.getPart(MegalodonModel.LAYER)), 2.4F);
+	}
+
+	@Override
+	protected void scale(Megalodon entity, MatrixStack matrices, float amount) {
+		matrices.scale(RENDER_SCALE, RENDER_SCALE, RENDER_SCALE);
+		super.scale(entity, matrices, amount);
 	}
 
 	@Override
