@@ -17,5 +17,6 @@ public class OceanStarterClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(
 				MegalodonModel.LAYER, MegalodonModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanStarter.MEGALODON, MegalodonRenderer::new);
+		EntityRendererRegistry.register(OceanStarter.MEGALODON_SEGMENT, NoopEntityRenderer::new);
 	}
 }

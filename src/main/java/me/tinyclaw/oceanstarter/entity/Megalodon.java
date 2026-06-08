@@ -1,5 +1,11 @@
 package me.tinyclaw.oceanstarter.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import me.tinyclaw.oceanstarter.OceanStarter;
+
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.control.AquaticMoveControl;
@@ -19,6 +25,7 @@ import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
@@ -35,6 +42,12 @@ public class Megalodon extends HostileEntity {
 
 	private final ServerBossBar bossBar =
 			new ServerBossBar(Text.literal("Megalodon"), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
+
+	/** Body-following hitbox parts (server-side; transient — never saved). */
+	private final List<MegalodonSegment> segments = new ArrayList<>();
+
+	/** Where each segment rides along the facing axis, head (+) to tail (-), in blocks. */
+	private static final double[] SEGMENT_OFFSETS = { 3.0, 1.5, 0.0, -1.5, -3.0 };
 
 	public Megalodon(EntityType<? extends HostileEntity> entityType, World world) {
 		super(entityType, world);
@@ -100,5 +113,63 @@ public class Megalodon extends HostileEntity {
 	public void onStoppedTrackingBy(ServerPlayerEntity player) {
 		super.onStoppedTrackingBy(player);
 		this.bossBar.removePlayer(player);
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		if (this.getWorld() instanceof ServerWorld serverWorld) {
+			this.updateSegments(serverWorld);
+		}
+	}
+
+	/**
+	 * Keep the hitbox chain alive and strung along the shark's body. Vanilla
+	 * multipart is dragon-only, so these are real entities we (re)spawn and
+	 * reposition ourselves every server tick.
+	 */
+	private void updateSegments(ServerWorld world) {
+		boolean respawn = this.segments.isEmpty();
+		for (MegalodonSegment seg : this.segments) {
+			if (seg.isRemoved()) {
+				respawn = true;
+				break;
+			}
+		}
+		if (respawn) {
+			for (MegalodonSegment seg : this.segments) {
+				seg.discard();
+			}
+			this.segments.clear();
+			for (int i = 0; i < SEGMENT_OFFSETS.length; i++) {
+				MegalodonSegment seg = new MegalodonSegment(OceanStarter.MEGALODON_SEGMENT, world);
+				seg.setOwner(this);
+				seg.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), 0.0F);
+				world.spawnEntity(seg);
+				this.segments.add(seg);
+			}
+		}
+		// String the segments along the shark's facing — including pitch, so the
+		// hitbox chain follows the body when it dives or surfaces.
+		float yawRad = this.bodyYaw * ((float) Math.PI / 180.0F);
+		float pitchRad = this.getPitch() * ((float) Math.PI / 180.0F);
+		double horizontal = Math.cos(pitchRad);
+		double fx = -Math.sin(yawRad) * horizontal;
+		double fy = -Math.sin(pitchRad);
+		double fz = Math.cos(yawRad) * horizontal;
+		for (int i = 0; i < this.segments.size(); i++) {
+			double off = SEGMENT_OFFSETS[i];
+			this.segments.get(i).setPosition(
+					this.getX() + fx * off, this.getY() + fy * off, this.getZ() + fz * off);
+		}
+	}
+
+	@Override
+	public void remove(Entity.RemovalReason reason) {
+		for (MegalodonSegment seg : this.segments) {
+			seg.discard();
+		}
+		this.segments.clear();
+		super.remove(reason);
 	}
 }

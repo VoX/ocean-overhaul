@@ -1,6 +1,7 @@
 package me.tinyclaw.oceanstarter;
 
 import me.tinyclaw.oceanstarter.entity.Megalodon;
+import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -325,9 +326,22 @@ public class OceanStarter implements ModInitializer {
 			Registries.ENTITY_TYPE,
 			id("megalodon"),
 			EntityType.Builder.create(Megalodon::new, SpawnGroup.MONSTER)
-					.dimensions(4.0F, 2.0F)
+					.dimensions(1.6F, 1.6F)
 					.maxTrackingRange(10)
 					.build("megalodon"));
+
+	// --- Megalodon hitbox segments (invisible, body-following multipart) ---
+	// Vanilla multipart is dragon-only (World checks instanceof EnderDragonEntity),
+	// so the shark strings a chain of these real entities along its body instead.
+	// The shark's own box stays small (1.6) — these segments are the real hitbox.
+	public static final EntityType<MegalodonSegment> MEGALODON_SEGMENT = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("megalodon_segment"),
+			EntityType.Builder.<MegalodonSegment>create(MegalodonSegment::new, SpawnGroup.MISC)
+					.dimensions(1.8F, 1.8F)
+					.maxTrackingRange(10)
+					.disableSaving()
+					.build("megalodon_segment"));
 
 	// --- Spawn egg for the Megalodon (grey body / pale belly) -------------
 	public static final SpawnEggItem MEGALODON_SPAWN_EGG =

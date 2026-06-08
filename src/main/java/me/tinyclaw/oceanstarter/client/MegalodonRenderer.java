@@ -17,10 +17,10 @@ public class MegalodonRenderer extends MobEntityRenderer<Megalodon, MegalodonMod
 			Identifier.of("oceanstarter", "textures/entity/megalodon.png");
 
 	/** Render the whole model at this multiple so the boss reads as a big shark. */
-	private static final float RENDER_SCALE = 1.6F;
+	private static final float RENDER_SCALE = 2.0F;
 
 	public MegalodonRenderer(EntityRendererFactory.Context context) {
-		super(context, new MegalodonModel(context.getPart(MegalodonModel.LAYER)), 2.4F);
+		super(context, new MegalodonModel(context.getPart(MegalodonModel.LAYER)), 3.0F);
 	}
 
 	@Override
