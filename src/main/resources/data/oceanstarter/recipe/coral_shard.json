@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "minecraft:tube_coral"
+      "tag": "oceanstarter:corals"
     }
   ],
   "result": {

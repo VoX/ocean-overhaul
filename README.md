@@ -4,20 +4,32 @@ Ocean Overhaul is a starter ocean-content mod for **Minecraft 1.21.1 (Fabric)**.
 
 ## Contents
 
-**Blocks**
-- Abyssal Coral Block
-- Sea Glass
-- Polished Prismarine Bricks
-- Driftwood Plank
-- Pearl Block
+**Blocks** (17 total)
+
+- **Abyssal Coral Block** — decorative coral-and-prismarine block
+- **Sea Glass** — base + stairs + slab
+- **Polished Prismarine Bricks** — base + stairs + slab + wall
+- **Driftwood Plank** — base + stairs + slab + wall
+- **Pearl Block** — base + stairs + slab + wall
+- **Pearl Lantern** — full-bright light source (like a sea lantern)
 
 **Items**
+
 - Tide Pearl
 - Coral Shard
 - Sea Salt
 
+**Crafting & recipes**
+
+Everything is craftable. The base blocks are made from ocean ingredients (prismarine, coral, pearls, sea salt); coral recipes accept **any** of the five vanilla coral colors. Stairs, slabs, and walls have standard crafting recipes, and the stone-like sets (Sea Glass, Polished Prismarine Bricks, Pearl Block) can also be cut on a **stonecutter**. Tide Pearls smelt/craft to and from Pearl Blocks, and Sea Salt is smelted from ocean sources.
+
+**Tags**
+
+Blocks are wired into the relevant vanilla tags so they behave like their counterparts: `planks`, `slabs`, `stairs`, `walls`, `mineable/axe`, `mineable/pickaxe`, and `beacon_base_blocks`.
+
 **Creative tab**
-- Ocean Overhaul (collects everything above; content is also surfaced in the relevant vanilla tabs)
+
+- Ocean Overhaul (collects everything above; content is also surfaced in the relevant vanilla tabs for discoverability)
 
 ## Install
 

@@ -3,7 +3,7 @@
   "category": "building",
   "ingredients": [
     {
-      "tag": "minecraft:planks"
+      "item": "minecraft:oak_planks"
     },
     {
       "item": "oceanstarter:sea_salt"
