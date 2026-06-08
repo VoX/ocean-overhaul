@@ -16,6 +16,9 @@
 	"entrypoints": {
 		"main": [
 			"me.tinyclaw.oceanstarter.OceanStarter"
+		],
+		"client": [
+			"me.tinyclaw.oceanstarter.client.OceanStarterClient"
 		]
 	},
 	"depends": {

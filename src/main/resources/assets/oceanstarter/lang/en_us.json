@@ -48,5 +48,7 @@
 	"block.oceanstarter.cracked_kelp_bricks_stairs": "Cracked Kelp Brick Stairs",
 	"block.oceanstarter.cracked_kelp_bricks_slab": "Cracked Kelp Brick Slab",
 	"block.oceanstarter.cracked_kelp_bricks_wall": "Cracked Kelp Brick Wall",
+	"entity.oceanstarter.megalodon": "Megalodon",
+	"item.oceanstarter.megalodon_spawn_egg": "Megalodon Spawn Egg",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

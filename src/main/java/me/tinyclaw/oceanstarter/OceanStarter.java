@@ -1,8 +1,11 @@
 package me.tinyclaw.oceanstarter;
 
+import me.tinyclaw.oceanstarter.entity.Megalodon;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -19,11 +22,14 @@ import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -312,6 +318,21 @@ public class OceanStarter implements ModInitializer {
 					.saturationModifier(0.8f)
 					.build()));
 
+	// --- Boss Entity: Megalodon -------------------------------------------
+	// Registered here (not in onInitialize) so the SpawnEggItem field below can
+	// reference a fully-built EntityType. build(String) takes the id path.
+	public static final EntityType<Megalodon> MEGALODON = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("megalodon"),
+			EntityType.Builder.create(Megalodon::new, SpawnGroup.MONSTER)
+					.dimensions(5.0F, 2.5F)
+					.maxTrackingRange(80)
+					.build("megalodon"));
+
+	// --- Spawn egg for the Megalodon (grey body / pale belly) -------------
+	public static final SpawnEggItem MEGALODON_SPAWN_EGG =
+			new SpawnEggItem(MEGALODON, 0x556677, 0xDDDDCC, new Item.Settings());
+
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
 			RegistryKey.of(Registries.ITEM_GROUP.getKey(), id("ocean_overhaul"));
@@ -368,6 +389,7 @@ public class OceanStarter implements ModInitializer {
 				entries.add(CRUSHED_CORAL);
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
+				entries.add(MEGALODON_SPAWN_EGG);
 			})
 			.build();
 
@@ -483,6 +505,11 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
 		Registry.register(Registries.ITEM, id("salted_cod"), SALTED_COD);
 
+		// Register the Megalodon boss: spawn-egg item + its default attributes.
+		// (The EntityType itself is registered in its static-field initializer above.)
+		Registry.register(Registries.ITEM, id("megalodon_spawn_egg"), MEGALODON_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(MEGALODON, Megalodon.createAttributes());
+
 		// Register our custom creative tab.
 		Registry.register(Registries.ITEM_GROUP, OCEAN_GROUP_KEY, OCEAN_GROUP);
 
@@ -546,11 +573,14 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_BUTTON);
 			entries.add(DRIFTWOOD_PRESSURE_PLATE);
 		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> {
+			entries.add(MEGALODON_SPAWN_EGG);
+		});
 
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, 1 boss entity (Megalodon), ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**
