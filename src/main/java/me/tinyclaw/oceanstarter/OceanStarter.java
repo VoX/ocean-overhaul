@@ -325,7 +325,7 @@ public class OceanStarter implements ModInitializer {
 			Registries.ENTITY_TYPE,
 			id("megalodon"),
 			EntityType.Builder.create(Megalodon::new, SpawnGroup.MONSTER)
-					.dimensions(6.0F, 3.0F)
+					.dimensions(4.0F, 2.0F)
 					.maxTrackingRange(10)
 					.build("megalodon"));
 
