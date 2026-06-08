@@ -79,7 +79,9 @@ public class MegalodonModel extends SinglePartEntityModel<Megalodon> {
 	@Override
 	public void setAngles(Megalodon entity, float limbAngle, float limbDistance,
 			float animationProgress, float headYaw, float headPitch) {
-		// Gentle tail sway so the shark looks alive.
-		this.root.getChild("tail").yaw = MathHelper.cos(animationProgress * 0.1F) * 0.2F;
+		// Gentle tail sway so the shark looks alive. "tail" is a child of "body"
+		// (not root) — looking it up on root throws "Can't find part tail" and
+		// crashes the client renderer (and the integrated server) on spawn.
+		this.root.getChild("body").getChild("tail").yaw = MathHelper.cos(animationProgress * 0.1F) * 0.2F;
 	}
 }
