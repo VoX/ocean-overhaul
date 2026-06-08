@@ -31,9 +31,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Ship the mod jar but not the -sources / -dev jars.
-          files: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            !build/libs/*-dev.jar
+          # Sources jar is disabled in build.gradle, so build/libs holds exactly
+          # the one mod jar — upload it as the release asset.
+          files: build/libs/*.jar
           fail_on_unmatched_files: true
