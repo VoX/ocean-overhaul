@@ -16,8 +16,8 @@ import me.tinyclaw.oceanstarter.OceanStarter;
 
 /**
  * Headless server-side GameTests for "Gear of the Deep" — proves the load-bearing
- * worn-armor ability of the Tidal diving set: wearing the Tidal Helmet (HEAD slot)
- * grants Water Breathing.
+ * worn-armor ability of the Tidal diving set: wearing the FULL Tidal set (all four
+ * pieces) grants Water Breathing (v0.10.1 — was helmet-only).
  *
  * <p>Registered via the {@code fabric-gametest} entrypoint in fabric.mod.json alongside
  * {@link MegalodonGameTest} and {@link ReefLifeGameTest}.</p>
@@ -48,10 +48,14 @@ public class GearGameTest implements FabricGameTest {
 	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
 	/**
-	 * Worn-effect proof: a player submerged in water with the Tidal Helmet on its HEAD slot
-	 * is granted Water Breathing by the server-tick poll, and its air supply never decrements
-	 * past full. A no-helmet control player sharing the same flooded pocket must NOT receive
-	 * the effect (proving it is helmet-gated, not an ambient/world effect).
+	 * Worn-effect proof: a player submerged in water wearing the FULL Tidal set (all four
+	 * pieces — helmet/chestplate/leggings/boots) is granted Water Breathing by the server-tick
+	 * poll, and its air supply never decrements past full. A no-armor control player sharing the
+	 * same flooded pocket must NOT receive the effect (proving it is set-gated, not ambient).
+	 *
+	 * <p><b>v0.10.1 — full-set bonus:</b> the effect was changed from helmet-only to a full-set
+	 * bonus (pindyj), so the wearer here equips all four slots. The partial-set negative below
+	 * proves three pieces is not enough.</p>
 	 *
 	 * <p>tickLimit raised past the assertion tick: the air-decrement window in vanilla is
 	 * ~{@code BREATH_COOLDOWN} (a few ticks); we set the test player's air low, submerge it,
@@ -60,7 +64,7 @@ public class GearGameTest implements FabricGameTest {
 	 * 100; we assert at 60 with margin.</p>
 	 */
 	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
-	public void tidalHelmetGrantsWaterBreathingWhenWorn(TestContext context) {
+	public void tidalFullSetGrantsWaterBreathingWhenWorn(TestContext context) {
 		fillWaterPocket(context);
 
 		// A real connected server player (added to the PlayerManager player list that the
@@ -69,53 +73,87 @@ public class GearGameTest implements FabricGameTest {
 		context.assertTrue(wearer != null, "mock server player (wearer) failed to create");
 		placeSubmerged(context, wearer, SPAWN);
 
-		// Equip the Tidal Helmet on the HEAD slot — the exact slot the handler checks.
-		wearer.equipStack(EquipmentSlot.HEAD, new ItemStack(OceanStarter.TIDAL_HELMET));
+		// Equip the FULL Tidal set — every slot the handler now checks.
+		equipFullTidalSet(wearer);
 		context.assertTrue(
-			wearer.getEquippedStack(EquipmentSlot.HEAD).getItem() == OceanStarter.TIDAL_HELMET,
-			"Tidal Helmet did not stick in the wearer's HEAD slot after equipStack");
+			wearer.getEquippedStack(EquipmentSlot.HEAD).getItem() == OceanStarter.TIDAL_HELMET
+				&& wearer.getEquippedStack(EquipmentSlot.CHEST).getItem() == OceanStarter.TIDAL_CHESTPLATE
+				&& wearer.getEquippedStack(EquipmentSlot.LEGS).getItem() == OceanStarter.TIDAL_LEGGINGS
+				&& wearer.getEquippedStack(EquipmentSlot.FEET).getItem() == OceanStarter.TIDAL_BOOTS,
+			"full Tidal set did not stick across all four slots after equipStack");
 
 		// Drain the wearer's air toward empty so a working effect must keep it from going
 		// further down (the "tick past the air-decrement window" the spec asks for).
 		wearer.setAir(1);
 
-		// Control: a second submerged player with NO helmet must never get Water Breathing.
+		// Control: a second submerged player with NO armor must never get Water Breathing.
 		ServerPlayerEntity control = context.createMockCreativeServerPlayerInWorld();
 		context.assertTrue(control != null, "mock server player (control) failed to create");
 		placeSubmerged(context, control, SPAWN.east());
-		// Bare-headed on purpose; assert the slot really is empty so the control is honest.
+		// Bare on purpose; assert the head slot really is empty so the control is honest.
 		context.assertTrue(
 			control.getEquippedStack(EquipmentSlot.HEAD).isEmpty(),
 			"control player unexpectedly had a head item");
 
 		// Let the END_SERVER_TICK poll fire many times (60 ticks ~ 3 s).
 		context.runAtTick(60L, () -> {
-			// Primary witness: the worn handler granted Water Breathing from the HEAD slot.
+			// Primary witness: the worn handler granted Water Breathing from the full set.
 			context.assertTrue(
 				wearer.hasStatusEffect(StatusEffects.WATER_BREATHING),
-				"helmet wearer did NOT receive WATER_BREATHING from the worn Tidal Helmet");
+				"full-set wearer did NOT receive WATER_BREATHING from the worn Tidal set");
 
 			// Supporting: with the effect active the submerged wearer's air never dropped
 			// below where we left it — it was not eaten by the drown timer.
 			context.assertTrue(
 				wearer.getAir() >= 1,
-				"helmet wearer's air decremented despite Water Breathing: air=" + wearer.getAir());
+				"full-set wearer's air decremented despite Water Breathing: air=" + wearer.getAir());
 
-			// Control proves the effect is helmet-gated, not ambient: bare-headed player in
-			// the same water did not get it.
+			// Control proves the effect is set-gated, not ambient: bare player in the same
+			// water did not get it.
 			context.assertFalse(
 				control.hasStatusEffect(StatusEffects.WATER_BREATHING),
-				"control (no helmet) wrongly received WATER_BREATHING — effect is not helmet-gated");
+				"control (no armor) wrongly received WATER_BREATHING — effect is not set-gated");
 
 			context.complete();
 		});
 	}
 
 	/**
-	 * Negative/robustness companion: a NON-helmet item in the HEAD slot must not trigger the
+	 * Set-bonus proof: a PARTIAL Tidal set (helmet + chestplate + leggings, but boots missing)
+	 * must NOT grant Water Breathing. Guards the v0.10.1 rule that water breathing requires ALL
+	 * FOUR pieces — a regression that checked only the helmet (or any subset) would wrongly pass
+	 * the full-set test above, but this one fails it.
+	 */
+	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
+	public void tidalPartialSetDoesNotGrantWaterBreathing(TestContext context) {
+		fillWaterPocket(context);
+
+		ServerPlayerEntity player = context.createMockCreativeServerPlayerInWorld();
+		context.assertTrue(player != null, "mock server player failed to create");
+		placeSubmerged(context, player, SPAWN);
+
+		// Three of four pieces — deliberately leave FEET empty.
+		player.equipStack(EquipmentSlot.HEAD, new ItemStack(OceanStarter.TIDAL_HELMET));
+		player.equipStack(EquipmentSlot.CHEST, new ItemStack(OceanStarter.TIDAL_CHESTPLATE));
+		player.equipStack(EquipmentSlot.LEGS, new ItemStack(OceanStarter.TIDAL_LEGGINGS));
+		context.assertTrue(
+			player.getEquippedStack(EquipmentSlot.FEET).isEmpty(),
+			"partial-set test was supposed to leave the FEET slot empty");
+
+		context.runAtTick(60L, () -> {
+			context.assertFalse(
+				player.hasStatusEffect(StatusEffects.WATER_BREATHING),
+				"a partial Tidal set (3/4) wrongly granted WATER_BREATHING — effect must be full-set gated");
+			context.complete();
+		});
+	}
+
+	/**
+	 * Negative/robustness companion: a NON-Tidal item in the HEAD slot must not trigger the
 	 * effect. Guards against a future regression that keys off "head slot non-empty" instead
-	 * of "head item == Tidal Helmet". Uses a vanilla pumpkin (wearable on the head) so the
-	 * slot is genuinely occupied by a non-Tidal item.
+	 * of the Tidal item identity. Uses a vanilla pumpkin (wearable on the head) so the slot is
+	 * genuinely occupied by a non-Tidal item; with no other Tidal pieces equipped this is also
+	 * a no-set case, so the full-set rule keeps it negative too.
 	 */
 	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
 	public void nonTidalHeadItemDoesNotGrantWaterBreathing(TestContext context) {
@@ -136,6 +174,14 @@ public class GearGameTest implements FabricGameTest {
 				"a non-Tidal head item wrongly granted WATER_BREATHING — handler is not item-gated");
 			context.complete();
 		});
+	}
+
+	/** Equip all four Tidal armor pieces on the given player (HEAD/CHEST/LEGS/FEET). */
+	private static void equipFullTidalSet(ServerPlayerEntity player) {
+		player.equipStack(EquipmentSlot.HEAD, new ItemStack(OceanStarter.TIDAL_HELMET));
+		player.equipStack(EquipmentSlot.CHEST, new ItemStack(OceanStarter.TIDAL_CHESTPLATE));
+		player.equipStack(EquipmentSlot.LEGS, new ItemStack(OceanStarter.TIDAL_LEGGINGS));
+		player.equipStack(EquipmentSlot.FEET, new ItemStack(OceanStarter.TIDAL_BOOTS));
 	}
 
 	/**

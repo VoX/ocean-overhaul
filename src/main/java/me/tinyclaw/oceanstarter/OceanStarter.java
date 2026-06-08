@@ -19,6 +19,7 @@ import net.minecraft.block.BlockSetType;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.DoorBlock;
+import net.minecraft.block.FallingBlock;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.block.FenceGateBlock;
 import net.minecraft.block.PressurePlateBlock;
@@ -217,9 +218,28 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem PEARL_LANTERN_ITEM = new BlockItem(
 			PEARL_LANTERN, new Item.Settings());
 
-	// --- Block: Salt Block (crafted from sea salt) ------------------------
-	public static final Block SALT_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.SMOOTH_QUARTZ));
+	// --- Block: Salt Block (crafted from sea salt; sand-style falling) ----
+	// A sand-like FALLING block: obeys gravity + uses sand sound/instant-break
+	// (copy of Blocks.SAND settings). FallingBlock is abstract with an abstract
+	// getCodec(), so subclass it anonymously (same pattern as the StairsBlock
+	// blocks above). The codec is only used for command/datapack block
+	// serialization; a self-referential createCodec(...) over the same settings
+	// satisfies the contract. Declared before SALT_BLOCK so the field is set when
+	// referenced (getCodec is only *called* lazily at runtime regardless).
+	private static final com.mojang.serialization.MapCodec<FallingBlock> SALT_BLOCK_CODEC =
+			Block.createCodec(settings -> new FallingBlock(settings) {
+				@Override
+				protected com.mojang.serialization.MapCodec<? extends FallingBlock> getCodec() {
+					return SALT_BLOCK_CODEC;
+				}
+			});
+	public static final Block SALT_BLOCK = new FallingBlock(
+			AbstractBlock.Settings.copy(Blocks.SAND)) {
+		@Override
+		protected com.mojang.serialization.MapCodec<? extends FallingBlock> getCodec() {
+			return SALT_BLOCK_CODEC;
+		}
+	};
 	public static final BlockItem SALT_BLOCK_ITEM = new BlockItem(
 			SALT_BLOCK, new Item.Settings());
 
@@ -381,7 +401,7 @@ public class OceanStarter implements ModInitializer {
 	// and handed around as RegistryEntry<ArmorMaterial>. ArmorItem keys off the
 	// ArmorItem.Type enum (no EquipmentType in 1.21.1). The worn-layer texture is
 	// resolved from the Layer(Identifier) -> textures/models/armor/tidal_layer_{1,2}.png.
-	// The worn WATER_BREATHING effect is granted from the HEAD slot only (see onInitialize).
+	// The worn WATER_BREATHING effect is a FULL-SET bonus (all four pieces; see onInitialize).
 	private static final Map<ArmorItem.Type, Integer> TIDAL_DEFENSE = makeTidalDefense();
 
 	private static Map<ArmorItem.Type, Integer> makeTidalDefense() {
@@ -862,14 +882,19 @@ public class OceanStarter implements ModInitializer {
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		// Gear of the Deep — worn-armor effect: wearing the Tidal Helmet (HEAD slot)
-		// grants WATER_BREATHING. No mixin: poll every server tick and refresh a
-		// short-duration effect (220 ticks > the poll gap so it never lapses). The
-		// effect is silent (no particles, no HUD icon) and harmless on land.
+		// Gear of the Deep — worn-armor effect: wearing the FULL Tidal set (all four
+		// pieces — helmet/chestplate/leggings/boots) grants WATER_BREATHING. No mixin:
+		// poll every server tick and refresh a short-duration effect (220 ticks > the
+		// poll gap so it never lapses). The effect is silent (no particles, no HUD
+		// icon) and harmless on land. A partial set grants nothing — it's a set bonus.
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-				ItemStack head = player.getEquippedStack(EquipmentSlot.HEAD);
-				if (head.getItem() == TIDAL_HELMET) {
+				boolean fullSet =
+						player.getEquippedStack(EquipmentSlot.HEAD).getItem() == TIDAL_HELMET
+						&& player.getEquippedStack(EquipmentSlot.CHEST).getItem() == TIDAL_CHESTPLATE
+						&& player.getEquippedStack(EquipmentSlot.LEGS).getItem() == TIDAL_LEGGINGS
+						&& player.getEquippedStack(EquipmentSlot.FEET).getItem() == TIDAL_BOOTS;
+				if (fullSet) {
 					player.addStatusEffect(new StatusEffectInstance(
 							StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
 				}
