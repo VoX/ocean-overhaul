@@ -30,7 +30,8 @@ import net.minecraft.world.World;
  * Megalodon's lean cousin: the same base class and the same proven aquatic idioms
  * ({@link AquaticMoveControl} + {@link SwimNavigation}, no mixins), but with all the
  * boss machinery stripped out — no boss bar, no multipart hitbox segments, no
- * custom attack box. Its own EntityType box (0.7x0.7) <i>is</i> its real hitbox, so
+ * custom attack box. Its own EntityType box (~2.0x2.0, elder-guardian sized) <i>is</i>
+ * its real hitbox, so
  * a {@link MeleeAttackGoal} + an {@link ActiveTargetGoal} targeting players is all it
  * needs to bite. Attributes are a deliberate fraction of the boss's (24/5/0.8/20 vs.
  * the Megalodon's 200/12/0.6/32) — a moderate threat that gives deep oceans teeth

@@ -1,53 +1,42 @@
 #!/usr/bin/env python3
-"""Hand-paint the Abyssal Lurker entity texture (64x64) to match AbyssalLurkerModel.java.
+"""Hand-paint the Abyssal Lurker ANGLERFISH textures (128x128) to match AbyssalLurkerModel.java.
+
+Two outputs from ONE shared faces() helper so the body skin and the emissive glow mask
+share the exact same UV layout (so the glow lands on the right faces):
+  1) abyssal_lurker.png          — the orange/brown anglerfish body skin.
+  2) abyssal_lurker_emissive.png — the glow MASK: solid BLACK everywhere except the
+     lure bulb + eye, painted bright pale-blue. RenderLayer.getEyes is ADDITIVE, so
+     black adds nothing (invisible) and the bright pixels add over the world -> glow.
 
 Every part's (u,v,sx,sy,sz) below is copied from the model's .uv()/.cuboid() calls.
 MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz), matching paint_megalodon.py:
-    up    = (u+sz+sx,    v,      sx, sz)   # geometric +Y face
-    down  = (u+sz,       v,      sx, sz)   # geometric -Y face
+    up    = (u+sz+sx,    v,      sx, sz)   # geometric +Y face (render-BOTTOM)
+    down  = (u+sz,       v,      sx, sz)   # geometric -Y face (render-TOP)
     east  = (u,          v+sz,   sz, sy)
-    north = (u+sz,       v+sz,   sx, sy)   # front (-Z)
+    north = (u+sz,       v+sz,   sx, sy)   # front (-Z, snout)
     west  = (u+sz+sx,    v+sz,   sz, sy)
     south = (u+sz+sx+sz, v+sz,   sx, sy)
-Model convention: -Y is UP, north face is the FRONT (-Z).
+Model convention: -Y is UP, north face is the FRONT (-Z). The fillbox down=render-top /
+up=render-bottom mapping is the v0.6.2 inside-out-mouth FIX — do NOT swap it.
 
-Opaque (alpha 255 everywhere) — unlike the jellyfish we do NOT bake translucency, and
-the model stays on the default cutout layer. Palette: dark deep-blue/near-black body,
-pale glowing eyes, a cyan lure bulb, a thin tooth row in the mouth.
+The TexturedModelData UV size MUST equal these PNG dims (128x128).
 """
 from PIL import Image
 
-W = H = 64
-img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-px = img.load()
+W = H = 128
 
-# All opaque (alpha 255).
-BODY_TOP = (18, 24, 40, 255)    # near-black top
-BODY_SIDE = (24, 32, 52, 255)   # dark blue sides
-BODY_BELLY = (40, 50, 72, 255)  # slightly lighter belly
-FIN = (16, 22, 36, 255)         # darkest, the fins
-LURE = (180, 255, 230, 255)     # glowing cyan bulb
-EYE = (200, 230, 255, 255)      # pale glowing eye
-TEETH = (230, 235, 240, 255)    # bone-white teeth
-MOUTH = (60, 30, 38, 255)       # dark red mouth interior
-
-
-def rect(x, y, w, h, c):
-    x, y, w, h = int(x), int(y), int(w), int(h)
-    for j in range(y, y + h):
-        for i in range(x, x + w):
-            if 0 <= i < W and 0 <= j < H:
-                px[i, j] = c
-
-
-def vgrad(x, y, w, h, ctop, cbot):
-    x, y, w, h = int(x), int(y), int(w), int(h)
-    for j in range(h):
-        t = j / max(1, h - 1)
-        c = tuple(int(ctop[k] + (cbot[k] - ctop[k]) * t) for k in range(4))
-        for i in range(w):
-            if 0 <= x + i < W and 0 <= y + j < H:
-                px[x + i, y + j] = c
+# ---- Anglerfish palette (all opaque, alpha 255) ----
+BODY_TOP = (120, 70, 35, 255)    # dark orange-brown back
+BODY_SIDE = (150, 90, 45, 255)   # orange-brown flank
+BODY_BELLY = (90, 55, 30, 255)   # darker brown belly
+FIN = (110, 60, 28, 255)         # brown fins
+TEETH = (240, 240, 235, 255)     # white needle teeth
+MOUTH = (150, 40, 55, 255)       # pink/red mouth interior
+EYE = (220, 230, 240, 255)       # big pale eye
+PUPIL = (20, 20, 30, 255)        # dark pupil
+LURE = (200, 235, 255, 255)      # pale-blue/white bulb (bright so it reads far)
+GLOW = (200, 235, 255, 255)      # the emissive glow colour
+BLACK = (0, 0, 0, 255)           # emissive mask background (additive -> invisible)
 
 
 def faces(u, v, sx, sy, sz):
@@ -61,86 +50,171 @@ def faces(u, v, sx, sy, sz):
     }
 
 
-def fillbox(f, top, side, belly):
-    """Paint a whole cuboid: -Y=render-top, +Y=render-bottom, sides graded top->belly."""
-    rect(*f['down'], top)     # render-top
-    rect(*f['up'], belly)     # render-bottom
-    vgrad(*f['north'], side, belly)
-    vgrad(*f['south'], side, belly)
-    vgrad(*f['east'], side, belly)
-    vgrad(*f['west'], side, belly)
+# ---- Cuboid table: (name, u, v, sx, sy, sz) — mirrors AbyssalLurkerModel exactly ----
+PARTS = {
+    'body':       (0, 0, 26, 30, 20),
+    'head':       (0, 51, 24, 12, 16),
+    'lower_jaw':  (0, 80, 22, 7, 16),
+    'lure_stalk': (94, 26, 2, 16, 2),
+    'lure_bulb':  (104, 26, 4, 4, 4),
+    'tail':       (80, 51, 12, 16, 12),
+    'caudal_fin': (78, 82, 1, 18, 9),
+    'dorsal_fin': (94, 0, 1, 12, 12),
+    'right_pectoral_fin': (0, 104, 10, 1, 7),
+    'left_pectoral_fin':  (36, 104, 10, 1, 7),
+}
+F = {name: faces(*spec) for name, spec in PARTS.items()}
 
 
-# ---- BODY  uv(0,0) cuboid(-3,-3,-8, 6,6,16) -> sx6 sy6 sz16 ----
-fillbox(faces(0, 0, 6, 6, 16), BODY_TOP, BODY_SIDE, BODY_BELLY)
+# ============================================================================
+# 1) BODY SKIN
+# ============================================================================
+def paint_body():
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    px = img.load()
 
-# ---- HEAD  uv(32,22) cuboid(-3.5,-3.5,-6, 7,7,6) -> sx7 sy7 sz6 ----
-hf = faces(32, 22, 7, 7, 6)
-fillbox(hf, BODY_TOP, BODY_SIDE, BODY_BELLY)
-# mouth roof: the head's +Y face ('up' rect) is the render-BOTTOM = roof of the mouth.
-rect(*hf['up'], MOUTH)
-# tooth row along the front edge of the mouth roof (top of the 'up' rect).
-ux, uy, uw, uh = [int(v) for v in hf['up']]
-rect(ux, uy, uw, 1, TEETH)
-# pale glowing eyes on the FRONT (north) face of the head, upper corners.
-nx, ny, nw, nh = [int(v) for v in hf['north']]
-rect(nx + 1, ny + 1, 1, 1, EYE)
-rect(nx + nw - 2, ny + 1, 1, 1, EYE)
+    def rect(x, y, w, h, c):
+        x, y, w, h = int(x), int(y), int(w), int(h)
+        for j in range(y, y + h):
+            for i in range(x, x + w):
+                if 0 <= i < W and 0 <= j < H:
+                    px[i, j] = c
 
-# ---- LOWER_JAW  uv(32,35) cuboid(-3,0,-6, 6,2,6) -> sx6 sy2 sz6 ----
-jf = faces(32, 35, 6, 2, 6)
-fillbox(jf, BODY_SIDE, BODY_SIDE, BODY_BELLY)
-# jaw interior: the lower jaw's -Y face ('down' rect) is the render-TOP = mouth floor.
-rect(*jf['down'], MOUTH)
-# tooth row along the front of the mouth floor.
-dx, dy, dw, dh = [int(v) for v in jf['down']]
-rect(dx, dy + dh - 1, dw, 1, TEETH)
+    def vgrad(x, y, w, h, ctop, cbot):
+        x, y, w, h = int(x), int(y), int(w), int(h)
+        for j in range(h):
+            t = j / max(1, h - 1)
+            c = tuple(int(ctop[k] + (cbot[k] - ctop[k]) * t) for k in range(4))
+            for i in range(w):
+                if 0 <= x + i < W and 0 <= y + j < H:
+                    px[x + i, y + j] = c
 
-# ---- LURE_STALK  uv(52,13) cuboid(-0.5,-6,-1, 1,6,1) -> sx1 sy6 sz1 ----
-sf = faces(52, 13, 1, 6, 1)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*sf[k], FIN)
+    def fillbox(f, top, side, belly):
+        rect(*f['down'], top)     # render-top
+        rect(*f['up'], belly)     # render-bottom
+        vgrad(*f['north'], side, belly)
+        vgrad(*f['south'], side, belly)
+        vgrad(*f['east'], side, belly)
+        vgrad(*f['west'], side, belly)
 
-# ---- LURE_BULB  uv(44,13) cuboid(-1,-8,-1.5, 2,2,2) -> sx2 sy2 sz2 ---- glowing cyan all 6 faces
-lf = faces(44, 13, 2, 2, 2)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*lf[k], LURE)
+    def tooth_row(x, y, w, horizontal_down):
+        """Paint a row of vertical needle teeth (alternating spikes) along an edge."""
+        x, y, w = int(x), int(y), int(w)
+        for i in range(w):
+            if i % 2 == 0:
+                # taller spike
+                rect(x + i, y, 1, 2 if horizontal_down else 2, TEETH)
+            else:
+                rect(x + i, y, 1, 1, TEETH)
 
-# ---- TAIL  uv(0,22) cuboid(-2,-2.5,0, 4,5,12) -> sx4 sy5 sz12 ----
-fillbox(faces(0, 22, 4, 5, 12), BODY_TOP, BODY_SIDE, BODY_BELLY)
+    # ---- BODY ----
+    fillbox(F['body'], BODY_TOP, BODY_SIDE, BODY_BELLY)
 
-# ---- CAUDAL_FIN  uv(0,39) cuboid(-0.5,-6,-2, 1,11,5) -> sx1 sy11 sz5 ----
-cf = faces(0, 39, 1, 11, 5)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*cf[k], FIN)
+    # ---- HEAD ----  the snout / upper jaw
+    fillbox(F['head'], BODY_TOP, BODY_SIDE, BODY_BELLY)
+    # mouth roof: head's +Y face ('up' rect) is render-BOTTOM = roof of the mouth.
+    rect(*F['head']['up'], MOUTH)
+    # needle teeth hanging from the front edge of the mouth roof.
+    ux, uy, uw, uh = [int(v) for v in F['head']['up']]
+    for i in range(uw):
+        spike = 3 if i % 2 == 0 else 2
+        rect(ux + i, uy, 1, spike, TEETH)
+    # BIG pale eye high on the head front (north) face, with a dark pupil.
+    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
+    ex, ey = nx + 2, ny + 1
+    rect(ex, ey, 4, 4, EYE)
+    rect(ex + 1, ey + 1, 2, 2, PUPIL)
+    rect(nx + nw - 6, ey, 4, 4, EYE)
+    rect(nx + nw - 5, ey + 1, 2, 2, PUPIL)
+    # also a big eye on each side (east/west) of the head, near the top-front.
+    for side in ('east', 'west'):
+        sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
+        rect(sx0 + 1, sy0 + 1, 4, 4, EYE)
+        rect(sx0 + 2, sy0 + 2, 2, 2, PUPIL)
 
-# ---- DORSAL_FIN  uv(44,0) cuboid(-0.5,-9,-3, 1,5,8) -> sx1 sy5 sz8 ----
-df = faces(44, 0, 1, 5, 8)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*df[k], FIN)
+    # ---- LOWER_JAW ----
+    fillbox(F['lower_jaw'], BODY_SIDE, BODY_SIDE, BODY_BELLY)
+    # mouth floor: lower jaw's -Y face ('down' rect) is render-TOP = mouth floor.
+    rect(*F['lower_jaw']['down'], MOUTH)
+    # needle teeth rising from the front of the mouth floor.
+    dx, dy, dw, dh = [int(v) for v in F['lower_jaw']['down']]
+    for i in range(dw):
+        spike = 3 if i % 2 == 0 else 2
+        rect(dx + i, dy + dh - spike, 1, spike, TEETH)
 
-# ---- RIGHT_PECTORAL_FIN  uv(12,43) cuboid(-7,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
-rpf = faces(12, 43, 7, 1, 5)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*rpf[k], FIN)
+    # ---- LURE_STALK ----
+    for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+        rect(*F['lure_stalk'][k], FIN)
 
-# ---- LEFT_PECTORAL_FIN  uv(36,43) cuboid(0,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
-lpf = faces(36, 43, 7, 1, 5)
-for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-    rect(*lpf[k], FIN)
+    # ---- LURE_BULB ----  pale-blue/white all 6 faces (bright so it reads from far).
+    for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+        rect(*F['lure_bulb'][k], LURE)
 
-OUT = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker.png"
-img.save(OUT)
-print("saved", OUT, img.size)
+    # ---- TAIL ----
+    fillbox(F['tail'], BODY_TOP, BODY_SIDE, BODY_BELLY)
 
-# Verify dims == 64x64 (TexturedModelData size must match).
-chk = Image.open(OUT)
-assert chk.size == (64, 64), "PNG is %s, expected (64, 64)" % (chk.size,)
-print("verified size", chk.size)
+    # ---- FINS ----
+    for fin in ('caudal_fin', 'dorsal_fin', 'right_pectoral_fin', 'left_pectoral_fin'):
+        for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+            rect(*F[fin][k], FIN)
 
-# 8x nearest-neighbour preview over a dark mat (reads like deep water).
-mat_bg = (10, 14, 24, 255)
-mat = Image.new("RGBA", (W, H), mat_bg)
-mat.alpha_composite(img)
-mat.resize((W * 8, H * 8), Image.NEAREST).save("/tmp/abyssal_lurker_preview.png")
-print("preview /tmp/abyssal_lurker_preview.png")
+    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker.png"
+    img.save(out)
+    chk = Image.open(out)
+    assert chk.size == (128, 128), "PNG is %s, expected (128, 128)" % (chk.size,)
+    print("saved", out, chk.size)
+
+    # 8x preview over a dark mat.
+    mat = Image.new("RGBA", (W, H), (10, 14, 24, 255))
+    mat.alpha_composite(img)
+    mat.resize((W * 8, H * 8), Image.NEAREST).save("/tmp/abyssal_lurker_preview.png")
+    print("preview /tmp/abyssal_lurker_preview.png")
+
+
+# ============================================================================
+# 2) EMISSIVE GLOW MASK  (black everywhere; bright only on bulb + eyes)
+# ============================================================================
+def paint_emissive():
+    img = Image.new("RGBA", (W, H), BLACK)
+    px = img.load()
+
+    def rect(x, y, w, h, c):
+        x, y, w, h = int(x), int(y), int(w), int(h)
+        for j in range(y, y + h):
+            for i in range(x, x + w):
+                if 0 <= i < W and 0 <= j < H:
+                    px[i, j] = c
+
+    # LURE BULB — all 6 faces glow.
+    for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+        rect(*F['lure_bulb'][k], GLOW)
+    # the stalk's tip glows faintly too (top 3 px of each long face) so the glow
+    # reads as bleeding down the esca filament, not a floating cube.
+    for k in ('north', 'south', 'east', 'west'):
+        x, y, w, h = [int(v) for v in F['lure_stalk'][k]]
+        rect(x, y, w, min(3, h), GLOW)
+
+    # EYES — glow them too (anglerfish eyes catch the lure light). Mirror the body
+    # script's eye placements EXACTLY so registration matches.
+    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
+    ey = ny + 1
+    rect(nx + 2, ey, 4, 4, GLOW)
+    rect(nx + nw - 6, ey, 4, 4, GLOW)
+    for side in ('east', 'west'):
+        sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
+        rect(sx0 + 1, sy0 + 1, 4, 4, GLOW)
+
+    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker_emissive.png"
+    img.save(out)
+    chk = Image.open(out)
+    assert chk.size == (128, 128), "emissive PNG is %s, expected (128, 128)" % (chk.size,)
+    print("saved", out, chk.size)
+
+    # 8x preview over a dark mat (the glow should be the only thing visible).
+    img.resize((W * 8, H * 8), Image.NEAREST).save("/tmp/abyssal_lurker_emissive_preview.png")
+    print("preview /tmp/abyssal_lurker_emissive_preview.png")
+
+
+if __name__ == "__main__":
+    paint_body()
+    paint_emissive()

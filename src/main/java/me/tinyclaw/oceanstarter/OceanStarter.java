@@ -510,13 +510,17 @@ public class OceanStarter implements ModInitializer {
 
 	// --- Hostile mob: Abyssal Lurker (deep-sea HostileEntity predator) ----
 	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
-	// below can reference a fully-built EntityType. MONSTER group; its 0.7x0.7 box
-	// IS the real hitbox (no segments, unlike the boss).
+	// below can reference a fully-built EntityType. MONSTER group; its ~2x2 box
+	// IS the real hitbox (no segments, unlike the boss). Sized to an elder guardian
+	// (1.9975) — the anglerfish model is built natively at that ~2-block scale, so the
+	// hitbox matches the silhouette (no render-scale decoupling). eyeHeight matches
+	// the elder guardian too (cosmetic: camera/look origin, not the hitbox).
 	public static final EntityType<AbyssalLurker> ABYSSAL_LURKER = Registry.register(
 			Registries.ENTITY_TYPE,
 			id("abyssal_lurker"),
 			EntityType.Builder.create(AbyssalLurker::new, SpawnGroup.MONSTER)
-					.dimensions(0.7F, 0.7F)
+					.dimensions(1.9975F, 1.9975F)
+					.eyeHeight(0.99875F)
 					.maxTrackingRange(8)
 					.build("abyssal_lurker"));
 
