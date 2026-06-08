@@ -326,7 +326,7 @@ public class OceanStarter implements ModInitializer {
 			id("megalodon"),
 			EntityType.Builder.create(Megalodon::new, SpawnGroup.MONSTER)
 					.dimensions(5.0F, 2.5F)
-					.maxTrackingRange(80)
+					.maxTrackingRange(10)
 					.build("megalodon"));
 
 	// --- Spawn egg for the Megalodon (grey body / pale belly) -------------

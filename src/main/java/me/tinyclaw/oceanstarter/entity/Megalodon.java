@@ -47,7 +47,7 @@ public class Megalodon extends HostileEntity {
 		return HostileEntity.createHostileAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 200.0)
 				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 12.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 1.2)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.6)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.6)
 				.add(EntityAttributes.GENERIC_ATTACK_KNOCKBACK, 1.5)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32.0);

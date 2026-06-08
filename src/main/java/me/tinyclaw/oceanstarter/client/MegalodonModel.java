@@ -68,7 +68,7 @@ public class MegalodonModel extends SinglePartEntityModel<Megalodon> {
 				ModelPartBuilder.create().uv(48, 24).cuboid(0.0F, 0.0F, -2.0F, 10.0F, 1.0F, 6.0F),
 				ModelTransform.pivot(4.0F, 1.0F, -8.0F));
 
-		return TexturedModelData.of(modelData, 64, 64);
+		return TexturedModelData.of(modelData, 128, 128);
 	}
 
 	@Override
