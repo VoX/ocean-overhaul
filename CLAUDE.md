@@ -55,7 +55,29 @@ PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recip
 bug class) — none of which `./gradlew build` sees. Pure Python, no JDK. Regen
 procedure + provenance: `scripts/validation/README.md` + `build-registries.py`.
 
-### 4. CI
+### 4. Headless visual render (dev tool — SEE the model, don't ship blind)
+```
+bash scripts/render-megalodon.sh        # → /tmp/megalodon-render.png (854x480)
+# generic: ./gradlew runClientProbe -Poo.probe.out=/abs/path.png -Poo.probe.target="x y z"
+```
+Renders a REAL in-game screenshot of an entity **headless** — Xvfb + Mesa llvmpipe
+software GL, no GPU needed (the LWJGL aarch64 natives are already in the gradle
+cache, so a 1.21.1 dev client boots fine on this ARM box). It stands up an
+ephemeral loopback server with the entity pre-summoned in a lit water tank, joins
+a headless dev client (the **dev-only `renderprobe` source set** — a separate
+fabric mod that NEVER ships in the release jar; `jar`/`remapJar` only bundle
+`sourceSets.main`), settles ~200 frames under slow software GL, then writes the
+PNG. Full how-to + the 4 render gotchas (accessibility screen / world-vs-title /
+peaceful-despawns-boss / stale framebuffer): `notes/headless-client-findings.md`.
+
+**POLICY — use this on visual work.** Any feature work that creates or changes
+visual assets (entity models/textures, block/item textures): render a test image
+with this tool and post it to the user for **review**. This is **informative, NOT
+gating** — surface the render so the user can eyeball it, but do **not** block
+progress waiting on a response; keep working. (Without it, visual bugs like the
+inside-out mouth ship blind.)
+
+### 5. CI
 - `.github/workflows/gametest.yml` — runs `./gradlew runGametest` on every push + PR, uploads `build/gametest/report.xml`. **This is the regression net — keep it green.**
 - `.github/workflows/build.yml` — `./gradlew build` on push/PR.
 - `.github/workflows/validate.yml` — runs `python3 scripts/validate-data.py` on push/PR (data/id validator). Fast, pure-Python.

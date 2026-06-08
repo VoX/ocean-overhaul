@@ -17,6 +17,23 @@ base {
 // then exit code 0 on all-pass / non-zero on any failure). The report-file property
 // also makes it emit a JUnit XML report we can parse.
 def gametestReport = "${projectDir}/build/gametest/report.xml"
+
+// ---------------------------------------------------------------------------
+// DEV-ONLY render-probe source set. This is a SEPARATE source set + a separate
+// fabric mod (src/renderprobe/resources/fabric.mod.json, id
+// `oceanstarter_renderprobe`) used ONLY to drive a headless dev client and grab
+// a real screenshot of the Megalodon (task: runClientProbe). It is deliberately
+// kept OUT of the shipped jar: `jar`/`remapJar` only bundle sourceSets.main, and
+// nothing in the release flow references the `renderprobe` source set, so the
+// release artifact stays clean. It links against main's compiled output.
+// ---------------------------------------------------------------------------
+sourceSets {
+	renderprobe {
+		compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+		runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+	}
+}
+
 loom {
 	runs {
 		gametest {
@@ -27,7 +44,44 @@ loom {
 			vmArg "-Dfabric-api.gametest"
 			vmArg "-Dfabric-api.gametest.report-file=${gametestReport}"
 		}
+		// Headless render probe: a dev client that joins the local ephemeral
+		// server, aims at the pre-summoned Megalodon and screenshots it. Driven
+		// by scripts/render-megalodon.sh (Xvfb + llvmpipe). The -Doo.probe.*
+		// system props (out path, host/port, target coords) are passed at launch
+		// by that script via ORG_GRADLE_PROJECT / -P or appended JVM args.
+		clientProbe {
+			client()
+			name = "Client Render Probe"
+			source sourceSets.renderprobe
+			runDir "build/clientprobe/run"
+			// Forward -Poo.probe.* gradle properties to the client JVM as
+			// -Doo.probe.* system props (out path, host/port, target, timeout).
+			// Lets scripts/render-megalodon.sh parameterise a run without editing
+			// this file. Read at configuration time (safe; values are Strings).
+			["out", "host", "port", "target", "timeoutTicks"].each { k ->
+				def pk = "oo.probe.${k}"
+				if (project.hasProperty(pk)) {
+					vmArg "-D${pk}=${project.property(pk)}"
+				}
+			}
+		}
 	}
+	// Register BOTH the main mod and the dev-only probe as loom mods so each is
+	// loaded from its own source set with its own fabric.mod.json in dev runs.
+	mods {
+		register("oceanstarter") {
+			sourceSet sourceSets.main
+		}
+		register("oceanstarter_renderprobe") {
+			sourceSet sourceSets.renderprobe
+		}
+	}
+}
+
+// The render probe needs the same Minecraft/Fabric API surface as main at
+// compile time. Mirror main's mod dependencies into the renderprobe config.
+dependencies {
+	renderprobeImplementation sourceSets.main.output
 }
 
 repositories {
