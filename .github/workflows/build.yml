@@ -1,0 +1,33 @@
+# Build the mod on every push and pull request to main, then upload the
+# compiled jar(s) as a workflow artifact. First line of defence against
+# bad commits.
+
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build
+        run: chmod +x gradlew && ./gradlew build --no-daemon
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocean-overhaul-jars
+          path: build/libs/*.jar

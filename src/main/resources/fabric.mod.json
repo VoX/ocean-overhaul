@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "oceanstarter",
+	"version": "${version}",
+	"name": "Ocean Overhaul (Starter)",
+	"description": "A small, correct starter seed for a revamped-ocean mod. Adds the Abyssal Coral Block, the Tide Pearl, and an Ocean Overhaul creative tab — grow it into a full ocean overhaul from here.",
+	"authors": [
+		"tinyclaw"
+	],
+	"contact": {
+		"homepage": "https://github.com/VoX/ocean-overhaul",
+		"sources": "https://github.com/VoX/ocean-overhaul"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"me.tinyclaw.oceanstarter.OceanStarter"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

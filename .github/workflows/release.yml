@@ -1,0 +1,39 @@
+# Publish a GitHub Release whenever a v* tag is pushed. Builds the mod and
+# attaches the compiled mod jar (excluding the -sources jar) as a release
+# asset using the default GITHUB_TOKEN.
+
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build
+        run: chmod +x gradlew && ./gradlew build --no-daemon
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Ship the mod jar but not the -sources / -dev jars.
+          files: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
+          fail_on_unmatched_files: true
