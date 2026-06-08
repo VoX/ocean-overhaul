@@ -1,18 +1,27 @@
 {
-  "type": "minecraft:ore",
+  "type": "minecraft:disk",
   "config": {
-    "discard_chance_on_air_exposure": 0.0,
-    "size": 10,
-    "targets": [
-      {
+    "half_height": 1,
+    "radius": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 2,
+      "max_inclusive": 4
+    },
+    "state_provider": {
+      "fallback": {
+        "type": "minecraft:simple_state_provider",
         "state": {
           "Name": "oceanstarter:salt_block"
-        },
-        "target": {
-          "predicate_type": "minecraft:block_match",
-          "block": "minecraft:sand"
         }
-      }
-    ]
+      },
+      "rules": []
+    },
+    "target": {
+      "type": "minecraft:matching_blocks",
+      "blocks": [
+        "minecraft:sand",
+        "minecraft:gravel"
+      ]
+    }
   }
 }

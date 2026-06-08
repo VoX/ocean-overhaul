@@ -30,6 +30,24 @@
           "predicate_type": "minecraft:block_match",
           "block": "minecraft:gravel"
         }
+      },
+      {
+        "state": {
+          "Name": "oceanstarter:barnacle_block"
+        },
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "minecraft:sand"
+        }
+      },
+      {
+        "state": {
+          "Name": "oceanstarter:barnacle_block"
+        },
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "minecraft:sandstone"
+        }
       }
     ]
   }
