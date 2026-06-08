@@ -61,43 +61,43 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 
 		// Head / upper jaw — the snout. Its underside is the roof of the mouth.
 		ModelPartData head = body.addChild("head",
-				ModelPartBuilder.create().uv(0, 22).cuboid(-3.5F, -3.5F, -6.0F, 7.0F, 7.0F, 6.0F),
+				ModelPartBuilder.create().uv(32, 22).cuboid(-3.5F, -3.5F, -6.0F, 7.0F, 7.0F, 6.0F),
 				ModelTransform.pivot(0.0F, 0.0F, -8.0F));
 
 		// Lower jaw — hinged at the back of the mouth and dropped open for the gape.
 		body.addChild("lower_jaw",
-				ModelPartBuilder.create().uv(28, 22).cuboid(-3.0F, 0.0F, -6.0F, 6.0F, 2.0F, 6.0F),
+				ModelPartBuilder.create().uv(32, 35).cuboid(-3.0F, 0.0F, -6.0F, 6.0F, 2.0F, 6.0F),
 				ModelTransform.of(0.0F, 2.5F, -8.0F, 0.4F, 0.0F, 0.0F));
 
 		// Anglerfish lure: a thin stalk arching off the head bearing a glowing bulb.
 		head.addChild("lure_stalk",
-				ModelPartBuilder.create().uv(0, 35).cuboid(-0.5F, -6.0F, -1.0F, 1.0F, 6.0F, 1.0F),
+				ModelPartBuilder.create().uv(52, 13).cuboid(-0.5F, -6.0F, -1.0F, 1.0F, 6.0F, 1.0F),
 				ModelTransform.pivot(0.0F, -3.5F, -6.0F));
 		head.addChild("lure_bulb",
-				ModelPartBuilder.create().uv(8, 35).cuboid(-1.0F, -8.0F, -1.5F, 2.0F, 2.0F, 2.0F),
+				ModelPartBuilder.create().uv(44, 13).cuboid(-1.0F, -8.0F, -1.5F, 2.0F, 2.0F, 2.0F),
 				ModelTransform.pivot(0.0F, -3.5F, -6.0F));
 
 		// Tail — tapering rear section behind the body.
 		ModelPartData tail = body.addChild("tail",
-				ModelPartBuilder.create().uv(40, 0).cuboid(-2.0F, -2.5F, 0.0F, 4.0F, 5.0F, 12.0F),
+				ModelPartBuilder.create().uv(0, 22).cuboid(-2.0F, -2.5F, 0.0F, 4.0F, 5.0F, 12.0F),
 				ModelTransform.pivot(0.0F, 0.0F, 8.0F));
 
 		// Caudal fin — the vertical tail fin, child of the tail so it sways with it.
 		tail.addChild("caudal_fin",
-				ModelPartBuilder.create().uv(0, 46).cuboid(-0.5F, -6.0F, -2.0F, 1.0F, 11.0F, 5.0F),
+				ModelPartBuilder.create().uv(0, 39).cuboid(-0.5F, -6.0F, -2.0F, 1.0F, 11.0F, 5.0F),
 				ModelTransform.pivot(0.0F, 0.0F, 12.0F));
 
 		// Dorsal fin — a low ridge on top.
 		body.addChild("dorsal_fin",
-				ModelPartBuilder.create().uv(40, 18).cuboid(-0.5F, -9.0F, -3.0F, 1.0F, 5.0F, 8.0F),
+				ModelPartBuilder.create().uv(44, 0).cuboid(-0.5F, -9.0F, -3.0F, 1.0F, 5.0F, 8.0F),
 				ModelTransform.pivot(0.0F, -3.0F, 0.0F));
 
 		// Pectoral fins — one each side.
 		body.addChild("right_pectoral_fin",
-				ModelPartBuilder.create().uv(60, 30).cuboid(-7.0F, 0.0F, -2.0F, 7.0F, 1.0F, 5.0F),
+				ModelPartBuilder.create().uv(12, 43).cuboid(-7.0F, 0.0F, -2.0F, 7.0F, 1.0F, 5.0F),
 				ModelTransform.pivot(-3.0F, 1.0F, -2.0F));
 		body.addChild("left_pectoral_fin",
-				ModelPartBuilder.create().uv(60, 36).cuboid(0.0F, 0.0F, -2.0F, 7.0F, 1.0F, 5.0F),
+				ModelPartBuilder.create().uv(36, 43).cuboid(0.0F, 0.0F, -2.0F, 7.0F, 1.0F, 5.0F),
 				ModelTransform.pivot(3.0F, 1.0F, -2.0F));
 
 		return TexturedModelData.of(modelData, 64, 64);

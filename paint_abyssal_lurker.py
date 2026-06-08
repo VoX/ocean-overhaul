@@ -74,8 +74,8 @@ def fillbox(f, top, side, belly):
 # ---- BODY  uv(0,0) cuboid(-3,-3,-8, 6,6,16) -> sx6 sy6 sz16 ----
 fillbox(faces(0, 0, 6, 6, 16), BODY_TOP, BODY_SIDE, BODY_BELLY)
 
-# ---- HEAD  uv(0,22) cuboid(-3.5,-3.5,-6, 7,7,6) -> sx7 sy7 sz6 ----
-hf = faces(0, 22, 7, 7, 6)
+# ---- HEAD  uv(32,22) cuboid(-3.5,-3.5,-6, 7,7,6) -> sx7 sy7 sz6 ----
+hf = faces(32, 22, 7, 7, 6)
 fillbox(hf, BODY_TOP, BODY_SIDE, BODY_BELLY)
 # mouth roof: the head's +Y face ('up' rect) is the render-BOTTOM = roof of the mouth.
 rect(*hf['up'], MOUTH)
@@ -87,8 +87,8 @@ nx, ny, nw, nh = [int(v) for v in hf['north']]
 rect(nx + 1, ny + 1, 1, 1, EYE)
 rect(nx + nw - 2, ny + 1, 1, 1, EYE)
 
-# ---- LOWER_JAW  uv(28,22) cuboid(-3,0,-6, 6,2,6) -> sx6 sy2 sz6 ----
-jf = faces(28, 22, 6, 2, 6)
+# ---- LOWER_JAW  uv(32,35) cuboid(-3,0,-6, 6,2,6) -> sx6 sy2 sz6 ----
+jf = faces(32, 35, 6, 2, 6)
 fillbox(jf, BODY_SIDE, BODY_SIDE, BODY_BELLY)
 # jaw interior: the lower jaw's -Y face ('down' rect) is the render-TOP = mouth floor.
 rect(*jf['down'], MOUTH)
@@ -96,36 +96,36 @@ rect(*jf['down'], MOUTH)
 dx, dy, dw, dh = [int(v) for v in jf['down']]
 rect(dx, dy + dh - 1, dw, 1, TEETH)
 
-# ---- LURE_STALK  uv(0,35) cuboid(-0.5,-6,-1, 1,6,1) -> sx1 sy6 sz1 ----
-sf = faces(0, 35, 1, 6, 1)
+# ---- LURE_STALK  uv(52,13) cuboid(-0.5,-6,-1, 1,6,1) -> sx1 sy6 sz1 ----
+sf = faces(52, 13, 1, 6, 1)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*sf[k], FIN)
 
-# ---- LURE_BULB  uv(8,35) cuboid(-1,-8,-1.5, 2,2,2) -> sx2 sy2 sz2 ---- glowing cyan all 6 faces
-lf = faces(8, 35, 2, 2, 2)
+# ---- LURE_BULB  uv(44,13) cuboid(-1,-8,-1.5, 2,2,2) -> sx2 sy2 sz2 ---- glowing cyan all 6 faces
+lf = faces(44, 13, 2, 2, 2)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*lf[k], LURE)
 
-# ---- TAIL  uv(40,0) cuboid(-2,-2.5,0, 4,5,12) -> sx4 sy5 sz12 ----
-fillbox(faces(40, 0, 4, 5, 12), BODY_TOP, BODY_SIDE, BODY_BELLY)
+# ---- TAIL  uv(0,22) cuboid(-2,-2.5,0, 4,5,12) -> sx4 sy5 sz12 ----
+fillbox(faces(0, 22, 4, 5, 12), BODY_TOP, BODY_SIDE, BODY_BELLY)
 
-# ---- CAUDAL_FIN  uv(0,46) cuboid(-0.5,-6,-2, 1,11,5) -> sx1 sy11 sz5 ----
-cf = faces(0, 46, 1, 11, 5)
+# ---- CAUDAL_FIN  uv(0,39) cuboid(-0.5,-6,-2, 1,11,5) -> sx1 sy11 sz5 ----
+cf = faces(0, 39, 1, 11, 5)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*cf[k], FIN)
 
-# ---- DORSAL_FIN  uv(40,18) cuboid(-0.5,-9,-3, 1,5,8) -> sx1 sy5 sz8 ----
-df = faces(40, 18, 1, 5, 8)
+# ---- DORSAL_FIN  uv(44,0) cuboid(-0.5,-9,-3, 1,5,8) -> sx1 sy5 sz8 ----
+df = faces(44, 0, 1, 5, 8)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*df[k], FIN)
 
-# ---- RIGHT_PECTORAL_FIN  uv(60,30) cuboid(-7,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
-rpf = faces(60, 30, 7, 1, 5)
+# ---- RIGHT_PECTORAL_FIN  uv(12,43) cuboid(-7,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
+rpf = faces(12, 43, 7, 1, 5)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*rpf[k], FIN)
 
-# ---- LEFT_PECTORAL_FIN  uv(60,36) cuboid(0,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
-lpf = faces(60, 36, 7, 1, 5)
+# ---- LEFT_PECTORAL_FIN  uv(36,43) cuboid(0,0,-2, 7,1,5) -> sx7 sy1 sz5 ----
+lpf = faces(36, 43, 7, 1, 5)
 for k in ('down', 'up', 'north', 'south', 'east', 'west'):
     rect(*lpf[k], FIN)
 
