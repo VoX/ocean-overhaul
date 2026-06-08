@@ -67,5 +67,7 @@
 	"item.oceanstarter.reef_fish_spawn_egg": "Reef Fish Spawn Egg",
 	"entity.oceanstarter.jellyfish": "Jellyfish",
 	"item.oceanstarter.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
+	"entity.oceanstarter.abyssal_lurker": "Abyssal Lurker",
+	"item.oceanstarter.abyssal_lurker_spawn_egg": "Abyssal Lurker Spawn Egg",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

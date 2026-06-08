@@ -27,5 +27,10 @@ public class OceanStarterClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(
 				JellyfishModel.LAYER, JellyfishModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanStarter.JELLYFISH, JellyfishRenderer::new);
+
+		// The Depths: hostile Abyssal Lurker.
+		EntityModelLayerRegistry.registerModelLayer(
+				AbyssalLurkerModel.LAYER, AbyssalLurkerModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanStarter.ABYSSAL_LURKER, AbyssalLurkerRenderer::new);
 	}
 }

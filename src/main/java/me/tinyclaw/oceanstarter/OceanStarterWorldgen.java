@@ -54,6 +54,11 @@ public final class OceanStarterWorldgen {
 		addDeepOceanFeature("abyssal_pearl_vein", GenerationStep.Feature.UNDERGROUND_ORES);
 		addDeepOceanFeature("prismarine_crystal_geode", GenerationStep.Feature.UNDERGROUND_ORES);
 
+		// --- The Depths: deep-ocean floor enrichment (abyssal coral patch) ----
+		// Layers after terrain like vanilla seagrass/coral; the placed feature gates
+		// on OCEAN_FLOOR_WG + a water predicate so it only lands on the submerged floor.
+		addDeepOceanFeature("abyssal_coral_patch", GenerationStep.Feature.VEGETAL_DECORATION);
+
 		// --- Rare pearl geode across all oceans -------------------------------
 		addOceanFeature("pearl_geode", GenerationStep.Feature.UNDERGROUND_ORES);
 
@@ -79,6 +84,16 @@ public final class OceanStarterWorldgen {
 				SpawnGroup.WATER_AMBIENT,
 				OceanStarter.JELLYFISH,
 				6, 1, 3);
+
+		// The Depths: a hostile deep-sea predator. Deep oceans only (IS_DEEP_OCEAN),
+		// MONSTER group, modest weight (8) in small groups of 1-2 so it reads as a
+		// lurking threat, not a swarm. The lurker's static canSpawn predicate further
+		// gates each spawn on submerged + dark.
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_DEEP_OCEAN),
+				SpawnGroup.MONSTER,
+				OceanStarter.ABYSSAL_LURKER,
+				8, 1, 2);
 	}
 
 	private static void addOceanFeature(String name, GenerationStep.Feature step) {

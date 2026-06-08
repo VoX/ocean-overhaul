@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanstarter;
 
+import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
@@ -507,6 +508,22 @@ public class OceanStarter implements ModInitializer {
 	public static final SpawnEggItem JELLYFISH_SPAWN_EGG =
 			new SpawnEggItem(JELLYFISH, 0xB070D0, 0xE8C0F0, new Item.Settings());
 
+	// --- Hostile mob: Abyssal Lurker (deep-sea HostileEntity predator) ----
+	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
+	// below can reference a fully-built EntityType. MONSTER group; its 0.7x0.7 box
+	// IS the real hitbox (no segments, unlike the boss).
+	public static final EntityType<AbyssalLurker> ABYSSAL_LURKER = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("abyssal_lurker"),
+			EntityType.Builder.create(AbyssalLurker::new, SpawnGroup.MONSTER)
+					.dimensions(0.7F, 0.7F)
+					.maxTrackingRange(8)
+					.build("abyssal_lurker"));
+
+	// --- Spawn egg for the Abyssal Lurker (dark navy / cyan lure) ---------
+	public static final SpawnEggItem ABYSSAL_LURKER_SPAWN_EGG =
+			new SpawnEggItem(ABYSSAL_LURKER, 0x0E1828, 0x4FE0C0, new Item.Settings());
+
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
 			RegistryKey.of(Registries.ITEM_GROUP.getKey(), id("ocean_overhaul"));
@@ -580,6 +597,7 @@ public class OceanStarter implements ModInitializer {
 				entries.add(MEGALODON_SPAWN_EGG);
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
+				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
 			})
 			.build();
 
@@ -736,6 +754,16 @@ public class OceanStarter implements ModInitializer {
 		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
 
+		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
+		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
+		// so WaterCreatureEntity.canSpawn can't be reused (type-bound mismatch) — the
+		// lurker carries its own static canSpawn (submerged + dark). Natural-spawn
+		// biome attachment is wired in OceanStarterWorldgen.register().
+		Registry.register(Registries.ITEM, id("abyssal_lurker_spawn_egg"), ABYSSAL_LURKER_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(ABYSSAL_LURKER, AbyssalLurker.createAttributes());
+		SpawnRestriction.register(ABYSSAL_LURKER, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AbyssalLurker::canSpawn);
+
 		// Register our custom creative tab.
 		Registry.register(Registries.ITEM_GROUP, OCEAN_GROUP_KEY, OCEAN_GROUP);
 
@@ -820,6 +848,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(MEGALODON_SPAWN_EGG);
 			entries.add(REEF_FISH_SPAWN_EGG);
 			entries.add(JELLYFISH_SPAWN_EGG);
+			entries.add(ABYSSAL_LURKER_SPAWN_EGG);
 		});
 
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
