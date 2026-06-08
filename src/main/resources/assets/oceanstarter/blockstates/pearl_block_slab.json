@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "oceanstarter:block/pearl_block_slab"
+    },
+    "type=double": {
+      "model": "oceanstarter:block/pearl_block"
+    },
+    "type=top": {
+      "model": "oceanstarter:block/pearl_block_slab_top"
+    }
+  }
+}

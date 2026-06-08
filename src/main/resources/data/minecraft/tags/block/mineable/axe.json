@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "oceanstarter:driftwood_plank",
+    "oceanstarter:driftwood_plank_stairs",
+    "oceanstarter:driftwood_plank_slab",
+    "oceanstarter:driftwood_plank_wall"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "oceanstarter:block/polished_prismarine_bricks",
+    "side": "oceanstarter:block/polished_prismarine_bricks",
+    "top": "oceanstarter:block/polished_prismarine_bricks"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "oceanstarter:abyssal_coral_block",
+    "oceanstarter:sea_glass",
+    "oceanstarter:sea_glass_stairs",
+    "oceanstarter:sea_glass_slab",
+    "oceanstarter:polished_prismarine_bricks",
+    "oceanstarter:polished_prismarine_bricks_stairs",
+    "oceanstarter:polished_prismarine_bricks_slab",
+    "oceanstarter:polished_prismarine_bricks_wall",
+    "oceanstarter:pearl_block",
+    "oceanstarter:pearl_block_stairs",
+    "oceanstarter:pearl_block_slab",
+    "oceanstarter:pearl_block_wall",
+    "oceanstarter:pearl_lantern"
+  ]
+}

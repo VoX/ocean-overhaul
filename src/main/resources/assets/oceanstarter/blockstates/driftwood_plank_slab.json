@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "oceanstarter:block/driftwood_plank_slab"
+    },
+    "type=double": {
+      "model": "oceanstarter:block/driftwood_plank"
+    },
+    "type=top": {
+      "model": "oceanstarter:block/driftwood_plank_slab_top"
+    }
+  }
+}
