@@ -9,8 +9,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockSetType;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ButtonBlock;
+import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FenceBlock;
+import net.minecraft.block.FenceGateBlock;
 import net.minecraft.block.PressurePlateBlock;
+import net.minecraft.block.TrapdoorBlock;
+import net.minecraft.block.WoodType;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
@@ -140,6 +144,25 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem DRIFTWOOD_PRESSURE_PLATE_ITEM = new BlockItem(
 			DRIFTWOOD_PRESSURE_PLATE, new Item.Settings());
 
+	// --- Functional set: Driftwood (fence gate + trapdoor + door) ----------
+	// FenceGateBlock(WoodType, Settings) is public; TrapdoorBlock/DoorBlock
+	// ctors are protected -> anon subclass, same pattern as the button above.
+	public static final Block DRIFTWOOD_FENCE_GATE = new FenceGateBlock(
+			WoodType.OAK,
+			AbstractBlock.Settings.copy(Blocks.OAK_FENCE_GATE));
+	public static final BlockItem DRIFTWOOD_FENCE_GATE_ITEM = new BlockItem(
+			DRIFTWOOD_FENCE_GATE, new Item.Settings());
+	public static final Block DRIFTWOOD_TRAPDOOR = new TrapdoorBlock(
+			BlockSetType.OAK,
+			AbstractBlock.Settings.copy(Blocks.OAK_TRAPDOOR).nonOpaque()) {};
+	public static final BlockItem DRIFTWOOD_TRAPDOOR_ITEM = new BlockItem(
+			DRIFTWOOD_TRAPDOOR, new Item.Settings());
+	public static final Block DRIFTWOOD_DOOR = new DoorBlock(
+			BlockSetType.OAK,
+			AbstractBlock.Settings.copy(Blocks.OAK_DOOR).nonOpaque()) {};
+	public static final BlockItem DRIFTWOOD_DOOR_ITEM = new BlockItem(
+			DRIFTWOOD_DOOR, new Item.Settings());
+
 	// --- Building set: Sea Glass (stairs + slab only, no wall) ------------
 	public static final Block SEA_GLASS_STAIRS = new StairsBlock(
 			SEA_GLASS.getDefaultState(),
@@ -266,6 +289,9 @@ public class OceanStarter implements ModInitializer {
 				entries.add(DRIFTWOOD_PLANK_SLAB);
 				entries.add(DRIFTWOOD_PLANK_WALL);
 				entries.add(DRIFTWOOD_PLANK_FENCE);
+				entries.add(DRIFTWOOD_FENCE_GATE);
+				entries.add(DRIFTWOOD_TRAPDOOR);
+				entries.add(DRIFTWOOD_DOOR);
 				entries.add(DRIFTWOOD_BUTTON);
 				entries.add(DRIFTWOOD_PRESSURE_PLATE);
 				entries.add(PEARL_BLOCK);
@@ -332,6 +358,12 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("driftwood_button"), DRIFTWOOD_BUTTON_ITEM);
 		Registry.register(Registries.BLOCK, id("driftwood_pressure_plate"), DRIFTWOOD_PRESSURE_PLATE);
 		Registry.register(Registries.ITEM, id("driftwood_pressure_plate"), DRIFTWOOD_PRESSURE_PLATE_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_fence_gate"), DRIFTWOOD_FENCE_GATE);
+		Registry.register(Registries.ITEM, id("driftwood_fence_gate"), DRIFTWOOD_FENCE_GATE_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_trapdoor"), DRIFTWOOD_TRAPDOOR);
+		Registry.register(Registries.ITEM, id("driftwood_trapdoor"), DRIFTWOOD_TRAPDOOR_ITEM);
+		Registry.register(Registries.BLOCK, id("driftwood_door"), DRIFTWOOD_DOOR);
+		Registry.register(Registries.ITEM, id("driftwood_door"), DRIFTWOOD_DOOR_ITEM);
 
 		Registry.register(Registries.BLOCK, id("pearl_block"), PEARL_BLOCK);
 		Registry.register(Registries.ITEM, id("pearl_block"), PEARL_BLOCK_ITEM);
@@ -406,6 +438,9 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_PLANK_SLAB);
 			entries.add(DRIFTWOOD_PLANK_WALL);
 			entries.add(DRIFTWOOD_PLANK_FENCE);
+			entries.add(DRIFTWOOD_FENCE_GATE);
+			entries.add(DRIFTWOOD_TRAPDOOR);
+			entries.add(DRIFTWOOD_DOOR);
 			entries.add(PEARL_BLOCK);
 			entries.add(PEARL_BLOCK_STAIRS);
 			entries.add(PEARL_BLOCK_SLAB);
@@ -435,7 +470,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(DRIFTWOOD_PRESSURE_PLATE);
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 30 blocks, 8 items, ocean_overhaul tab.");
+		LOGGER.info("Ocean Overhaul loaded: 33 blocks, 8 items, ocean_overhaul tab.");
 	}
 
 	/**

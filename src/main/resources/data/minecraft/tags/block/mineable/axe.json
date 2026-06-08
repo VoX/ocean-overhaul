@@ -7,6 +7,9 @@
     "oceanstarter:driftwood_plank_wall",
     "oceanstarter:driftwood_plank_fence",
     "oceanstarter:driftwood_button",
-    "oceanstarter:driftwood_pressure_plate"
+    "oceanstarter:driftwood_pressure_plate",
+    "oceanstarter:driftwood_fence_gate",
+    "oceanstarter:driftwood_trapdoor",
+    "oceanstarter:driftwood_door"
   ]
 }
