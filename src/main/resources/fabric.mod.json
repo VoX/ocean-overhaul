@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "oceanstarter",
 	"version": "${version}",
-	"name": "Ocean Overhaul (Starter)",
-	"description": "A small, correct starter seed for a revamped-ocean mod. Adds the Abyssal Coral Block, the Tide Pearl, and an Ocean Overhaul creative tab — grow it into a full ocean overhaul from here.",
+	"name": "Ocean Overhaul",
+	"description": "Adds 5 ocean-themed blocks (Abyssal Coral Block, Sea Glass, Polished Prismarine Bricks, Driftwood Plank, Pearl Block), 3 items (Tide Pearl, Coral Shard, Sea Salt), and a dedicated Ocean Overhaul creative tab.",
 	"authors": [
 		"tinyclaw"
 	],

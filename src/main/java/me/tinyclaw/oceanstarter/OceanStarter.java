@@ -3,8 +3,8 @@ package me.tinyclaw.oceanstarter;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
@@ -39,31 +39,31 @@ public class OceanStarter implements ModInitializer {
 
 	// --- Block: Abyssal Coral Block ---------------------------------------
 	public static final Block ABYSSAL_CORAL_BLOCK = new Block(
-			FabricBlockSettings.copyOf(Blocks.PRISMARINE));
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
 	public static final BlockItem ABYSSAL_CORAL_BLOCK_ITEM = new BlockItem(
 			ABYSSAL_CORAL_BLOCK, new Item.Settings());
 
 	// --- Block: Sea Glass -------------------------------------------------
 	public static final Block SEA_GLASS = new Block(
-			FabricBlockSettings.copyOf(Blocks.GLASS));
+			AbstractBlock.Settings.copy(Blocks.GLASS));
 	public static final BlockItem SEA_GLASS_ITEM = new BlockItem(
 			SEA_GLASS, new Item.Settings());
 
 	// --- Block: Polished Prismarine Bricks --------------------------------
 	public static final Block POLISHED_PRISMARINE_BRICKS = new Block(
-			FabricBlockSettings.copyOf(Blocks.PRISMARINE_BRICKS));
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE_BRICKS));
 	public static final BlockItem POLISHED_PRISMARINE_BRICKS_ITEM = new BlockItem(
 			POLISHED_PRISMARINE_BRICKS, new Item.Settings());
 
 	// --- Block: Driftwood Plank -------------------------------------------
 	public static final Block DRIFTWOOD_PLANK = new Block(
-			FabricBlockSettings.copyOf(Blocks.OAK_PLANKS));
+			AbstractBlock.Settings.copy(Blocks.OAK_PLANKS));
 	public static final BlockItem DRIFTWOOD_PLANK_ITEM = new BlockItem(
 			DRIFTWOOD_PLANK, new Item.Settings());
 
 	// --- Block: Pearl Block -----------------------------------------------
 	public static final Block PEARL_BLOCK = new Block(
-			FabricBlockSettings.copyOf(Blocks.SMOOTH_QUARTZ));
+			AbstractBlock.Settings.copy(Blocks.SMOOTH_QUARTZ));
 	public static final BlockItem PEARL_BLOCK_ITEM = new BlockItem(
 			PEARL_BLOCK, new Item.Settings());
 

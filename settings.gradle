@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 // Should match your archives base name
-rootProject.name = 'ocean-starter'
+rootProject.name = 'ocean-overhaul'
