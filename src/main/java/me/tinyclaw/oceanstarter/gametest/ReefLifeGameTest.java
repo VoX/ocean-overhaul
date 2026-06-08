@@ -74,6 +74,46 @@ public class ReefLifeGameTest implements FabricGameTest {
 	}
 
 	/**
+	 * Jellyfish color-variant machinery: the synced {@code VARIANT} TrackedData defaults to
+	 * 0, round-trips through the getter/setter for every valid index, and CLAMPS an
+	 * out-of-range value into 0..{@code VARIANT_COUNT}-1 so a corrupt NBT value can never
+	 * index past the client texture array. ({@code spawnEntity} does not fire {@code
+	 * initialize}, so the spawn-roll isn't exercised here — this locks the storage + clamp
+	 * path the renderer depends on.)
+	 */
+	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	public void jellyfishVariantRoundTripsAndClamps(TestContext context) {
+		fillWaterPocket(context);
+
+		Jellyfish jelly = context.spawnEntity(OceanStarter.JELLYFISH, SPAWN);
+		context.assertTrue(jelly != null, "Jellyfish failed to spawn");
+
+		context.assertTrue(
+			jelly.getVariant() == 0,
+			"Jellyfish default variant expected 0 but was " + jelly.getVariant());
+
+		for (int v = 0; v < Jellyfish.VARIANT_COUNT; v++) {
+			jelly.setVariant(v);
+			context.assertTrue(
+				jelly.getVariant() == v,
+				"Jellyfish variant " + v + " did not round-trip; got " + jelly.getVariant());
+		}
+
+		// Out-of-range high and low must clamp into the valid texture-index range.
+		jelly.setVariant(999);
+		context.assertTrue(
+			jelly.getVariant() == Jellyfish.VARIANT_COUNT - 1,
+			"Jellyfish variant 999 should clamp to " + (Jellyfish.VARIANT_COUNT - 1)
+				+ " but was " + jelly.getVariant());
+		jelly.setVariant(-7);
+		context.assertTrue(
+			jelly.getVariant() == 0,
+			"Jellyfish variant -7 should clamp to 0 but was " + jelly.getVariant());
+
+		context.complete();
+	}
+
+	/**
 	 * No-drown: both mobs are aquatic and must breathe underwater indefinitely. Flood the
 	 * area, drop one of each in, run ~120 ticks (6 s — well past the vanilla air-then-drown
 	 * window), and assert both kept full health. (tickLimit raised past the 120-tick

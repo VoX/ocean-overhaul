@@ -79,12 +79,67 @@ for u in (0, 4, 8, 12):
     rect(*t['east'], TENT)
     rect(*t['west'], TENT_D)
 
-out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/jellyfish.png"
-img.save(out)
-print("saved", out, img.size)
+import colorsys
 
-# 8x nearest-neighbour preview (over a mid-grey mat so transparency reads).
-mat = Image.new("RGBA", (W, H), (128, 128, 128, 255))
-mat.alpha_composite(img)
-mat.resize((W * 8, H * 8), Image.NEAREST).save("/tmp/jellyfish_preview.png")
-print("preview /tmp/jellyfish_preview.png")
+OUT_DIR = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity"
+
+# Keep the base purple/pink texture (variant source / legacy name).
+base_out = OUT_DIR + "/jellyfish.png"
+img.save(base_out)
+print("saved", base_out, img.size)
+
+
+def hue_shift(src, hue, sat_boost=1.35, val_boost=1.18):
+    """Recolor `src` (RGBA) to a target HUE while PRESERVING the original alpha.
+
+    Operates per-pixel in HSV: the painted value/shading variation is kept, hue is
+    forced to the target, saturation is pumped (neon look). Alpha is the ORIGINAL
+    pixel alpha copied straight back — load-bearing for the translucent bell, and a
+    naive HSV round-trip drops/rounds it (the solid-blob bug). Fully transparent
+    pixels are left untouched so the empty UV margins stay empty.
+
+    hue: 0..1 (matches colorsys; the spec's 0-255 hues / 255.0).
+    """
+    src = src.convert("RGBA")
+    w, h = src.size
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    sp = src.load()
+    op = out.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = sp[x, y]
+            if a == 0:
+                continue  # preserve empty margins exactly
+            _, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+            s = min(1.0, s * sat_boost)
+            v = min(1.0, v * val_boost)
+            nr, ng, nb = colorsys.hsv_to_rgb(hue, s, v)
+            op[x, y] = (int(nr * 255), int(ng * 255), int(nb * 255), a)  # ORIGINAL alpha
+    return out
+
+
+# Approx hues from the spec (PIL/colorsys 0-1 scale = spec's 0-255 / 255):
+#   green 85, blue 150, pink 220, red 250, orange 18.
+VARIANTS = {
+    "green":  85 / 255.0,
+    "blue":  150 / 255.0,
+    "pink":  220 / 255.0,
+    "red":   250 / 255.0,
+    "orange": 18 / 255.0,
+}
+
+# 8x nearest-neighbour montage preview (each variant over a dark mat so the
+# neon/translucency reads the way it will against deep water).
+mat_bg = (24, 28, 40, 255)
+montage = Image.new("RGBA", (W * 8 * len(VARIANTS), H * 8), mat_bg)
+for idx, (name, hue) in enumerate(VARIANTS.items()):
+    v_img = hue_shift(img, hue)
+    v_out = OUT_DIR + "/jellyfish_" + name + ".png"
+    v_img.save(v_out)
+    print("saved", v_out, v_img.size)
+    mat = Image.new("RGBA", (W, H), mat_bg)
+    mat.alpha_composite(v_img)
+    montage.paste(mat.resize((W * 8, H * 8), Image.NEAREST), (idx * W * 8, 0))
+
+montage.save("/tmp/jellyfish_variants_preview.png")
+print("preview /tmp/jellyfish_variants_preview.png")
