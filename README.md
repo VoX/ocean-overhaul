@@ -4,28 +4,39 @@ Ocean Overhaul is a starter ocean-content mod for **Minecraft 1.21.1 (Fabric)**.
 
 ## Contents
 
-**Blocks** (17 total)
+**Decorative blocks**
 
-- **Abyssal Coral Block** — decorative coral-and-prismarine block
+- **Abyssal Coral Block** — coral-and-prismarine block
 - **Sea Glass** — base + stairs + slab
 - **Polished Prismarine Bricks** — base + stairs + slab + wall
-- **Driftwood Plank** — base + stairs + slab + wall
+- **Chiseled Prismarine Tiles** — base + stairs + slab + wall
 - **Pearl Block** — base + stairs + slab + wall
+- **Kelp Brick** — base + stairs + slab + wall
+- **Cracked Kelp Bricks** — base + stairs + slab + wall (smelted from Kelp Brick)
 - **Pearl Lantern** — full-bright light source (like a sea lantern)
+- **Prismarine Crystal Block** — full-bright luminous block
+- **Salt Block**, **Barnacle Block**, **Nautilus Shell Block**, **Abyssal Pearl Block**, **Crushed Coral Block** — standalone decoratives
+
+**Driftwood functional set**
+
+- **Driftwood Plank** — base + stairs + slab + wall
+- **Driftwood Fence** + **Fence Gate**
+- **Driftwood Door** + **Trapdoor**
+- **Driftwood Button** + **Pressure Plate**
 
 **Items**
 
-- Tide Pearl
-- Coral Shard
-- Sea Salt
+- Tide Pearl, Coral Shard, Sea Salt
+- Kelp Fiber, Abyssal Pearl, Crushed Coral (crafting ingredients)
+- Sea Urchin, Salted Cod (foods)
 
 **Crafting & recipes**
 
-Everything is craftable. The base blocks are made from ocean ingredients (prismarine, coral, pearls, sea salt); coral recipes accept **any** of the five vanilla coral colors. Stairs, slabs, and walls have standard crafting recipes, and the stone-like sets (Sea Glass, Polished Prismarine Bricks, Pearl Block) can also be cut on a **stonecutter**. Tide Pearls smelt/craft to and from Pearl Blocks, and Sea Salt is smelted from ocean sources.
+Everything is craftable. The base blocks are made from ocean ingredients (prismarine, coral, pearls, kelp, sea salt); coral recipes accept **any** of the five vanilla coral colors. The driftwood functional blocks (fence, gate, door, trapdoor, button, pressure plate) use vanilla wood-set recipe shapes and counts. Stairs, slabs, and walls have standard crafting recipes, and the stone-like sets (Sea Glass, Polished Prismarine Bricks, Chiseled Prismarine Tiles, Pearl Block, Kelp Brick, Cracked Kelp Bricks) can also be cut on a **stonecutter**. Tide Pearls, Abyssal Pearls, and Crushed Coral pack/unpack to and from their storage blocks, and Sea Salt is smelted from ocean sources.
 
 **Tags**
 
-Blocks are wired into the relevant vanilla tags so they behave like their counterparts: `planks`, `slabs`, `stairs`, `walls`, `mineable/axe`, `mineable/pickaxe`, and `beacon_base_blocks`.
+Blocks are wired into the relevant vanilla tags so they behave like their counterparts: `planks`, `slabs`, `stairs`, `walls`, `wooden_fences`, `wooden_buttons`, `wooden_pressure_plates`, `wooden_doors`, `wooden_trapdoors`, `fence_gates`, `mineable/axe`, `mineable/pickaxe`, and `beacon_base_blocks`.
 
 **Creative tab**
 
