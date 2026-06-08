@@ -13,6 +13,16 @@
     "oceanstarter:pearl_block_stairs",
     "oceanstarter:pearl_block_slab",
     "oceanstarter:pearl_block_wall",
-    "oceanstarter:pearl_lantern"
+    "oceanstarter:pearl_lantern",
+    "oceanstarter:salt_block",
+    "oceanstarter:barnacle_block",
+    "oceanstarter:nautilus_shell_block",
+    "oceanstarter:abyssal_pearl_block",
+    "oceanstarter:crushed_coral_block",
+    "oceanstarter:prismarine_crystal_block",
+    "oceanstarter:kelp_brick",
+    "oceanstarter:kelp_brick_stairs",
+    "oceanstarter:kelp_brick_slab",
+    "oceanstarter:kelp_brick_wall"
   ]
 }

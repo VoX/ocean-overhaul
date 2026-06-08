@@ -3,7 +3,7 @@
 	"id": "oceanstarter",
 	"version": "${version}",
 	"name": "Ocean Overhaul",
-	"description": "Adds 17 ocean-themed blocks (Abyssal Coral Block, Sea Glass + stairs/slab, Polished Prismarine Bricks + stairs/slab/wall, Driftwood Plank + stairs/slab/wall, Pearl Block + stairs/slab/wall, Pearl Lantern), 3 items (Tide Pearl, Coral Shard, Sea Salt), and a dedicated Ocean Overhaul creative tab.",
+	"description": "Adds 27 ocean-themed blocks (Abyssal Coral Block, Sea Glass + stairs/slab, Polished Prismarine Bricks + stairs/slab/wall, Driftwood Plank + stairs/slab/wall, Pearl Block + stairs/slab/wall, Pearl Lantern, Salt Block, Barnacle Block, Nautilus Shell Block, Abyssal Pearl Block, Crushed Coral Block, Prismarine Crystal Block, Kelp Brick + stairs/slab/wall), 8 items (Tide Pearl, Coral Shard, Sea Salt, Kelp Fiber, Abyssal Pearl, Crushed Coral, Sea Urchin, Salted Cod), and a dedicated Ocean Overhaul creative tab.",
 	"authors": [
 		"tinyclaw"
 	],

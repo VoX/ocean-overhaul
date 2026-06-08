@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "oceanstarter:block/barnacle_block"
+    }
+  }
+}

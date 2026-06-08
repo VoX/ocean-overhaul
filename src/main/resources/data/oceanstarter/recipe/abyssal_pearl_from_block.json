@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "oceanstarter:abyssal_pearl_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "oceanstarter:abyssal_pearl"
+  }
+}

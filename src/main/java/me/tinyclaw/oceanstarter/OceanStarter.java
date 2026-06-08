@@ -10,6 +10,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -133,6 +134,63 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem PEARL_LANTERN_ITEM = new BlockItem(
 			PEARL_LANTERN, new Item.Settings());
 
+	// --- Block: Salt Block (crafted from sea salt) ------------------------
+	public static final Block SALT_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SMOOTH_QUARTZ));
+	public static final BlockItem SALT_BLOCK_ITEM = new BlockItem(
+			SALT_BLOCK, new Item.Settings());
+
+	// --- Block: Barnacle Block (lumpy natural decorative) -----------------
+	public static final Block BARNACLE_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
+	public static final BlockItem BARNACLE_BLOCK_ITEM = new BlockItem(
+			BARNACLE_BLOCK, new Item.Settings());
+
+	// --- Block: Nautilus Shell Block --------------------------------------
+	public static final Block NAUTILUS_SHELL_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SMOOTH_QUARTZ));
+	public static final BlockItem NAUTILUS_SHELL_BLOCK_ITEM = new BlockItem(
+			NAUTILUS_SHELL_BLOCK, new Item.Settings());
+
+	// --- Block: Abyssal Pearl Block ---------------------------------------
+	public static final Block ABYSSAL_PEARL_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SMOOTH_QUARTZ));
+	public static final BlockItem ABYSSAL_PEARL_BLOCK_ITEM = new BlockItem(
+			ABYSSAL_PEARL_BLOCK, new Item.Settings());
+
+	// --- Block: Crushed Coral Block (gravel-like, but a full block) -------
+	public static final Block CRUSHED_CORAL_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
+	public static final BlockItem CRUSHED_CORAL_BLOCK_ITEM = new BlockItem(
+			CRUSHED_CORAL_BLOCK, new Item.Settings());
+
+	// --- Block: Prismarine Crystal Block (full-bright luminous) -----------
+	public static final Block PRISMARINE_CRYSTAL_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SEA_LANTERN).luminance(state -> 15));
+	public static final BlockItem PRISMARINE_CRYSTAL_BLOCK_ITEM = new BlockItem(
+			PRISMARINE_CRYSTAL_BLOCK, new Item.Settings());
+
+	// --- Block: Kelp Brick ------------------------------------------------
+	public static final Block KELP_BRICK = new Block(
+			AbstractBlock.Settings.copy(Blocks.STONE_BRICKS));
+	public static final BlockItem KELP_BRICK_ITEM = new BlockItem(
+			KELP_BRICK, new Item.Settings());
+
+	// --- Building set: Kelp Brick (stairs + slab + wall) ------------------
+	public static final Block KELP_BRICK_STAIRS = new StairsBlock(
+			KELP_BRICK.getDefaultState(),
+			AbstractBlock.Settings.copy(KELP_BRICK)) {};
+	public static final BlockItem KELP_BRICK_STAIRS_ITEM = new BlockItem(
+			KELP_BRICK_STAIRS, new Item.Settings());
+	public static final Block KELP_BRICK_SLAB = new SlabBlock(
+			AbstractBlock.Settings.copy(KELP_BRICK));
+	public static final BlockItem KELP_BRICK_SLAB_ITEM = new BlockItem(
+			KELP_BRICK_SLAB, new Item.Settings());
+	public static final Block KELP_BRICK_WALL = new WallBlock(
+			AbstractBlock.Settings.copy(KELP_BRICK));
+	public static final BlockItem KELP_BRICK_WALL_ITEM = new BlockItem(
+			KELP_BRICK_WALL, new Item.Settings());
+
 	// --- Item: Tide Pearl -------------------------------------------------
 	public static final Item TIDE_PEARL = new Item(new Item.Settings());
 
@@ -141,6 +199,29 @@ public class OceanStarter implements ModInitializer {
 
 	// --- Item: Sea Salt ---------------------------------------------------
 	public static final Item SEA_SALT = new Item(new Item.Settings());
+
+	// --- Item: Kelp Fiber (crafting ingredient) ---------------------------
+	public static final Item KELP_FIBER = new Item(new Item.Settings());
+
+	// --- Item: Abyssal Pearl (crafting ingredient) ------------------------
+	public static final Item ABYSSAL_PEARL = new Item(new Item.Settings());
+
+	// --- Item: Crushed Coral (crafting ingredient) ------------------------
+	public static final Item CRUSHED_CORAL = new Item(new Item.Settings());
+
+	// --- Item: Sea Urchin (food) ------------------------------------------
+	public static final Item SEA_URCHIN = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(3)
+					.saturationModifier(0.3f)
+					.build()));
+
+	// --- Item: Salted Cod (food, better than cooked cod) ------------------
+	public static final Item SALTED_COD = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(7)
+					.saturationModifier(0.8f)
+					.build()));
 
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
@@ -166,9 +247,24 @@ public class OceanStarter implements ModInitializer {
 				entries.add(PEARL_BLOCK_SLAB);
 				entries.add(PEARL_BLOCK_WALL);
 				entries.add(PEARL_LANTERN);
+				entries.add(SALT_BLOCK);
+				entries.add(BARNACLE_BLOCK);
+				entries.add(NAUTILUS_SHELL_BLOCK);
+				entries.add(ABYSSAL_PEARL_BLOCK);
+				entries.add(CRUSHED_CORAL_BLOCK);
+				entries.add(PRISMARINE_CRYSTAL_BLOCK);
+				entries.add(KELP_BRICK);
+				entries.add(KELP_BRICK_STAIRS);
+				entries.add(KELP_BRICK_SLAB);
+				entries.add(KELP_BRICK_WALL);
 				entries.add(TIDE_PEARL);
 				entries.add(CORAL_SHARD);
 				entries.add(SEA_SALT);
+				entries.add(KELP_FIBER);
+				entries.add(ABYSSAL_PEARL);
+				entries.add(CRUSHED_CORAL);
+				entries.add(SEA_URCHIN);
+				entries.add(SALTED_COD);
 			})
 			.build();
 
@@ -217,10 +313,42 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("pearl_lantern"), PEARL_LANTERN);
 		Registry.register(Registries.ITEM, id("pearl_lantern"), PEARL_LANTERN_ITEM);
 
+		Registry.register(Registries.BLOCK, id("salt_block"), SALT_BLOCK);
+		Registry.register(Registries.ITEM, id("salt_block"), SALT_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("barnacle_block"), BARNACLE_BLOCK);
+		Registry.register(Registries.ITEM, id("barnacle_block"), BARNACLE_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("nautilus_shell_block"), NAUTILUS_SHELL_BLOCK);
+		Registry.register(Registries.ITEM, id("nautilus_shell_block"), NAUTILUS_SHELL_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("abyssal_pearl_block"), ABYSSAL_PEARL_BLOCK);
+		Registry.register(Registries.ITEM, id("abyssal_pearl_block"), ABYSSAL_PEARL_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("crushed_coral_block"), CRUSHED_CORAL_BLOCK);
+		Registry.register(Registries.ITEM, id("crushed_coral_block"), CRUSHED_CORAL_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK);
+		Registry.register(Registries.ITEM, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK_ITEM);
+
+		Registry.register(Registries.BLOCK, id("kelp_brick"), KELP_BRICK);
+		Registry.register(Registries.ITEM, id("kelp_brick"), KELP_BRICK_ITEM);
+		Registry.register(Registries.BLOCK, id("kelp_brick_stairs"), KELP_BRICK_STAIRS);
+		Registry.register(Registries.ITEM, id("kelp_brick_stairs"), KELP_BRICK_STAIRS_ITEM);
+		Registry.register(Registries.BLOCK, id("kelp_brick_slab"), KELP_BRICK_SLAB);
+		Registry.register(Registries.ITEM, id("kelp_brick_slab"), KELP_BRICK_SLAB_ITEM);
+		Registry.register(Registries.BLOCK, id("kelp_brick_wall"), KELP_BRICK_WALL);
+		Registry.register(Registries.ITEM, id("kelp_brick_wall"), KELP_BRICK_WALL_ITEM);
+
 		// Register the standalone items.
 		Registry.register(Registries.ITEM, id("tide_pearl"), TIDE_PEARL);
 		Registry.register(Registries.ITEM, id("coral_shard"), CORAL_SHARD);
 		Registry.register(Registries.ITEM, id("sea_salt"), SEA_SALT);
+		Registry.register(Registries.ITEM, id("kelp_fiber"), KELP_FIBER);
+		Registry.register(Registries.ITEM, id("abyssal_pearl"), ABYSSAL_PEARL);
+		Registry.register(Registries.ITEM, id("crushed_coral"), CRUSHED_CORAL);
+		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
+		Registry.register(Registries.ITEM, id("salted_cod"), SALTED_COD);
 
 		// Register our custom creative tab.
 		Registry.register(Registries.ITEM_GROUP, OCEAN_GROUP_KEY, OCEAN_GROUP);
@@ -228,6 +356,10 @@ public class OceanStarter implements ModInitializer {
 		// Backup: also surface content in vanilla groups so it's easy to find.
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register(entries -> {
 			entries.add(ABYSSAL_CORAL_BLOCK);
+			entries.add(BARNACLE_BLOCK);
+			entries.add(CRUSHED_CORAL_BLOCK);
+			entries.add(NAUTILUS_SHELL_BLOCK);
+			entries.add(PRISMARINE_CRYSTAL_BLOCK);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(entries -> {
 			entries.add(SEA_GLASS);
@@ -246,14 +378,27 @@ public class OceanStarter implements ModInitializer {
 			entries.add(PEARL_BLOCK_SLAB);
 			entries.add(PEARL_BLOCK_WALL);
 			entries.add(PEARL_LANTERN);
+			entries.add(SALT_BLOCK);
+			entries.add(ABYSSAL_PEARL_BLOCK);
+			entries.add(KELP_BRICK);
+			entries.add(KELP_BRICK_STAIRS);
+			entries.add(KELP_BRICK_SLAB);
+			entries.add(KELP_BRICK_WALL);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
 			entries.add(TIDE_PEARL);
 			entries.add(CORAL_SHARD);
 			entries.add(SEA_SALT);
+			entries.add(KELP_FIBER);
+			entries.add(ABYSSAL_PEARL);
+			entries.add(CRUSHED_CORAL);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(entries -> {
+			entries.add(SEA_URCHIN);
+			entries.add(SALTED_COD);
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 17 blocks, 3 items, ocean_overhaul tab.");
+		LOGGER.info("Ocean Overhaul loaded: 27 blocks, 8 items, ocean_overhaul tab.");
 	}
 
 	/**

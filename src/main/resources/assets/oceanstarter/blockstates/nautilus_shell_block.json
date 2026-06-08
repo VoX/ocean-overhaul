@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "oceanstarter:block/nautilus_shell_block"
+    }
+  }
+}
