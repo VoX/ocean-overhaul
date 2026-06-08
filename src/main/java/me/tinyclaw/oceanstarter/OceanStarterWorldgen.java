@@ -50,7 +50,6 @@ public final class OceanStarterWorldgen {
 		addBeachFeature("salt_flat_deposit", GenerationStep.Feature.LOCAL_MODIFICATIONS);
 
 		// --- Deep-ocean-only deposits -----------------------------------------
-		addDeepOceanFeature("nautilus_shell_bed", GenerationStep.Feature.LOCAL_MODIFICATIONS);
 		addDeepOceanFeature("abyssal_pearl_vein", GenerationStep.Feature.UNDERGROUND_ORES);
 		addDeepOceanFeature("prismarine_crystal_geode", GenerationStep.Feature.UNDERGROUND_ORES);
 
@@ -88,7 +87,7 @@ public final class OceanStarterWorldgen {
 		// The Depths: a hostile deep-sea predator. Deep oceans only (IS_DEEP_OCEAN),
 		// MONSTER group, modest weight (8) in small groups of 1-2 so it reads as a
 		// lurking threat, not a swarm. The lurker's static canSpawn predicate further
-		// gates each spawn on submerged + dark.
+		// gates each spawn on submerged water (no light check — it lurks day or night).
 		BiomeModifications.addSpawn(
 				BiomeSelectors.tag(BiomeTags.IS_DEEP_OCEAN),
 				SpawnGroup.MONSTER,

@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab",
-  "textures": {
-    "bottom": "oceanstarter:block/kelp_brick",
-    "side": "oceanstarter:block/kelp_brick",
-    "top": "oceanstarter:block/kelp_brick"
-  }
-}

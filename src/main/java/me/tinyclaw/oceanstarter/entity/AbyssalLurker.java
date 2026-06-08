@@ -92,13 +92,13 @@ public class AbyssalLurker extends HostileEntity {
 	 * its {@code EntityType} param is bound to {@code ? extends WaterCreatureEntity}
 	 * but ours is {@code ? extends HostileEntity}, so a method-ref won't compile
 	 * (verified via javap). This is a fresh {@link net.minecraft.entity.SpawnRestriction.SpawnPredicate}:
-	 * spawn only where this block and the one above are both water (submerged) AND the
-	 * spot is dark — a true deep lurker, and the deep-ocean floor is dark enough.
+	 * spawn only where this block and the one above are both water (submerged) —
+	 * a true deep lurker. No light check: it spawns regardless of day/night so the
+	 * deep ocean stays dangerous around the clock.
 	 */
 	public static boolean canSpawn(EntityType<? extends HostileEntity> type, ServerWorldAccess world,
 			SpawnReason reason, BlockPos pos, Random random) {
 		return world.getFluidState(pos).isIn(FluidTags.WATER)
-				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER)
-				&& HostileEntity.isSpawnDark(world, pos, random);
+				&& world.getFluidState(pos.up()).isIn(FluidTags.WATER);
 	}
 }

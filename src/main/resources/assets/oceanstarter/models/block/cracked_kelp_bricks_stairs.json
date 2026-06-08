@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/stairs",
-  "textures": {
-    "bottom": "oceanstarter:block/cracked_kelp_bricks",
-    "side": "oceanstarter:block/cracked_kelp_bricks",
-    "top": "oceanstarter:block/cracked_kelp_bricks"
-  }
-}

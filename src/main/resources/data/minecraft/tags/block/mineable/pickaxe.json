@@ -16,21 +16,12 @@
     "oceanstarter:pearl_lantern",
     "oceanstarter:salt_block",
     "oceanstarter:barnacle_block",
-    "oceanstarter:nautilus_shell_block",
     "oceanstarter:abyssal_pearl_block",
     "oceanstarter:crushed_coral_block",
     "oceanstarter:prismarine_crystal_block",
-    "oceanstarter:kelp_brick",
-    "oceanstarter:kelp_brick_stairs",
-    "oceanstarter:kelp_brick_slab",
-    "oceanstarter:kelp_brick_wall",
     "oceanstarter:chiseled_prismarine_tiles",
     "oceanstarter:chiseled_prismarine_tiles_stairs",
     "oceanstarter:chiseled_prismarine_tiles_slab",
-    "oceanstarter:chiseled_prismarine_tiles_wall",
-    "oceanstarter:cracked_kelp_bricks",
-    "oceanstarter:cracked_kelp_bricks_stairs",
-    "oceanstarter:cracked_kelp_bricks_slab",
-    "oceanstarter:cracked_kelp_bricks_wall"
+    "oceanstarter:chiseled_prismarine_tiles_wall"
   ]
 }
