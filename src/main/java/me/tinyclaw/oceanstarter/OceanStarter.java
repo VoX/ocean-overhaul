@@ -4,8 +4,10 @@ import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
+import me.tinyclaw.oceanstarter.item.TidalToolMaterial;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -26,22 +28,42 @@ import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnLocationTypes;
 import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.WaterCreatureEntity;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ArmorMaterial;
+import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.ShovelItem;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolMaterial;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,6 +347,109 @@ public class OceanStarter implements ModInitializer {
 					.saturationModifier(0.8f)
 					.build()));
 
+	// =====================================================================
+	// Gear of the Deep — Tidal tools (iron-plus, crafted from Abyssal Pearl)
+	// =====================================================================
+	// 1.21.1 gotcha: the tool item ctors only set durability + the mining
+	// component — they do NOT bake in attack-damage/attack-speed modifiers.
+	// We pass them explicitly via Item.Settings.attributeModifiers(...) using
+	// each tool's static createAttributeModifiers(...), exactly like vanilla
+	// Items.java; without this every tool deals bare-fist damage.
+	public static final ToolMaterial TIDAL = new TidalToolMaterial();
+
+	public static final Item TIDAL_SWORD = new SwordItem(TIDAL,
+			new Item.Settings().attributeModifiers(
+					SwordItem.createAttributeModifiers(TIDAL, 3, -2.4f)));
+	public static final Item TIDAL_PICKAXE = new PickaxeItem(TIDAL,
+			new Item.Settings().attributeModifiers(
+					PickaxeItem.createAttributeModifiers(TIDAL, 1.0f, -2.8f)));
+	public static final Item TIDAL_SHOVEL = new ShovelItem(TIDAL,
+			new Item.Settings().attributeModifiers(
+					ShovelItem.createAttributeModifiers(TIDAL, 1.5f, -3.0f)));
+	public static final Item TIDAL_AXE = new AxeItem(TIDAL,
+			new Item.Settings().attributeModifiers(
+					AxeItem.createAttributeModifiers(TIDAL, 5.0f, -3.0f)));
+	public static final Item TIDAL_HOE = new HoeItem(TIDAL,
+			new Item.Settings().attributeModifiers(
+					HoeItem.createAttributeModifiers(TIDAL, -3.0f, 0.0f)));
+
+	// =====================================================================
+	// Gear of the Deep — Tidal diving armor (turtle/iron-ish, water breathing)
+	// =====================================================================
+	// 1.21.1 ArmorMaterial is a 7-arg RECORD registered into Registries.ARMOR_MATERIAL
+	// and handed around as RegistryEntry<ArmorMaterial>. ArmorItem keys off the
+	// ArmorItem.Type enum (no EquipmentType in 1.21.1). The worn-layer texture is
+	// resolved from the Layer(Identifier) -> textures/models/armor/tidal_layer_{1,2}.png.
+	// The worn WATER_BREATHING effect is granted from the HEAD slot only (see onInitialize).
+	private static final Map<ArmorItem.Type, Integer> TIDAL_DEFENSE = makeTidalDefense();
+
+	private static Map<ArmorItem.Type, Integer> makeTidalDefense() {
+		EnumMap<ArmorItem.Type, Integer> m = new EnumMap<>(ArmorItem.Type.class);
+		m.put(ArmorItem.Type.HELMET, 2);
+		m.put(ArmorItem.Type.CHESTPLATE, 6);
+		m.put(ArmorItem.Type.LEGGINGS, 5);
+		m.put(ArmorItem.Type.BOOTS, 2);
+		m.put(ArmorItem.Type.BODY, 5);
+		return m;
+	}
+
+	public static final RegistryEntry<ArmorMaterial> TIDAL_ARMOR = Registry.registerReference(
+			Registries.ARMOR_MATERIAL,
+			id("tidal"),
+			new ArmorMaterial(
+					TIDAL_DEFENSE,
+					9, // enchantability
+					SoundEvents.ITEM_ARMOR_EQUIP_TURTLE,
+					() -> Ingredient.ofItems(ABYSSAL_PEARL),
+					List.of(new ArmorMaterial.Layer(id("tidal"))),
+					0.0f, // toughness
+					0.0f  // knockback resistance
+			));
+
+	public static final Item TIDAL_HELMET = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.HELMET,
+			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(15)));
+	public static final Item TIDAL_CHESTPLATE = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.CHESTPLATE,
+			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(15)));
+	public static final Item TIDAL_LEGGINGS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.LEGGINGS,
+			new Item.Settings().maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(15)));
+	public static final Item TIDAL_BOOTS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.BOOTS,
+			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(15)));
+
+	// =====================================================================
+	// Gear of the Deep — Seafood foods
+	// =====================================================================
+	// --- Item: Raw Reef Fish (drop / smelting input) ----------------------
+	public static final Item RAW_REEF_FISH = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(2)
+					.saturationModifier(0.1f)
+					.build()));
+
+	// --- Item: Cooked Reef Fish (smelt/smoke of raw_reef_fish) -------------
+	public static final Item COOKED_REEF_FISH = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(6)
+					.saturationModifier(0.8f)
+					.build()));
+
+	// --- Item: Kelp Roll (shapeless snack) --------------------------------
+	public static final Item KELP_ROLL = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(5)
+					.saturationModifier(0.6f)
+					.snack()
+					.build()));
+
+	// --- Item: Seafood Stew (bowl food, returns empty bowl) ---------------
+	public static final Item SEAFOOD_STEW = new Item(new Item.Settings()
+			.maxCount(1)
+			.food(new FoodComponent.Builder()
+					.nutrition(9)
+					.saturationModifier(0.9f)
+					.usingConvertsTo(Items.BOWL)
+					.statusEffect(new StatusEffectInstance(StatusEffects.DOLPHINS_GRACE, 1200, 0), 1.0f)
+					.build()));
+
 	// --- Boss Entity: Megalodon -------------------------------------------
 	// Registered here (not in onInitialize) so the SpawnEggItem field below can
 	// reference a fully-built EntityType. build(String) takes the id path.
@@ -438,6 +563,20 @@ public class OceanStarter implements ModInitializer {
 				entries.add(CRUSHED_CORAL);
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
+				// Gear of the Deep: tools, armor, foods.
+				entries.add(TIDAL_SWORD);
+				entries.add(TIDAL_PICKAXE);
+				entries.add(TIDAL_AXE);
+				entries.add(TIDAL_SHOVEL);
+				entries.add(TIDAL_HOE);
+				entries.add(TIDAL_HELMET);
+				entries.add(TIDAL_CHESTPLATE);
+				entries.add(TIDAL_LEGGINGS);
+				entries.add(TIDAL_BOOTS);
+				entries.add(RAW_REEF_FISH);
+				entries.add(COOKED_REEF_FISH);
+				entries.add(KELP_ROLL);
+				entries.add(SEAFOOD_STEW);
 				entries.add(MEGALODON_SPAWN_EGG);
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
@@ -556,6 +695,25 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
 		Registry.register(Registries.ITEM, id("salted_cod"), SALTED_COD);
 
+		// Gear of the Deep: Tidal tool set.
+		Registry.register(Registries.ITEM, id("tidal_sword"), TIDAL_SWORD);
+		Registry.register(Registries.ITEM, id("tidal_pickaxe"), TIDAL_PICKAXE);
+		Registry.register(Registries.ITEM, id("tidal_shovel"), TIDAL_SHOVEL);
+		Registry.register(Registries.ITEM, id("tidal_axe"), TIDAL_AXE);
+		Registry.register(Registries.ITEM, id("tidal_hoe"), TIDAL_HOE);
+
+		// Gear of the Deep: Tidal diving armor.
+		Registry.register(Registries.ITEM, id("tidal_helmet"), TIDAL_HELMET);
+		Registry.register(Registries.ITEM, id("tidal_chestplate"), TIDAL_CHESTPLATE);
+		Registry.register(Registries.ITEM, id("tidal_leggings"), TIDAL_LEGGINGS);
+		Registry.register(Registries.ITEM, id("tidal_boots"), TIDAL_BOOTS);
+
+		// Gear of the Deep: Seafood foods.
+		Registry.register(Registries.ITEM, id("raw_reef_fish"), RAW_REEF_FISH);
+		Registry.register(Registries.ITEM, id("cooked_reef_fish"), COOKED_REEF_FISH);
+		Registry.register(Registries.ITEM, id("kelp_roll"), KELP_ROLL);
+		Registry.register(Registries.ITEM, id("seafood_stew"), SEAFOOD_STEW);
+
 		// Register the Megalodon boss: spawn-egg item + its default attributes.
 		// (The EntityType itself is registered in its static-field initializer above.)
 		Registry.register(Registries.ITEM, id("megalodon_spawn_egg"), MEGALODON_SPAWN_EGG);
@@ -636,6 +794,23 @@ public class OceanStarter implements ModInitializer {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(entries -> {
 			entries.add(SEA_URCHIN);
 			entries.add(SALTED_COD);
+			entries.add(RAW_REEF_FISH);
+			entries.add(COOKED_REEF_FISH);
+			entries.add(KELP_ROLL);
+			entries.add(SEAFOOD_STEW);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+			entries.add(TIDAL_PICKAXE);
+			entries.add(TIDAL_AXE);
+			entries.add(TIDAL_SHOVEL);
+			entries.add(TIDAL_HOE);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
+			entries.add(TIDAL_SWORD);
+			entries.add(TIDAL_HELMET);
+			entries.add(TIDAL_CHESTPLATE);
+			entries.add(TIDAL_LEGGINGS);
+			entries.add(TIDAL_BOOTS);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
 			entries.add(DRIFTWOOD_BUTTON);
@@ -650,7 +825,21 @@ public class OceanStarter implements ModInitializer {
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, 3 entities (Megalodon boss + Reef Fish + Jellyfish passive mobs), ocean_overhaul tab, 8 worldgen deposits.");
+		// Gear of the Deep — worn-armor effect: wearing the Tidal Helmet (HEAD slot)
+		// grants WATER_BREATHING. No mixin: poll every server tick and refresh a
+		// short-duration effect (220 ticks > the poll gap so it never lapses). The
+		// effect is silent (no particles, no HUD icon) and harmless on land.
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+				ItemStack head = player.getEquippedStack(EquipmentSlot.HEAD);
+				if (head.getItem() == TIDAL_HELMET) {
+					player.addStatusEffect(new StatusEffectInstance(
+							StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
+				}
+			}
+		});
+
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 21 items (incl. Tidal tools/armor + seafood foods), 3 entities (Megalodon boss + Reef Fish + Jellyfish passive mobs), ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smoking",
+  "category": "food",
+  "ingredient": {
+    "item": "oceanstarter:raw_reef_fish"
+  },
+  "result": {
+    "id": "oceanstarter:cooked_reef_fish"
+  },
+  "experience": 0.35,
+  "cookingtime": 100
+}

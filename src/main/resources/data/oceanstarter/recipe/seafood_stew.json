@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:bowl"
+    },
+    {
+      "item": "oceanstarter:cooked_reef_fish"
+    },
+    {
+      "item": "oceanstarter:sea_urchin"
+    },
+    {
+      "item": "minecraft:kelp"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanstarter:seafood_stew"
+  }
+}

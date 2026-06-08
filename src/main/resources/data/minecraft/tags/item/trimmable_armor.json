@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "oceanstarter:tidal_helmet",
+    "oceanstarter:tidal_chestplate",
+    "oceanstarter:tidal_leggings",
+    "oceanstarter:tidal_boots"
+  ]
+}

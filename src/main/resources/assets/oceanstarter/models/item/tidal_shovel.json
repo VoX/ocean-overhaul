@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "oceanstarter:item/tidal_shovel"
+  }
+}
