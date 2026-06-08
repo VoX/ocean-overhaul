@@ -11,11 +11,9 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Polished Prismarine Bricks** — base + stairs + slab + wall
 - **Chiseled Prismarine Tiles** — base + stairs + slab + wall
 - **Pearl Block** — base + stairs + slab + wall
-- **Kelp Brick** — base + stairs + slab + wall
-- **Cracked Kelp Bricks** — base + stairs + slab + wall (smelted from Kelp Brick)
 - **Pearl Lantern** — full-bright light source (like a sea lantern)
 - **Prismarine Crystal Block** — full-bright luminous block
-- **Salt Block**, **Barnacle Block**, **Nautilus Shell Block**, **Abyssal Pearl Block**, **Crushed Coral Block** — standalone decoratives
+- **Salt Block**, **Barnacle Block**, **Abyssal Pearl Block**, **Crushed Coral Block** — standalone decoratives
 
 **Driftwood functional set**
 
@@ -32,17 +30,18 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 
 **Mobs**
 
-- **Megalodon** — a giant boss shark (~200 HP, heavy bite, boss bar). A spawn egg is in the Ocean Overhaul + Spawn Eggs tabs.
+- **Megalodon** — a giant boss shark (~200 HP, heavy bite, boss bar, split body hitbox). Spawns rarely in deep oceans, day or night; a spawn egg is in the Ocean Overhaul + Spawn Eggs tabs.
+- **Abyssal Lurker** — a hostile deep-sea anglerfish (elder-guardian sized) with a bioluminescent lure that glows in the dark. Spawns in deep oceans, day or night. Spawn egg available.
 - **Reef Fish** — a small, brightly-striped tropical fish that swims in schools. Spawns naturally in oceans; drops cod (cooked if killed while on fire). Spawn egg available.
-- **Jellyfish** — a fragile, gently-drifting passive sea creature. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
+- **Jellyfish** — a fragile, gently-drifting passive sea creature in five glow-in-the-dark color variants. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
 
 **Worldgen**
 
-Eight natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, nautilus shell beds, abyssal pearl veins, prismarine crystal geodes, and a rare pearl geode). The Reef Fish and Jellyfish also spawn naturally in ocean biomes.
+Eight natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, and a rare pearl geode). Reef Fish and Jellyfish spawn naturally in oceans, while the Megalodon and Abyssal Lurker spawn rarely in deep oceans (day or night).
 
 **Crafting & recipes**
 
-Everything is craftable. The base blocks are made from ocean ingredients (prismarine, coral, pearls, kelp, sea salt); coral recipes accept **any** of the five vanilla coral colors. The driftwood functional blocks (fence, gate, door, trapdoor, button, pressure plate) use vanilla wood-set recipe shapes and counts. Stairs, slabs, and walls have standard crafting recipes, and the stone-like sets (Sea Glass, Polished Prismarine Bricks, Chiseled Prismarine Tiles, Pearl Block, Kelp Brick, Cracked Kelp Bricks) can also be cut on a **stonecutter**. Tide Pearls, Abyssal Pearls, and Crushed Coral pack/unpack to and from their storage blocks, and Sea Salt is smelted from ocean sources.
+Everything is craftable. The base blocks are made from ocean ingredients (prismarine, coral, pearls, kelp, sea salt); coral recipes accept **any** of the five vanilla coral colors. The driftwood functional blocks (fence, gate, door, trapdoor, button, pressure plate) use vanilla wood-set recipe shapes and counts. Stairs, slabs, and walls have standard crafting recipes, and the stone-like sets (Sea Glass, Polished Prismarine Bricks, Chiseled Prismarine Tiles, Pearl Block) can also be cut on a **stonecutter**. Tide Pearls, Abyssal Pearls, and Crushed Coral pack/unpack to and from their storage blocks, and Sea Salt is smelted from ocean sources.
 
 **Tags**
 
