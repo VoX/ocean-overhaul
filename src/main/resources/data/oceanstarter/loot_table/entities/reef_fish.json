@@ -7,7 +7,7 @@
 			"entries": [
 				{
 					"type": "minecraft:item",
-					"name": "minecraft:cod",
+					"name": "oceanstarter:raw_reef_fish",
 					"functions": [
 						{
 							"function": "minecraft:furnace_smelt",
