@@ -3,6 +3,7 @@ package me.tinyclaw.oceanstarter;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
@@ -55,6 +56,29 @@ public final class OceanStarterWorldgen {
 
 		// --- Rare pearl geode across all oceans -------------------------------
 		addOceanFeature("pearl_geode", GenerationStep.Feature.UNDERGROUND_ORES);
+
+		// --- Reef Life: natural passive-mob spawns in all oceans --------------
+		registerMobSpawns();
+	}
+
+	/**
+	 * Attach the Reef Life passive mobs to natural ocean spawning. Both spawn in the
+	 * WATER_AMBIENT group (the vanilla cod/salmon/tropicalfish cap) across all ocean
+	 * biomes (IS_OCEAN covers ocean + deep_ocean). Reef fish spawn in tight schools
+	 * (weight 12, groups of 4-8); jellyfish are a rarer, smaller drift (weight 6,
+	 * groups of 1-3) so they read as an occasional sight rather than a swarm.
+	 */
+	private static void registerMobSpawns() {
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_OCEAN),
+				SpawnGroup.WATER_AMBIENT,
+				OceanStarter.REEF_FISH,
+				12, 4, 8);
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_OCEAN),
+				SpawnGroup.WATER_AMBIENT,
+				OceanStarter.JELLYFISH,
+				6, 1, 3);
 	}
 
 	private static void addOceanFeature(String name, GenerationStep.Feature step) {

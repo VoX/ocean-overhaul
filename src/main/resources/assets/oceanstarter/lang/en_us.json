@@ -50,5 +50,9 @@
 	"block.oceanstarter.cracked_kelp_bricks_wall": "Cracked Kelp Brick Wall",
 	"entity.oceanstarter.megalodon": "Megalodon",
 	"item.oceanstarter.megalodon_spawn_egg": "Megalodon Spawn Egg",
+	"entity.oceanstarter.reef_fish": "Reef Fish",
+	"item.oceanstarter.reef_fish_spawn_egg": "Reef Fish Spawn Egg",
+	"entity.oceanstarter.jellyfish": "Jellyfish",
+	"item.oceanstarter.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

@@ -1,6 +1,6 @@
 # Ocean Overhaul
 
-Ocean Overhaul is a starter ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It seeds a revamped-ocean project with a handful of sea-themed decorative blocks, a few ocean items, and a dedicated "Ocean Overhaul" creative tab that holds them all — everything wired up against the 1.21.1 Fabric registry API and ready to grow into a full ocean overhaul. It deliberately ships clean and buildable (no custom worldgen, mobs, or mixins yet) so you have a reliable base to build on.
+Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It adds a set of sea-themed decorative + functional blocks, a few ocean items, natural seafloor worldgen deposits, the **Megalodon** boss shark, and a growing cast of passive sea creatures — all wired up against the 1.21.1 Fabric registry API and shipped clean, tested, and **mixin-free**.
 
 ## Contents
 
@@ -29,6 +29,16 @@ Ocean Overhaul is a starter ocean-content mod for **Minecraft 1.21.1 (Fabric)**.
 - Tide Pearl, Coral Shard, Sea Salt
 - Kelp Fiber, Abyssal Pearl, Crushed Coral (crafting ingredients)
 - Sea Urchin, Salted Cod (foods)
+
+**Mobs**
+
+- **Megalodon** — a giant boss shark (~200 HP, heavy bite, boss bar). A spawn egg is in the Ocean Overhaul + Spawn Eggs tabs.
+- **Reef Fish** — a small, brightly-striped tropical fish that swims in schools. Spawns naturally in oceans; drops cod (cooked if killed while on fire). Spawn egg available.
+- **Jellyfish** — a fragile, gently-drifting passive sea creature. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
+
+**Worldgen**
+
+Eight natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, nautilus shell beds, abyssal pearl veins, prismarine crystal geodes, and a rare pearl geode). The Reef Fish and Jellyfish also spawn naturally in ocean biomes.
 
 **Crafting & recipes**
 
@@ -59,13 +69,13 @@ Requires **JDK 21**.
 
 The built mod jar lands in `build/libs/` (the file without the `-sources` suffix). Tagged `v*` pushes build automatically and attach that jar to a GitHub Release — see [Releases](https://github.com/VoX/ocean-overhaul/releases) for downloads.
 
-## Roadmap / it's a starter
+## Roadmap
 
-This is a **starter**: the goal right now is a clean, correct, reliably-buildable base, not a finished overhaul. Natural next steps from here:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eight seafloor worldgen deposits, the Megalodon boss, and the first passive sea creatures (Reef Fish, Jellyfish). Natural next steps:
 
+- More sea creatures (predator/prey behaviours, breeding, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
-- **Mobs** (new sea creatures and their AI/spawning)
-- **Worldgen** (coral structures, features, ore/block placement on the seafloor)
+- Larger **worldgen** structures (coral reefs, shipwreck-adjacent decoration)
 
 Contributions and ideas welcome — fork it and build the ocean out.
 

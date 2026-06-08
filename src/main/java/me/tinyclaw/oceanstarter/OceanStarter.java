@@ -1,7 +1,9 @@
 package me.tinyclaw.oceanstarter;
 
+import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
+import me.tinyclaw.oceanstarter.entity.ReefFish;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -25,6 +27,9 @@ import net.minecraft.block.WallBlock;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.SpawnLocationTypes;
+import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -36,6 +41,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.Heightmap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -347,6 +353,35 @@ public class OceanStarter implements ModInitializer {
 	public static final SpawnEggItem MEGALODON_SPAWN_EGG =
 			new SpawnEggItem(MEGALODON, 0x556677, 0xDDDDCC, new Item.Settings());
 
+	// --- Passive mob: Reef Fish (small colourful schooling fish) ----------
+	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
+	// below can reference a fully-built EntityType. WATER_AMBIENT = the vanilla
+	// cod/salmon/tropicalfish group.
+	public static final EntityType<ReefFish> REEF_FISH = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("reef_fish"),
+			EntityType.Builder.create(ReefFish::new, SpawnGroup.WATER_AMBIENT)
+					.dimensions(0.5F, 0.4F)
+					.maxTrackingRange(4)
+					.build("reef_fish"));
+
+	// --- Spawn egg for the Reef Fish (yellow body / dark stripe) ----------
+	public static final SpawnEggItem REEF_FISH_SPAWN_EGG =
+			new SpawnEggItem(REEF_FISH, 0xF2C200, 0x2B2B2B, new Item.Settings());
+
+	// --- Passive mob: Jellyfish (fragile drifting WaterCreatureEntity) ----
+	public static final EntityType<Jellyfish> JELLYFISH = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("jellyfish"),
+			EntityType.Builder.create(Jellyfish::new, SpawnGroup.WATER_AMBIENT)
+					.dimensions(0.6F, 0.8F)
+					.maxTrackingRange(8)
+					.build("jellyfish"));
+
+	// --- Spawn egg for the Jellyfish (soft purple / pale pink) ------------
+	public static final SpawnEggItem JELLYFISH_SPAWN_EGG =
+			new SpawnEggItem(JELLYFISH, 0xB070D0, 0xE8C0F0, new Item.Settings());
+
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
 			RegistryKey.of(Registries.ITEM_GROUP.getKey(), id("ocean_overhaul"));
@@ -404,6 +439,8 @@ public class OceanStarter implements ModInitializer {
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
 				entries.add(MEGALODON_SPAWN_EGG);
+				entries.add(REEF_FISH_SPAWN_EGG);
+				entries.add(JELLYFISH_SPAWN_EGG);
 			})
 			.build();
 
@@ -524,6 +561,23 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("megalodon_spawn_egg"), MEGALODON_SPAWN_EGG);
 		FabricDefaultAttributeRegistry.register(MEGALODON, Megalodon.createAttributes());
 
+		// Register the Reef Life passive mobs: spawn-egg items, default attributes,
+		// and natural-spawn placement restrictions. (EntityTypes are registered in
+		// their static-field initializers above; natural spawning is wired in
+		// OceanStarterWorldgen.register().) The spawn predicate is the static
+		// WaterCreatureEntity.canSpawn — fish inherit it (FishEntity declares no
+		// static override of its own). 1.21.1: SpawnRestriction.register takes a
+		// SpawnLocation (SpawnLocationTypes.IN_WATER), NOT the removed Location enum.
+		Registry.register(Registries.ITEM, id("reef_fish_spawn_egg"), REEF_FISH_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(REEF_FISH, ReefFish.createAttributes());
+		SpawnRestriction.register(REEF_FISH, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
+
+		Registry.register(Registries.ITEM, id("jellyfish_spawn_egg"), JELLYFISH_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(JELLYFISH, Jellyfish.createAttributes());
+		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
+
 		// Register our custom creative tab.
 		Registry.register(Registries.ITEM_GROUP, OCEAN_GROUP_KEY, OCEAN_GROUP);
 
@@ -589,12 +643,14 @@ public class OceanStarter implements ModInitializer {
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> {
 			entries.add(MEGALODON_SPAWN_EGG);
+			entries.add(REEF_FISH_SPAWN_EGG);
+			entries.add(JELLYFISH_SPAWN_EGG);
 		});
 
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, 1 boss entity (Megalodon), ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 8 items, 3 entities (Megalodon boss + Reef Fish + Jellyfish passive mobs), ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**

@@ -18,5 +18,14 @@ public class OceanStarterClient implements ClientModInitializer {
 				MegalodonModel.LAYER, MegalodonModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanStarter.MEGALODON, MegalodonRenderer::new);
 		EntityRendererRegistry.register(OceanStarter.MEGALODON_SEGMENT, NoopEntityRenderer::new);
+
+		// Reef Life passive mobs.
+		EntityModelLayerRegistry.registerModelLayer(
+				ReefFishModel.LAYER, ReefFishModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanStarter.REEF_FISH, ReefFishRenderer::new);
+
+		EntityModelLayerRegistry.registerModelLayer(
+				JellyfishModel.LAYER, JellyfishModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanStarter.JELLYFISH, JellyfishRenderer::new);
 	}
 }

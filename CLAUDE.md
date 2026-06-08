@@ -2,7 +2,7 @@
 
 Context for anyone (human or subagent) working on this repo. Read this before touching code — it captures the build/test/release flow and the load-bearing design decisions + gotchas that are NOT obvious from the source.
 
-/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, and the Megalodon boss.
+/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, and two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), both natural-spawning in oceans with spawn eggs + loot.
 
 ## Toolchain (pin exactly — mismatches fail the build)
 
@@ -98,13 +98,17 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 
 ## Repo layout
 
-- `src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment `EntityType`s, spawn egg, `FabricDefaultAttributeRegistry`, worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
+- `src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment + ReefFish + Jellyfish `EntityType`s, spawn eggs, `FabricDefaultAttributeRegistry`, `SpawnRestriction` (the two passive mobs), worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
 - `.../entity/Megalodon.java` — the boss (`extends HostileEntity`).
 - `.../entity/MegalodonSegment.java` — invisible body-following hitbox part (`extends Entity`).
-- `.../client/OceanStarterClient.java` — `ClientModInitializer`: model layer + entity renderer registration.
+- `.../entity/ReefFish.java` — passive schooling fish (`extends SchoolingFishEntity`; only overrides getBucketItem + getFlopSound + getMaxGroupSize + sounds; AI/nav/flop/water-breathing all inherited).
+- `.../entity/Jellyfish.java` — passive drifter (`extends WaterCreatureEntity`; AquaticMoveControl + SwimNavigation, passive-only goals, no targets, no sting this round).
+- `.../client/OceanStarterClient.java` — `ClientModInitializer`: model layer + entity renderer registration (Megalodon, ReefFish, Jellyfish).
 - `.../client/MegalodonModel.java` / `MegalodonRenderer.java` / `NoopEntityRenderer.java` — boss model/renderer + the segment's invisible renderer.
-- `.../gametest/MegalodonGameTest.java` — the gametests.
-- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest), `assets/oceanstarter/**` (blockstates/models/textures/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular], tags, worldgen/).
+- `.../client/ReefFishModel.java` / `ReefFishRenderer.java` / `JellyfishModel.java` / `JellyfishRenderer.java` — the two passive mobs' `SinglePartEntityModel`s + `MobEntityRenderer`s (both on a 32x32 atlas; animated parts grabbed in the ctor).
+- `.../gametest/MegalodonGameTest.java` / `ReefLifeGameTest.java` — the gametests (4 boss + 3 Reef Life spawn/no-drown).
+- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [2 classes]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
+- `paint_reef_fish.py` / `paint_jellyfish.py` (repo root + /tmp) — the entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look).
 - `scripts/playtest-server.sh` — the smoke test. `paint_megalodon.py` (in repo root or /tmp) — the entity texture painter.
 
 ## Architecture & load-bearing design decisions
