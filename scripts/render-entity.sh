@@ -36,6 +36,16 @@
 #   SUMMON_AT    "x y z"     (default "7 100 7") — where the mob is summoned
 #   VANTAGE      "x y z yaw" (default "-1 101 7 270") — camera spawn/look pose
 #                yaw 270 faces +X (toward a mob east of the camera).
+#   SUMMON_CMD   full `summon ...` console command (default: summon ENTITY_ID at
+#                SUMMON_AT with NoAI/Silent/PersistenceRequired). Override to summon
+#                a VANILLA carrier with custom NBT — e.g. an armor_stand wearing the
+#                mod's armor (render-armor.sh does this). When set, ENTITY_ID is used
+#                only as a label; set TARGET_SELECTOR + TARGET_TYPE to point the
+#                wrangler + probe at the real entity.
+#   TARGET_SELECTOR  entity selector body for tp/keep-alive (default "type=ENTITY_ID").
+#                e.g. "type=minecraft:armor_stand".
+#   TARGET_TYPE  exact entity-type id the render probe frames (default ENTITY_ID).
+#                e.g. "minecraft:armor_stand".
 # ============================================================================
 set -u
 
@@ -88,6 +98,26 @@ read -r SX SY SZ <<<"$SUMMON_AT"
 TARGET="${SX},${SY},${SZ}"                       # probe aim target (csv)
 VANTAGE="${VANTAGE:--1 101 7 270}"
 read -r VANTAGE_X VANTAGE_Y VANTAGE_Z VANTAGE_YAW <<<"$VANTAGE"
+
+# Summon command, target selector + probe target type. Defaults match the simple
+# single-mob case (summon ENTITY_ID at SUMMON_AT, NoAI/Silent/persistent). A caller
+# (e.g. render-armor.sh) can override SUMMON_CMD to summon a vanilla carrier with
+# custom NBT (an armor_stand wearing the mod's armor) and point TARGET_SELECTOR /
+# TARGET_TYPE at that carrier so the keep-alive loop + the probe frame the right thing.
+#
+# NB: build the default in a separate assignment, NOT inline as
+# `${SUMMON_CMD:-...}` — the default's literal `}` (closing the NBT compound) would
+# otherwise be parsed as the close of the `${...}` expansion, leaking an extra `}`
+# onto the value even when SUMMON_CMD is set (a real bug that broke the summon).
+DEFAULT_SUMMON_CMD="summon ${ENTITY_ID} ${SX} ${SY} ${SZ} {NoAI:1b,Silent:1b,PersistenceRequired:1b}"
+SUMMON_CMD="${SUMMON_CMD:-$DEFAULT_SUMMON_CMD}"
+TARGET_SELECTOR="${TARGET_SELECTOR:-type=${ENTITY_ID}}"
+TARGET_TYPE="${TARGET_TYPE:-${ENTITY_ID}}"
+# Block that fills the arena volume around the entity. Default water (the ocean
+# mobs want it). render-armor.sh overrides to minecraft:air so the teal armor
+# reads against a neutral lit backdrop, not a blue water tint (which would mask
+# whether the worn armor is actually textured vs a flat teal blob).
+ARENA_MEDIUM="${ARENA_MEDIUM:-minecraft:water}"
 
 LOG="$SCRATCH/console.log"
 FIFO="$SCRATCH/cmd.fifo"
@@ -145,6 +175,13 @@ cleanup() {
     fi
 
     rm -f "$FIFO" 2>/dev/null || true
+    # DEBUG hook: when KEEP_LOG is set, stash the server + client logs OUTSIDE the
+    # scratch before we wipe it, so a failed render (e.g. a summon that didn't take)
+    # can be diagnosed without re-instrumenting. Off by default.
+    if [ -n "${KEEP_LOG:-}" ]; then
+        cp "$LOG" "${KEEP_LOG}-console.log" 2>/dev/null && note "kept server log -> ${KEEP_LOG}-console.log" || true
+        cp "$CLIENTLOG" "${KEEP_LOG}-client.log" 2>/dev/null || true
+    fi
     # Remove the whole ephemeral scratch (server.jar + generated world ≈ 138M) so no
     # leftovers accumulate in /tmp. Guarded to a known oo-render* path to be safe.
     case "$SCRATCH" in
@@ -257,15 +294,15 @@ send "time set day"
 send "weather clear 1000000"
 send "forceload add -2 -2 16 16"
 sleep 1
-# big glass-walled water tank so the camera (which we put just outside) sees a
-# fully-lit mob against water, not void. Floor + water column.
+# big glass-walled tank so the camera (which we put just outside) sees a
+# fully-lit subject against a clean backdrop, not void. Floor + medium column.
 send "fill -2 90 -2 18 90 18 minecraft:glass"        # floor
-send "fill -2 91 -2 18 104 18 minecraft:water"       # water volume y91..104
+send "fill -2 91 -2 18 104 18 ${ARENA_MEDIUM}"       # arena volume y91..104 (water|air)
 # ring the tank top with glowstone for even, bright lighting (no day/night)
 send "fill -2 105 -2 18 105 18 minecraft:glowstone"
 send "fill -4 100 5 -3 100 9 minecraft:glowstone"    # side light bank toward camera
 sleep 1
-send "summon ${ENTITY_ID} ${SX} ${SY} ${SZ} {NoAI:1b,Silent:1b,PersistenceRequired:1b}"
+send "$SUMMON_CMD"
 sleep 4
 # The vanilla summon-confirmation line is "Summoned new <DisplayName>"; the
 # display name is the entity's lang key value, which for our mobs is the
@@ -273,8 +310,8 @@ sleep 4
 # the short id case-insensitively (informational only; not fatal).
 if grep -qi "Summoned new" "$LOG" 2>/dev/null; then note "entity summoned"; else note "WARN: summon confirmation not seen"; fi
 
-# keep the mob pinned at the framing point (NoAI, but belt+braces)
-send "tp @e[type=${ENTITY_ID},limit=1] ${SX} ${SY} ${SZ}"
+# keep the entity pinned at the framing point (NoAI, but belt+braces)
+send "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}"
 # Set the world spawn to the camera VANTAGE so the joining client spawns right
 # inside the lit tank, broadside of the mob, with the arena chunks already
 # loaded — that fixes the "mob never synced to the client" failure mode.
@@ -328,6 +365,7 @@ OPTS
       -Poo.probe.host=127.0.0.1 \
       -Poo.probe.port="$MC_PORT" \
       -Poo.probe.target="$TARGET" \
+      -Poo.probe.targetType="$TARGET_TYPE" \
       -Poo.probe.timeoutTicks=2400
 ) >"$CLIENTLOG" 2>&1 &
 GRADLE_PID=$!
@@ -347,10 +385,10 @@ note "client gradle pid=$GRADLE_PID"
     while kill -0 "$GRADLE_PID" 2>/dev/null; do
         printf '%s\r\n' "gamemode spectator @a" >&3 2>/dev/null || break
         printf '%s\r\n' "tp @a ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW} 0" >&3 2>/dev/null || break
-        # Re-summon the mob if it's gone for any reason (despawn/death), then keep
+        # Re-summon the entity if it's gone for any reason (despawn/death), then keep
         # it pinned at the framing point. execute-if-missing avoids a duplicate.
-        printf '%s\r\n' "execute unless entity @e[type=${ENTITY_ID}] run summon ${ENTITY_ID} ${SX} ${SY} ${SZ} {NoAI:1b,Silent:1b,PersistenceRequired:1b}" >&3 2>/dev/null || break
-        printf '%s\r\n' "tp @e[type=${ENTITY_ID},limit=1] ${SX} ${SY} ${SZ}" >&3 2>/dev/null || break
+        printf '%s\r\n' "execute unless entity @e[${TARGET_SELECTOR}] run ${SUMMON_CMD}" >&3 2>/dev/null || break
+        printf '%s\r\n' "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}" >&3 2>/dev/null || break
         sleep 1
     done
 ) &

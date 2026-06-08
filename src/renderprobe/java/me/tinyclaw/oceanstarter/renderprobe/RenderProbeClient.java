@@ -56,6 +56,10 @@ public class RenderProbeClient implements ClientModInitializer {
 	private final File outFile = new File(System.getProperty("oo.probe.out", "/tmp/megalodon-render.png"));
 	private final int timeoutTicks = Integer.getInteger("oo.probe.timeoutTicks", 2400);
 	private final Vec3d target = parseTarget(System.getProperty("oo.probe.target", "7,100,7"));
+	// Optional exact entity-type id to frame (e.g. "minecraft:armor_stand" for the
+	// worn-armor render). Empty => default behaviour (prefer the Megalodon, then
+	// any oceanstarter:* mob). Lets the harness aim at a VANILLA carrier entity.
+	private final String targetType = System.getProperty("oo.probe.targetType", "").trim();
 
 	private static Vec3d parseTarget(String s) {
 		try {
@@ -71,7 +75,9 @@ public class RenderProbeClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		log("render probe loaded — target server " + host + ":" + port + ", out=" + outFile
-				+ ", aim=" + target + ", timeout=" + timeoutTicks + " ticks");
+				+ ", aim=" + target
+				+ (targetType.isEmpty() ? "" : ", targetType=" + targetType)
+				+ ", timeout=" + timeoutTicks + " ticks");
 		ClientTickEvents.END_CLIENT_TICK.register(this::onTick);
 	}
 
@@ -201,17 +207,25 @@ public class RenderProbeClient implements ClientModInitializer {
 	}
 
 	/**
-	 * Find the entity to frame. Prefers the Megalodon (the original target of this
-	 * probe), but falls back to ANY {@code oceanstarter:*} entity so the probe can
-	 * frame other mod mobs (e.g. the jellyfish/reef fish) when the harness summons
-	 * one of those instead — it advances past WAIT_WORLD immediately and aims at the
-	 * mob's real center rather than waiting out the fallback timer on raw coords.
+	 * Find the entity to frame. If {@code oo.probe.targetType} is set, an entity of
+	 * exactly that type id wins (used to frame a VANILLA carrier such as
+	 * {@code minecraft:armor_stand} wearing the mod's armor). Otherwise: prefers the
+	 * Megalodon (the original target of this probe), then falls back to ANY
+	 * {@code oceanstarter:*} entity so the probe can frame other mod mobs (e.g. the
+	 * jellyfish/reef fish) — it advances past WAIT_WORLD immediately and aims at the
+	 * entity's real center rather than waiting out the fallback timer on raw coords.
 	 */
 	private Entity findTargetEntity(MinecraftClient client) {
 		if (client.world == null) return null;
 		Entity fallback = null;
 		for (Entity e : client.world.getEntities()) {
 			String id = net.minecraft.registry.Registries.ENTITY_TYPE.getId(e.getType()).toString();
+			if (!targetType.isEmpty()) {
+				if (targetType.equals(id)) {
+					return e;
+				}
+				continue; // an explicit targetType is exclusive — ignore everything else
+			}
 			if ("oceanstarter:megalodon".equals(id)) {
 				return e;
 			}
