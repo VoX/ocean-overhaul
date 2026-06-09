@@ -25,7 +25,15 @@ OUT="${1:-${OUT:-docs/renders/tidal-armor-worn.png}}"
 # Armor stand summoned at 7,100,7, floating (NoGravity), arms shown so the
 # chestplate sleeves render. ShowBasePlate hidden + invulnerable for a clean shot.
 # Full Tidal set in ArmorItems (slot order: boots, leggings, chestplate, helmet).
-SUMMON_CMD='summon minecraft:armor_stand 7 100 7 {NoGravity:1b,ShowArms:1b,Invulnerable:1b,PersistenceRequired:1b,ArmorItems:[{id:"oceanstarter:tidal_boots",count:1},{id:"oceanstarter:tidal_leggings",count:1},{id:"oceanstarter:tidal_chestplate",count:1},{id:"oceanstarter:tidal_helmet",count:1}]}'
+# Summon a BARE stand, then equip via `/item replace entity` (POST_CMDS). The old
+# {ArmorItems:[...]} summon-NBT silently stopped equipping after the 1.21.x entity
+# equipment-NBT change (stand spawned naked); `/item replace` is slot-based + stable.
+SUMMON_CMD='summon minecraft:armor_stand 7 100 7 {NoGravity:1b,ShowArms:1b,Invulnerable:1b,PersistenceRequired:1b}'
+EQUIP="\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.head with oceanstarter:tidal_helmet;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.chest with oceanstarter:tidal_chestplate;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.legs with oceanstarter:tidal_leggings;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.feet with oceanstarter:tidal_boots"
 
 # Camera ~4 blocks back at chest height looking +X (yaw 270) — fits the whole
 # ~2-block humanoid stand in frame so plate detail on every piece is visible.
@@ -36,6 +44,7 @@ SUMMON_AT="${SUMMON_AT:-7 100 7}" \
 VANTAGE="${VANTAGE:-3 101 7 270}" \
 ARENA_MEDIUM="${ARENA_MEDIUM:-minecraft:air}" \
 SUMMON_CMD="$SUMMON_CMD" \
+POST_CMDS="$EQUIP" \
 TARGET_SELECTOR="${TARGET_SELECTOR:-type=minecraft:armor_stand}" \
 TARGET_TYPE="${TARGET_TYPE:-minecraft:armor_stand}" \
 exec bash "$HERE/render-entity.sh" minecraft:armor_stand "$OUT"

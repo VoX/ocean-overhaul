@@ -302,6 +302,14 @@ send "fill -2 91 -2 18 104 18 ${ARENA_MEDIUM}"       # arena volume y91..104 (wa
 send "fill -2 105 -2 18 105 18 minecraft:glowstone"
 send "fill -4 100 5 -3 100 9 minecraft:glowstone"    # side light bank toward camera
 sleep 1
+# Optional staging hook: extra console commands run after the arena is built but
+# before the summon — e.g. a `;`-separated list of setblock commands to build a
+# block showcase (see render-blocks.sh). Each segment is sent as its own command.
+if [ -n "${STAGE_CMDS:-}" ]; then
+  IFS=';' read -ra _stage <<< "$STAGE_CMDS"
+  for _c in "${_stage[@]}"; do [ -n "$_c" ] && send "$_c"; done
+  sleep 1
+fi
 send "$SUMMON_CMD"
 sleep 4
 # The vanilla summon-confirmation line is "Summoned new <DisplayName>"; the
@@ -312,6 +320,14 @@ if grep -qi "Summoned new" "$LOG" 2>/dev/null; then note "entity summoned"; else
 
 # keep the entity pinned at the framing point (NoAI, but belt+braces)
 send "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}"
+# Optional post-summon hook: `;`-separated commands run after the carrier is
+# summoned + positioned — e.g. `/item replace entity` to equip an armor stand
+# (version-stable, avoids the 1.21.x equipment-NBT schema churn). See render-armor.sh.
+if [ -n "${POST_CMDS:-}" ]; then
+  IFS=';' read -ra _post <<< "$POST_CMDS"
+  for _c in "${_post[@]}"; do [ -n "$_c" ] && send "$_c"; done
+  sleep 1
+fi
 # Set the world spawn to the camera VANTAGE so the joining client spawns right
 # inside the lit tank, broadside of the mob, with the arena chunks already
 # loaded — that fixes the "mob never synced to the client" failure mode.
