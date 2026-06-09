@@ -105,8 +105,10 @@ def _bright(im, f):
     return Image.merge("RGBA", (*rgb.split(), a))
 
 def _face(tex, size, O, e1, e2, br):
-    n = tex.size[0]; W, H = size
-    m00, m01, m10, m11 = e1[0]/n, e2[0]/n, e1[1]/n, e2[1]/n
+    # nu/nv separate so a non-square texture (e.g. a slab's bottom-half side strip)
+    # maps with correct aspect instead of being squished to fill the face.
+    nu, nv = tex.size; W, H = size
+    m00, m01, m10, m11 = e1[0]/nu, e2[0]/nv, e1[1]/nu, e2[1]/nv
     det = m00*m11 - m01*m10
     if abs(det) < 1e-6: return None
     i00, i01, i10, i11 = m11/det, -m01/det, -m10/det, m00/det
@@ -121,27 +123,45 @@ def _face(tex, size, O, e1, e2, br):
 def iso_cube(tex, W=30, Vh=30, frac=1.0):
     tex = tex.convert("RGBA")
     if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
+    # For a partial-height block (slab, frac<1) the side faces only show the BOTTOM
+    # frac of the block, so crop the texture to that strip instead of squishing the
+    # full texture into the shortened face. Top face always uses the full texture.
+    side = tex if frac >= 1.0 else tex.crop((0, 16 - max(1, int(round(16*frac))), 16, 16))
     toff = int(Vh*(1-frac)); vh = int(Vh*frac); cx = W
     A=(cx,toff); B=(2*W,toff+W//2); C=(cx,toff+W); D=(0,toff+W//2)
     E=(2*W,toff+W//2+vh); G=(0,toff+W//2+vh)
     cw, ch = 2*W+1, toff+W+vh+1
     cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-    for O, e1, e2, br in [
-        (D, (A[0]-D[0],A[1]-D[1]), (C[0]-D[0],C[1]-D[1]), 1.00),   # top
-        (D, (C[0]-D[0],C[1]-D[1]), (G[0]-D[0],G[1]-D[1]), 0.80),   # left
-        (B, (C[0]-B[0],C[1]-B[1]), (E[0]-B[0],E[1]-B[1]), 0.62)]:  # right
-        f = _face(tex, (cw, ch), O, e1, e2, br)
+    for O, e1, e2, br, ft in [
+        (D, (A[0]-D[0],A[1]-D[1]), (C[0]-D[0],C[1]-D[1]), 1.00, tex),    # top
+        (D, (C[0]-D[0],C[1]-D[1]), (G[0]-D[0],G[1]-D[1]), 0.80, side),   # left
+        (B, (C[0]-B[0],C[1]-B[1]), (E[0]-B[0],E[1]-B[1]), 0.62, side)]:  # right
+        f = _face(ft, (cw, ch), O, e1, e2, br)
         if f: cv.alpha_composite(f)
     return cv
 
+def iso_stair(tex, W=30, Vh=30):
+    """Two-tier iso block reading as stairs: a full bottom slab + a second slab
+    raised half a block at the back, so the front shows the stepped profile."""
+    vh = Vh // 2
+    base = iso_cube(tex, W, Vh, frac=0.5)
+    step = iso_cube(tex, W, Vh, frac=0.5)
+    cw, ch = base.size[0], base.size[1] + vh
+    out = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+    out.alpha_composite(base, (0, vh))   # lower step at the bottom
+    out.alpha_composite(step, (0, 0))    # upper step raised by half a block
+    return out
+
 def cell_display(tex, idv, size):
     """Rendered icon ready to paste in a slot of `size`px: iso cube for blocks
-    (slabs half-height), flat for items."""
+    (slabs half-height, stairs two-tier), flat for items."""
     if idv and is_block(idv):
-        frac = 0.5 if idv.endswith("_slab") else 1.0
-        cube = iso_cube(tex, frac=frac)
-        target = size - 6
-        sc = target / cube.width
+        n = idv.split(":")[-1]
+        if n.endswith("_stairs"):
+            cube = iso_stair(tex)
+        else:
+            cube = iso_cube(tex, frac=0.5 if n.endswith("_slab") else 1.0)
+        sc = min((size - 6) / cube.width, (size - 2) / cube.height)
         return cube.resize((max(1, int(cube.width*sc)), max(1, int(cube.height*sc))), Image.NEAREST)
     s = size - 12
     return tex.resize((s, s), Image.NEAREST)
