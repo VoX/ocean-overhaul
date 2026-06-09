@@ -42,3 +42,6 @@ __pycache__/
 
 # downloaded reference images (not mod content)
 docs/refs/
+
+# Local working rules (commit-attribution convention) — not committed
+CLAUDE.local.md
