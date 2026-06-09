@@ -141,7 +141,7 @@ public class RenderProbeClient implements ClientModInitializer {
 				}
 				Entity shark = findTargetEntity(client);
 				if (shark != null) {
-					log("target entity found at " + shark.getPos() + " (in-game) — posing camera");
+					log("target entity found at " + shark.getEntityPos() + " (in-game) — posing camera");
 					setPhase(Phase.POSE);
 				} else if (phaseTicks > 600) {
 					// Entity STILL not synced after a long wait (chunk not sent).
@@ -257,7 +257,7 @@ public class RenderProbeClient implements ClientModInitializer {
 	private void aimAtShark(MinecraftClient client) {
 		if (client.player == null) return;
 		Entity shark = findTargetEntity(client);
-		Vec3d aim = shark != null ? shark.getPos().add(0, shark.getHeight() * 0.5, 0) : target;
+		Vec3d aim = shark != null ? shark.getEntityPos().add(0, shark.getHeight() * 0.5, 0) : target;
 		Vec3d eye = client.player.getEyePos();
 		Vec3d dir = aim.subtract(eye);
 		double horiz = Math.sqrt(dir.x * dir.x + dir.z * dir.z);
@@ -265,10 +265,10 @@ public class RenderProbeClient implements ClientModInitializer {
 		float pitch = (float) (-(MathHelper.atan2(dir.y, horiz) * (180.0 / Math.PI)));
 		client.player.setYaw(yaw);
 		client.player.setPitch(pitch);
-		client.player.prevYaw = yaw;
-		client.player.prevPitch = pitch;
+		client.player.lastYaw = yaw;
+		client.player.lastPitch = pitch;
 		client.player.headYaw = yaw;
-		client.player.prevHeadYaw = yaw;
+		client.player.lastHeadYaw = yaw;
 	}
 
 	private void capture(MinecraftClient client) {
