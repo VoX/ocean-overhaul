@@ -76,3 +76,93 @@ Proven tech we can reuse: real-entity multipart hitbox (MegalodonSegment), emiss
 
 ### Suggested sequencing
 A natural roadmap that compounds: **#2 Megalodon Tooth** first (quick win, gives the existing boss a payoff) → **#1 Abyssal Trench** (the destination) → **#5 Kraken** + **#3 Harpoon/diving kit** (populate + equip for the trench) → **#4 Aquarium** any time (parallel, pure decoration). Each one makes the others better.
+
+---
+
+# Round 2 — Ambient & Decorative: Make the Ocean Feel Alive (2026-06-09)
+
+Focus per VoX: decorative/ambient life, not new gameplay systems. Round-1's
+"bioluminescent plankton" idea graduates to the headline pick here.
+
+## 20 ideas (quick list)
+
+**Light & water effects**
+1. Bioluminescent plankton blooms — drifting glow-particle fields in deep water at night.
+2. Plankton disturbance trails — swimming through a bloom leaves a fading light-wake.
+3. Sea sparkle wake — night surface glitter where waves/boats break the water.
+4. Ostracod sparks — blue firefly-like motes over seagrass beds at night.
+5. Bubble seeps — seafloor cracks venting bubble streams with a soft hiss.
+
+**Pseudo-life (cheap crowds)**
+6. Baitfish schools — particle-rendered fish schools that part around players/predators.
+7. Bait-ball events — rare swirling vortex of baitfish; Megalodon/Lurker charge through it.
+8. Drifting jelly swarms — thumb-sized ambient jellies riding currents near the trench.
+
+**Micro-fauna blocks**
+9. Sea anemones — waving-tentacle reef block; reef fish shelter in them.
+10. Tube worm gardens — plumes beside abyssal vents that retract when approached.
+11. Starfish — placeable floor/wall decor in several colors.
+12. Urchin colonies — placeable cluster block of the existing sea urchin; damages on step.
+13. Coral fans + whip corals — tall swaying 2D corals for reef silhouette depth.
+
+**Creatures (small scope)**
+14. Hermit crabs — tiny mob wearing shells (rarely a mini block).
+15. Manta ray — big slow glider whose shadow passes overhead.
+
+**Surface & structure dressing**
+16. Sargassum mats — floating weed islands with crabs on top.
+17. Wreck haunting — barnacle overgrowth + cold fog + creaks around shipwrecks.
+18. Message bottles — rare seafloor bottles drawing notes from a lore pool.
+19. Whale fall — ultra-rare skeleton site with bone-worm decor; lurkers gather to it.
+
+**Sound**
+20. Depth soundscape — whale song, sonar clicks, pressure creaks layered in by depth/biome.
+
+## Top 4 (fleshed out)
+
+### A. Plankton blooms + disturbance trails (1+2)
+**What:** patchy glowing fields in deep-ocean water at night; anything swimming through
+stirs a brighter wake that fades over a few seconds.
+**Why:** signature visual; the Megalodon charging you *lights up the water*. Ties the
+existing glowing_plankton_block to a living source and gives the trench a halo.
+**Build (mixin-free):** pure client-side ambient particle emitter keyed to biome + depth
++ time (vanilla underwater-particle pattern); wake = short-lived particle burst on entity
+swim ticks inside a bloom region (noise-seeded so blooms are patchy). No blocks, no
+entities, no server cost.
+**Scope:** small-medium; mostly particle tuning.
+
+### B. Depth soundscape (20)
+**What:** ambient sound events layered by y-level + biome — whale song in open deep
+ocean, distant sonar clicks, low pressure creaks below ~y20, muffled booms near the trench.
+**Why:** the ocean is currently silent; this is the biggest immersion-per-byte in the
+list. Zero gameplay risk.
+**Build (mixin-free):** vanilla cave-ambience pattern (mood/additions sound sets) via
+biome ambience fields on our modified biomes + a light client tick hook for depth gates.
+Sounds sourced/CC0 or synthesized.
+**Scope:** small; sound sourcing is the main cost.
+
+### C. Baitfish schools + bait balls (6+7)
+**What:** schools of tiny fish that part around big things; rarely they ball into a
+vortex and the predators charge through, scattering them.
+**Why:** crowds = alive. Makes the Megalodon/Lurker look like apex predators without
+touching their AI.
+**Build (mixin-free):** ONE invisible "school" entity steering boids-ish server-side;
+individual fish are client particles positioned around it (≈100 fish for one entity's
+cost). Bait-ball = school state that tightens the swarm radius + pings nearby predators
+with a goal nudge.
+**Scope:** medium; the school steering is the engineering, rendering is cheap.
+
+### D. Anemones + tube worms (9+10)
+**What:** two animated micro-fauna blocks — anemones for reefs (tentacle sway), tube
+worms for the abyssal vents (plume retracts when something comes near).
+**Why:** the seafloor gets things that visibly *react* to the player; vents stop looking
+lonely; anemones give reef fish a home to loiter at.
+**Build (mixin-free):** anemone sway = animated texture (.mcmeta frames); tube-worm
+retract = blockstate swap driven by a slow block tick scanning for nearby players
+(sculk-sensor-style reactivity without redstone). Both drop with silk touch / shears.
+**Scope:** small each; pure block + texture work on proven patterns.
+
+### Suggested pairing
+B (soundscape) underpins everything and ships fastest; A is the visual signature; D
+dresses the trench we already have; C is the most "alive" but the most engineering.
+Natural order: **B → A → D → C**.
