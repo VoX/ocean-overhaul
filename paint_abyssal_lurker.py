@@ -118,11 +118,14 @@ def paint_body():
     fillbox(F['head'], BODY_TOP, BODY_SIDE, BODY_BELLY)
     # mouth roof: head's +Y face ('up' rect) is render-BOTTOM = roof of the mouth.
     rect(*F['head']['up'], MOUTH)
-    # needle teeth hanging from the front edge of the mouth roof.
+    # needle teeth hanging from the front edge of the mouth roof. The roof ('up')
+    # rect shares the floor ('down') rect's v-sense, so the FRONT lip is the
+    # HIGH-v edge — same anchoring as the lower-jaw teeth (pindyj caught the old
+    # low-v row sitting backwards at the throat).
     ux, uy, uw, uh = [int(v) for v in F['head']['up']]
     for i in range(uw):
         spike = 3 if i % 2 == 0 else 2
-        rect(ux + i, uy, 1, spike, TEETH)
+        rect(ux + i, uy + uh - spike, 1, spike, TEETH)
     # BIG pale eye high on the head front (north) face, with a dark pupil.
     nx, ny, nw, nh = [int(v) for v in F['head']['north']]
     ex, ey = nx + 2, ny + 1
