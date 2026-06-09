@@ -141,16 +141,29 @@ def iso_cube(tex, W=30, Vh=30, frac=1.0):
     return cv
 
 def iso_stair(tex, W=30, Vh=30):
-    """Two-tier iso block reading as stairs: a full bottom slab + a second slab
-    raised half a block at the back, so the front shows the stepped profile."""
-    vh = Vh // 2
-    base = iso_cube(tex, W, Vh, frac=0.5)
-    step = iso_cube(tex, W, Vh, frac=0.5)
-    cw, ch = base.size[0], base.size[1] + vh
-    out = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-    out.alpha_composite(base, (0, vh))   # lower step at the bottom
-    out.alpha_composite(step, (0, 0))    # upper step raised by half a block
-    return out
+    """True iso stair: an upper step occupying the BACK half-depth (full height)
+    plus a lower step on the FRONT half (half height), so the front tread + riser
+    are visible. Steps along the j axis; same projection/brightness as iso_cube.
+    Visible faces only (top + i=0 left + j=1 front), drawn back-to-front."""
+    tex = tex.convert("RGBA")
+    if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
+    def S(i, j, y):
+        return (int(i*W + j*W), int((W//2) - i*(W//2) + j*(W//2) + y*Vh))
+    cw, ch = 2*W+1, W+Vh+1
+    cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+    def quad(O, U, V, src, br):
+        sub = tex.crop(src)
+        f = _face(sub, (cw, ch), O, (U[0]-O[0], U[1]-O[1]), (V[0]-O[0], V[1]-O[1]), br)
+        if f: cv.alpha_composite(f)
+    # upper step (back: j 0..0.5, full height) — drawn first
+    quad(S(0,0,0),     S(1,0,0),     S(0,0.5,0),   (0,0,16,8),  1.00)  # upper top
+    quad(S(0,0,0),     S(0,0.5,0),   S(0,0,1),     (0,0,8,16),  0.80)  # upper left (i=0)
+    quad(S(0,0.5,0),   S(1,0.5,0),   S(0,0.5,0.5), (0,0,16,8),  0.62)  # riser (j=0.5, y 0..0.5)
+    # lower step (front: j 0.5..1, y 0.5..1) — drawn over the upper step
+    quad(S(0,0.5,0.5), S(1,0.5,0.5), S(0,1,0.5),   (0,8,16,16), 1.00)  # lower tread
+    quad(S(0,0.5,0.5), S(0,1,0.5),   S(0,0.5,1),   (8,8,16,16), 0.80)  # lower left (i=0)
+    quad(S(0,1,0.5),   S(1,1,0.5),   S(0,1,1),     (0,8,16,16), 0.62)  # lower front (j=1)
+    return cv
 
 def cell_display(tex, idv, size):
     """Rendered icon ready to paste in a slot of `size`px: iso cube for blocks
