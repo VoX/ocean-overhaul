@@ -1,8 +1,7 @@
 package me.tinyclaw.oceanstarter.gametest;
 
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.block.Blocks;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,7 +24,7 @@ import me.tinyclaw.oceanstarter.entity.ReefFish;
  * {@code @GameTest} into one world at nearby positions, so each test holds a direct
  * reference to the entity it spawned and asserts against that — never counts by radius.</p>
  */
-public class ReefLifeGameTest implements FabricGameTest {
+public class ReefLifeGameTest {
 
 	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
@@ -34,7 +33,7 @@ public class ReefLifeGameTest implements FabricGameTest {
 	 * all running), and stays at full ~3 HP. Catches crash-on-spawn for the
 	 * SchoolingFishEntity subclass + its attribute/goal wiring.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void reefFishSpawnsAliveAtFullHealth(TestContext context) {
 		fillWaterPocket(context);
 
@@ -56,7 +55,7 @@ public class ReefLifeGameTest implements FabricGameTest {
 	 * passive drift goals all running, no-drown air pin active), and stays at full ~4 HP.
 	 * Catches crash-on-spawn for the WaterCreatureEntity subclass + its wiring.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void jellyfishSpawnsAliveAtFullHealth(TestContext context) {
 		fillWaterPocket(context);
 
@@ -81,7 +80,7 @@ public class ReefLifeGameTest implements FabricGameTest {
 	 * initialize}, so the spawn-roll isn't exercised here — this locks the storage + clamp
 	 * path the renderer depends on.)
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void jellyfishVariantRoundTripsAndClamps(TestContext context) {
 		fillWaterPocket(context);
 
@@ -119,7 +118,7 @@ public class ReefLifeGameTest implements FabricGameTest {
 	 * window), and assert both kept full health. (tickLimit raised past the 120-tick
 	 * assertion; the @GameTest default is 100.)
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 140)
+	@GameTest(maxTicks = 140)
 	public void reefLifeMobsDoNotDrown(TestContext context) {
 		fillWaterPocket(context);
 

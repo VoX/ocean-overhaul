@@ -1,10 +1,9 @@
 package me.tinyclaw.oceanstarter.gametest;
 
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.SalmonEntity;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
 
@@ -29,7 +28,7 @@ import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
  * rather than waiting on an AI-timed hit. Coverage: spawn liveness, the no-drown air-pin, and
  * the melee bite dealing damage.</p>
  */
-public class DepthsGameTest implements FabricGameTest {
+public class DepthsGameTest {
 
 	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
@@ -38,7 +37,7 @@ public class DepthsGameTest implements FabricGameTest {
 	 * combat/target goals all running), and stays at full 24 HP. Catches crash-on-spawn for
 	 * the HostileEntity subclass + its attribute/goal/model wiring.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void abyssalLurkerSpawnsAliveAtFullHealth(TestContext context) {
 		fillWaterPocket(context);
 
@@ -62,7 +61,7 @@ public class DepthsGameTest implements FabricGameTest {
 	 * and assert it kept full health. ({@code tickLimit} raised past the assertion; the
 	 * {@code @GameTest} default is 100.)
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 140)
+	@GameTest(maxTicks = 140)
 	public void abyssalLurkerDoesNotDrown(TestContext context) {
 		fillWaterPocket(context);
 
@@ -94,7 +93,7 @@ public class DepthsGameTest implements FabricGameTest {
 	 * (MeleeAttackGoal + ActiveTargetGoal) is exercised crash-free by the spawn test above,
 	 * which ticks the full goal system. Mirrors {@code MegalodonGameTest#megalodonBiteDealsDamage}.</p>
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void abyssalLurkerBiteDealsDamage(TestContext context) {
 		fillWaterPocket(context);
 
@@ -109,7 +108,7 @@ public class DepthsGameTest implements FabricGameTest {
 
 		// Let both settle a couple ticks (spawn-init, position) before the bite.
 		context.runAtTick(2L, () -> {
-			boolean bit = lurker.tryAttack(prey);
+			boolean bit = lurker.tryAttack(context.getWorld(), prey);
 			context.assertTrue(bit, "AbyssalLurker.tryAttack returned false (bite did not register)");
 		});
 

@@ -1,13 +1,12 @@
 package me.tinyclaw.oceanstarter.gametest;
 
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
@@ -43,7 +42,7 @@ import me.tinyclaw.oceanstarter.OceanStarter;
  * {@code @GameTest} into one world at nearby positions, so each test holds direct references
  * to the players it created and asserts against those — never by radius.</p>
  */
-public class GearGameTest implements FabricGameTest {
+public class GearGameTest {
 
 	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
@@ -63,7 +62,7 @@ public class GearGameTest implements FabricGameTest {
 	 * entity would have lost air and begun drowning. The {@code @GameTest} default tickLimit is
 	 * 100; we assert at 60 with margin.</p>
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
+	@GameTest(maxTicks = 120)
 	public void tidalFullSetGrantsWaterBreathingWhenWorn(TestContext context) {
 		fillWaterPocket(context);
 
@@ -124,7 +123,7 @@ public class GearGameTest implements FabricGameTest {
 	 * FOUR pieces — a regression that checked only the helmet (or any subset) would wrongly pass
 	 * the full-set test above, but this one fails it.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
+	@GameTest(maxTicks = 120)
 	public void tidalPartialSetDoesNotGrantWaterBreathing(TestContext context) {
 		fillWaterPocket(context);
 
@@ -155,7 +154,7 @@ public class GearGameTest implements FabricGameTest {
 	 * genuinely occupied by a non-Tidal item; with no other Tidal pieces equipped this is also
 	 * a no-set case, so the full-set rule keeps it negative too.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 120)
+	@GameTest(maxTicks = 120)
 	public void nonTidalHeadItemDoesNotGrantWaterBreathing(TestContext context) {
 		fillWaterPocket(context);
 

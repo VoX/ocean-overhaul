@@ -4,7 +4,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.world.World;
 
 /**
@@ -53,12 +55,13 @@ public class MegalodonSegment extends Entity {
 	}
 
 	@Override
-	public boolean damage(DamageSource source, float amount) {
+	public boolean damage(ServerWorld world, DamageSource source, float amount) {
 		// Forward only real attacks (player/mob/projectile have an attacker) to the
 		// shark — never environmental damage (lava/fire/void) the segment might be
 		// teleported into, since it noclips around the body each tick.
+		// 1.21.2+: Entity.damage is now (ServerWorld, DamageSource, float).
 		if (source.getAttacker() != null && this.owner != null && this.owner.isAlive()) {
-			return this.owner.damage(source, amount);
+			return this.owner.damage(world, source, amount);
 		}
 		return false;
 	}
@@ -79,12 +82,12 @@ public class MegalodonSegment extends Entity {
 	}
 
 	@Override
-	protected void readCustomDataFromNbt(NbtCompound nbt) {
+	protected void readCustomData(ReadView view) {
 		// transient (disableSaving) — nothing to read
 	}
 
 	@Override
-	protected void writeCustomDataToNbt(NbtCompound nbt) {
+	protected void writeCustomData(WriteView view) {
 		// transient (disableSaving) — nothing to write
 	}
 }

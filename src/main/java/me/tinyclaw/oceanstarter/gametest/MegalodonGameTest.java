@@ -2,11 +2,10 @@ package me.tinyclaw.oceanstarter.gametest;
 
 import java.util.List;
 
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.SalmonEntity;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
 
@@ -18,10 +17,12 @@ import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
  * Headless server-side GameTests for the Megalodon boss.
  *
  * <p>Registered via the {@code fabric-gametest} entrypoint in fabric.mod.json. Each
- * {@code @GameTest}-annotated method is discovered + invoked by fabric-gametest-api-v1
- * (the default {@link FabricGameTest#invokeTestMethod} just reflectively calls the
- * method). Tests run structure-less on the bundled empty template
- * ({@link FabricGameTest#EMPTY_STRUCTURE} = {@code "fabric-gametest-api-v1:empty"}).</p>
+ * {@link GameTest}-annotated method is discovered + invoked by fabric-gametest-api-v1
+ * (3.x annotation-based API — methods are plain instance methods taking a
+ * {@link TestContext}; no marker interface to implement). Tests run structure-less on the
+ * bundled empty template (the {@code @GameTest} {@code structure} default,
+ * {@code "fabric-gametest-api-v1:empty"}). {@code maxTicks} sets each test's tick budget
+ * (the annotation default is only 20, so any test asserting later must raise it).</p>
  *
  * <p><b>Shared-world gotcha:</b> fabric-gametest batches every {@code @GameTest} into one
  * shared world at nearby positions. So we never count entities by radius across tests —
@@ -29,7 +30,7 @@ import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
  * that, or filters segments by ownership ({@link MegalodonSegment#isPartOf}). Counting by
  * radius would catch a sibling test's boss + its 5 segments and give false failures.</p>
  */
-public class MegalodonGameTest implements FabricGameTest {
+public class MegalodonGameTest {
 
 	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
@@ -39,7 +40,7 @@ public class MegalodonGameTest implements FabricGameTest {
 	 * v0.6.0 spawn-crash class (a broken ctor / attribute / goal wiring throws on
 	 * spawn or first tick and the test fails instead of passing).
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void megalodonSpawnsAliveAtFullHealth(TestContext context) {
 		fillWaterPocket(context);
 
@@ -62,7 +63,7 @@ public class MegalodonGameTest implements FabricGameTest {
 	 * (b) segments-present: after the boss has ticked, assert it spawned exactly its
 	 * 5 invisible body-following hitbox segments, all owned by THIS boss.
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void megalodonSpawnsFiveHitboxSegments(TestContext context) {
 		fillWaterPocket(context);
 
@@ -94,7 +95,7 @@ public class MegalodonGameTest implements FabricGameTest {
 	// tickLimit raised past our 120-tick assertion: the @GameTest default is 100, and
 	// fabric-gametest fails the test if it neither succeeds nor fails within that window
 	// ("Didn't succeed or fail within 100 ticks"). 140 leaves margin past the assertion.
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 140)
+	@GameTest(maxTicks = 140)
 	public void megalodonDoesNotDrownInWater(TestContext context) {
 		fillWaterPocket(context);
 
@@ -128,7 +129,7 @@ public class MegalodonGameTest implements FabricGameTest {
 	 * itself (MeleeAttackGoal + ActiveTargetGoal) is covered by the spawn-no-crash test,
 	 * which ticks the full goal system without throwing.</p>
 	 */
-	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	@GameTest(maxTicks = 100)
 	public void megalodonBiteDealsDamage(TestContext context) {
 		fillWaterPocket(context);
 
@@ -143,7 +144,7 @@ public class MegalodonGameTest implements FabricGameTest {
 
 		// Let both settle a couple ticks (spawn-init, position) before the bite.
 		context.runAtTick(2L, () -> {
-			boolean bit = boss.tryAttack(prey);
+			boolean bit = boss.tryAttack(context.getWorld(), prey);
 			context.assertTrue(bit, "Megalodon.tryAttack returned false (bite did not register)");
 		});
 

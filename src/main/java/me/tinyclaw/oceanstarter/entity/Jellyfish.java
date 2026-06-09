@@ -17,7 +17,8 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WaterCreatureEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
@@ -94,21 +95,20 @@ public class Jellyfish extends WaterCreatureEntity {
 	}
 
 	@Override
-	public void writeCustomDataToNbt(NbtCompound nbt) {
-		super.writeCustomDataToNbt(nbt);
-		nbt.putInt("Variant", getVariant());
+	public void writeCustomData(WriteView view) {
+		super.writeCustomData(view);
+		view.putInt("Variant", getVariant());
 	}
 
 	@Override
-	public void readCustomDataFromNbt(NbtCompound nbt) {
-		super.readCustomDataFromNbt(nbt);
-		if (nbt.contains("Variant")) {
-			setVariant(nbt.getInt("Variant"));
-		} else {
-			// No saved variant (e.g. legacy/edge data): re-roll a random color rather
-			// than silently defaulting every such jelly to variant 0 (all green).
-			setVariant(this.getRandom().nextInt(VARIANT_COUNT));
-		}
+	public void readCustomData(ReadView view) {
+		super.readCustomData(view);
+		// 1.21.5+: ReadView.getOptionalInt returns empty when the key is absent, so a
+		// missing variant re-rolls a random color rather than silently defaulting every
+		// such jelly to variant 0 (all green).
+		view.getOptionalInt("Variant").ifPresentOrElse(
+				this::setVariant,
+				() -> setVariant(this.getRandom().nextInt(VARIANT_COUNT)));
 	}
 
 	@Override

@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "oceanstarter:tidal"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "oceanstarter:tidal"
+      }
+    ]
+  }
+}
