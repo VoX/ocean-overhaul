@@ -33,7 +33,8 @@ OUT = REPO / "scripts/validation/registries-1.21.1.json"
 reg = json.loads(VANILLA.read_text())
 src = JAVA.read_text()
 
-REGMAP = {"BLOCK": "minecraft:block", "ITEM": "minecraft:item", "ENTITY_TYPE": "minecraft:entity_type"}
+REGMAP = {"BLOCK": "minecraft:block", "ITEM": "minecraft:item", "ENTITY_TYPE": "minecraft:entity_type",
+          "BLOCK_ENTITY_TYPE": "minecraft:block_entity_type"}
 pat = re.compile(r'Registry\.register\(\s*Registries\.(\w+)\s*,\s*id\(\s*"([a-z0-9_./-]+)"\s*\)', re.DOTALL)
 
 added = {}

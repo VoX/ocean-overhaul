@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"equipment","key":{"T":{"item":"oceanstarter:megalodon_tooth"},"A":{"item":"oceanstarter:abyssal_pearl"},"S":{"item":"minecraft:stick"}},"pattern":["T","A","S"],"result":{"count":1,"id":"oceanstarter:abyssal_fang"}}

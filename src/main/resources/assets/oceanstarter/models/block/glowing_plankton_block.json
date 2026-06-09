@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "oceanstarter:block/glowing_plankton_block"
+  }
+}

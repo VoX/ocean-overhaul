@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ocean Overhaul &mdash; a deep-dive Minecraft mod</title>
+<meta name="description" content="Ocean Overhaul: bosses, a bioluminescent trench biome, harpoons, diving gear, aquariums and dozens of blocks for Minecraft 1.21.1 Fabric.">
+<style>
+:root{--bg:#061d21;--bg2:#0a2e34;--panel:#0e353b;--panel2:#11414a;--line:#1c5159;
+--cyan:#2bd1d8;--teal:#43999d;--ink:#d7ecec;--mut:#8fb3b5;--gold:#e8e2d0;}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header.hero{background:linear-gradient(rgba(4,22,26,.72),rgba(6,32,37,.86)),url('renders/biome-hero.png');
+background-size:cover;background-position:center;
+border-bottom:1px solid var(--line);padding:84px 0 76px;text-align:center;position:relative;overflow:hidden}
+.hero h1{font-size:3.2rem;margin:.1em 0;letter-spacing:.5px;
+background:linear-gradient(90deg,#2bd1d8,#a6cbcc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.tag{font-size:1.25rem;color:var(--mut);margin:.2em auto 1.4em;max-width:640px}
+.badges{margin:0 0 26px}.badge{display:inline-block;background:#06262b;border:1px solid var(--line);
+color:var(--teal);border-radius:999px;padding:5px 14px;margin:4px;font-size:.85rem}
+.btns a{display:inline-block;margin:6px;padding:12px 26px;border-radius:8px;font-weight:600}
+.btn-primary{background:var(--cyan);color:#04181c}.btn-ghost{border:1px solid var(--line);color:var(--ink)}
+section{padding:54px 0;border-bottom:1px solid #0c2a30}
+h2{font-size:2rem;margin:0 0 .2em;color:var(--gold)}
+.sub{color:var(--mut);margin:0 0 28px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.fcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.fcard h3{margin:.1em 0 .35em;color:var(--cyan);font-size:1.15rem}
+.fcard p{margin:0;color:var(--ink);font-size:.97rem}
+.mobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.mob{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mob img{width:100%;display:block;background:#04181c;aspect-ratio:4/3;object-fit:cover}
+.mob .cap{padding:12px 16px}.mob h3{margin:0 0 .2em;color:var(--gold);font-size:1.1rem}
+.mob p{margin:0;color:var(--mut);font-size:.88rem}
+.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px}
+.ic{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 6px;text-align:center}
+.ic img{width:72px;height:72px;object-fit:contain;image-rendering:pixelated}
+.ic .n{display:block;margin-top:8px;font-size:.74rem;color:var(--mut);line-height:1.25}
+.recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.rc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.rc img{width:100%;image-rendering:pixelated;border-radius:6px}
+.rc .n{display:block;margin-top:6px;font-size:.8rem;color:var(--mut)}
+ol.steps{counter-reset:s;list-style:none;padding:0;max-width:760px}
+ol.steps li{position:relative;padding:14px 16px 14px 60px;margin:10px 0;background:var(--panel);
+border:1px solid var(--line);border-radius:10px}
+ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:50%;transform:translateY(-50%);
+width:30px;height:30px;border-radius:50%;background:var(--cyan);color:#04181c;font-weight:700;display:flex;align-items:center;justify-content:center}
+ol.steps b{color:var(--gold)}
+footer{padding:38px 0;text-align:center;color:var(--mut);font-size:.9rem}
+.count{color:var(--teal);font-size:.95rem;font-weight:600}
+</style></head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>Ocean Overhaul</h1>
+  <p class="tag">A deep-dive overhaul of Minecraft's oceans &mdash; a boss, a bioluminescent trench, apex gear, diving kit, aquariums, and the creatures and blocks to fill it all.</p>
+  <div class="badges"><span class="badge">Minecraft 1.21.1</span><span class="badge">Fabric</span>
+    <span class="badge">36 blocks</span><span class="badge">32 items</span><span class="badge">4 mobs</span><span class="badge">57 recipes</span></div>
+  <div class="btns"><a class="btn-primary" href="https://github.com/VoX/ocean-overhaul/releases">Download</a>
+    <a class="btn-ghost" href="https://github.com/VoX/ocean-overhaul">View on GitHub</a></div>
+</div></header>
+
+<section id="features"><div class="wrap">
+  <h2>Features</h2><p class="sub">What Ocean Overhaul adds to the deep.</p>
+  <div class="fgrid"><div class='fcard'><h3>Megalodon &amp; Apex Gear</h3><p>Hunt the <strong>Megalodon</strong>, a colossal apex boss shark, for guaranteed <strong>Megalodon Teeth</strong>, then forge the <strong>Abyssal Fang</strong> &mdash; an apex sword a full tier above Tidal (9 attack damage, 2200 durability, repaired with teeth).</p></div>
+<div class='fcard'><h3>The Abyssal Trench</h3><p>Deep oceans now grow <strong>bioluminescent plankton</strong> and <strong>hydrothermal vents</strong>; <strong>giant clams</strong> hide guaranteed pearls, and the Megalodon and Abyssal Lurker concentrate down in the dark. Finding the deep <em>is</em> the deep-content gate.</p></div>
+<div class='fcard'><h3>Harpoon &amp; Diving Kit</h3><p>Throw a <strong>Harpoon</strong> that yanks your target back toward you and loyalty-returns to your hand. Equip <strong>Flippers</strong> (swim speed), an <strong>Oxygen Tank</strong> (water breathing) and a <strong>Deep-Sea Helmet</strong> (night vision) to make the depths traversable.</p></div>
+<div class='fcard'><h3>Aquariums</h3><p>Bucket the mod's <strong>Reef Fish</strong> and <strong>Jellyfish</strong> &mdash; color variants preserved &mdash; and place an <strong>Aquarium</strong> block to watch your catch swim around inside a glass tank.</p></div>
+<div class='fcard'><h3>Tidal Gear</h3><p>A full <strong>Tidal</strong> armor and tool set crafted from ocean materials, granting water-breathing and built for life below the surface.</p></div>
+<div class='fcard'><h3>Ocean Building Sets</h3><p>Driftwood wood-set, abyssal coral, prismarine, pearl and sea-glass blocks &mdash; with stairs, slabs, walls and chiseled variants for true underwater builds.</p></div></div>
+</div></section>
+
+<section id="mobs"><div class="wrap">
+  <h2>Mobs</h2><p class="sub">New creatures from the shallows to the trench.</p>
+  <div class="mobs"><div class='mob'><img src='renders/megalodon-site.png' alt='Megalodon' loading='lazy'><div class='cap'><h3>Megalodon</h3><p>A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth.</p></div></div>
+<div class='mob'><img src='renders/abyssal_lurker-site.png' alt='Abyssal Lurker' loading='lazy'><div class='cap'><h3>Abyssal Lurker</h3><p>A bioluminescent anglerfish of the depths, its lure glowing in the dark.</p></div></div>
+<div class='mob'><img src='renders/reef_fish-site.png' alt='Reef Fish' loading='lazy'><div class='cap'><h3>Reef Fish</h3><p>Schooling tropical reef fish that bring color to shallow waters.</p></div></div>
+<div class='mob'><img src='renders/jellyfish-site.png' alt='Jellyfish' loading='lazy'><div class='cap'><h3>Jellyfish</h3><p>Drifting jellyfish in five distinct color variants.</p></div></div></div>
+</div></section>
+
+<section id="blocks"><div class="wrap">
+  <h2>Blocks <span class="count">(36)</span></h2><p class="sub">Building sets, deep-sea flora and functional blocks.</p>
+  <div class="icons"><div class='ic'><img src='icons/b_abyssal_coral_block.png' alt='Abyssal Coral Block' loading='lazy'><span class='n'>Abyssal Coral Block</span></div>
+<div class='ic'><img src='icons/b_abyssal_pearl_block.png' alt='Abyssal Pearl Block' loading='lazy'><span class='n'>Abyssal Pearl Block</span></div>
+<div class='ic'><img src='icons/b_abyssal_vent.png' alt='Abyssal Vent' loading='lazy'><span class='n'>Abyssal Vent</span></div>
+<div class='ic'><img src='icons/b_aquarium.png' alt='Aquarium' loading='lazy'><span class='n'>Aquarium</span></div>
+<div class='ic'><img src='icons/b_barnacle_block.png' alt='Barnacle Block' loading='lazy'><span class='n'>Barnacle Block</span></div>
+<div class='ic'><img src='icons/b_chiseled_prismarine_tiles.png' alt='Chiseled Prismarine Tiles' loading='lazy'><span class='n'>Chiseled Prismarine Tiles</span></div>
+<div class='ic'><img src='icons/b_chiseled_prismarine_tiles_slab.png' alt='Chiseled Prismarine Tiles Slab' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Slab</span></div>
+<div class='ic'><img src='icons/b_chiseled_prismarine_tiles_stairs.png' alt='Chiseled Prismarine Tiles Stairs' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Stairs</span></div>
+<div class='ic'><img src='icons/b_chiseled_prismarine_tiles_wall.png' alt='Chiseled Prismarine Tiles Wall' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Wall</span></div>
+<div class='ic'><img src='icons/b_crushed_coral_block.png' alt='Crushed Coral Block' loading='lazy'><span class='n'>Crushed Coral Block</span></div>
+<div class='ic'><img src='icons/b_driftwood_button.png' alt='Driftwood Button' loading='lazy'><span class='n'>Driftwood Button</span></div>
+<div class='ic'><img src='icons/b_driftwood_door.png' alt='Driftwood Door' loading='lazy'><span class='n'>Driftwood Door</span></div>
+<div class='ic'><img src='icons/b_driftwood_fence_gate.png' alt='Driftwood Fence Gate' loading='lazy'><span class='n'>Driftwood Fence Gate</span></div>
+<div class='ic'><img src='icons/b_driftwood_plank.png' alt='Driftwood Plank' loading='lazy'><span class='n'>Driftwood Plank</span></div>
+<div class='ic'><img src='icons/b_driftwood_plank_fence.png' alt='Driftwood Plank Fence' loading='lazy'><span class='n'>Driftwood Plank Fence</span></div>
+<div class='ic'><img src='icons/b_driftwood_plank_slab.png' alt='Driftwood Plank Slab' loading='lazy'><span class='n'>Driftwood Plank Slab</span></div>
+<div class='ic'><img src='icons/b_driftwood_plank_stairs.png' alt='Driftwood Plank Stairs' loading='lazy'><span class='n'>Driftwood Plank Stairs</span></div>
+<div class='ic'><img src='icons/b_driftwood_plank_wall.png' alt='Driftwood Plank Wall' loading='lazy'><span class='n'>Driftwood Plank Wall</span></div>
+<div class='ic'><img src='icons/b_driftwood_pressure_plate.png' alt='Driftwood Pressure Plate' loading='lazy'><span class='n'>Driftwood Pressure Plate</span></div>
+<div class='ic'><img src='icons/b_driftwood_trapdoor.png' alt='Driftwood Trapdoor' loading='lazy'><span class='n'>Driftwood Trapdoor</span></div>
+<div class='ic'><img src='icons/b_giant_clam.png' alt='Giant Clam' loading='lazy'><span class='n'>Giant Clam</span></div>
+<div class='ic'><img src='icons/b_glowing_plankton_block.png' alt='Glowing Plankton Block' loading='lazy'><span class='n'>Glowing Plankton Block</span></div>
+<div class='ic'><img src='icons/b_pearl_block.png' alt='Pearl Block' loading='lazy'><span class='n'>Pearl Block</span></div>
+<div class='ic'><img src='icons/b_pearl_block_slab.png' alt='Pearl Block Slab' loading='lazy'><span class='n'>Pearl Block Slab</span></div>
+<div class='ic'><img src='icons/b_pearl_block_stairs.png' alt='Pearl Block Stairs' loading='lazy'><span class='n'>Pearl Block Stairs</span></div>
+<div class='ic'><img src='icons/b_pearl_block_wall.png' alt='Pearl Block Wall' loading='lazy'><span class='n'>Pearl Block Wall</span></div>
+<div class='ic'><img src='icons/b_pearl_lantern.png' alt='Pearl Lantern' loading='lazy'><span class='n'>Pearl Lantern</span></div>
+<div class='ic'><img src='icons/b_polished_prismarine_bricks.png' alt='Polished Prismarine Bricks' loading='lazy'><span class='n'>Polished Prismarine Bricks</span></div>
+<div class='ic'><img src='icons/b_polished_prismarine_bricks_slab.png' alt='Polished Prismarine Bricks Slab' loading='lazy'><span class='n'>Polished Prismarine Bricks Slab</span></div>
+<div class='ic'><img src='icons/b_polished_prismarine_bricks_stairs.png' alt='Polished Prismarine Bricks Stairs' loading='lazy'><span class='n'>Polished Prismarine Bricks Stairs</span></div>
+<div class='ic'><img src='icons/b_polished_prismarine_bricks_wall.png' alt='Polished Prismarine Bricks Wall' loading='lazy'><span class='n'>Polished Prismarine Bricks Wall</span></div>
+<div class='ic'><img src='icons/b_prismarine_crystal_block.png' alt='Prismarine Crystal Block' loading='lazy'><span class='n'>Prismarine Crystal Block</span></div>
+<div class='ic'><img src='icons/b_salt_block.png' alt='Salt Block' loading='lazy'><span class='n'>Salt Block</span></div>
+<div class='ic'><img src='icons/b_sea_glass.png' alt='Sea Glass' loading='lazy'><span class='n'>Sea Glass</span></div>
+<div class='ic'><img src='icons/b_sea_glass_slab.png' alt='Sea Glass Slab' loading='lazy'><span class='n'>Sea Glass Slab</span></div>
+<div class='ic'><img src='icons/b_sea_glass_stairs.png' alt='Sea Glass Stairs' loading='lazy'><span class='n'>Sea Glass Stairs</span></div></div>
+</div></section>
+
+<section id="items"><div class="wrap">
+  <h2>Items <span class="count">(32)</span></h2><p class="sub">Tools, gear, food, materials and spawn eggs.</p>
+  <div class="icons"><div class='ic'><img src='icons/i_abyssal_fang.png' alt='Abyssal Fang' loading='lazy'><span class='n'>Abyssal Fang</span></div>
+<div class='ic'><img src='icons/i_abyssal_lurker_spawn_egg.png' alt='Abyssal Lurker Spawn Egg' loading='lazy'><span class='n'>Abyssal Lurker Spawn Egg</span></div>
+<div class='ic'><img src='icons/i_abyssal_pearl.png' alt='Abyssal Pearl' loading='lazy'><span class='n'>Abyssal Pearl</span></div>
+<div class='ic'><img src='icons/i_cooked_reef_fish.png' alt='Cooked Reef Fish' loading='lazy'><span class='n'>Cooked Reef Fish</span></div>
+<div class='ic'><img src='icons/i_coral_shard.png' alt='Coral Shard' loading='lazy'><span class='n'>Coral Shard</span></div>
+<div class='ic'><img src='icons/i_crushed_coral.png' alt='Crushed Coral' loading='lazy'><span class='n'>Crushed Coral</span></div>
+<div class='ic'><img src='icons/i_deep_sea_helmet.png' alt='Deep Sea Helmet' loading='lazy'><span class='n'>Deep Sea Helmet</span></div>
+<div class='ic'><img src='icons/i_flippers.png' alt='Flippers' loading='lazy'><span class='n'>Flippers</span></div>
+<div class='ic'><img src='icons/i_harpoon.png' alt='Harpoon' loading='lazy'><span class='n'>Harpoon</span></div>
+<div class='ic'><img src='icons/i_jellyfish_bucket.png' alt='Jellyfish Bucket' loading='lazy'><span class='n'>Jellyfish Bucket</span></div>
+<div class='ic'><img src='icons/i_jellyfish_spawn_egg.png' alt='Jellyfish Spawn Egg' loading='lazy'><span class='n'>Jellyfish Spawn Egg</span></div>
+<div class='ic'><img src='icons/i_kelp_roll.png' alt='Kelp Roll' loading='lazy'><span class='n'>Kelp Roll</span></div>
+<div class='ic'><img src='icons/i_megalodon_spawn_egg.png' alt='Megalodon Spawn Egg' loading='lazy'><span class='n'>Megalodon Spawn Egg</span></div>
+<div class='ic'><img src='icons/i_megalodon_tooth.png' alt='Megalodon Tooth' loading='lazy'><span class='n'>Megalodon Tooth</span></div>
+<div class='ic'><img src='icons/i_oxygen_tank.png' alt='Oxygen Tank' loading='lazy'><span class='n'>Oxygen Tank</span></div>
+<div class='ic'><img src='icons/i_raw_reef_fish.png' alt='Raw Reef Fish' loading='lazy'><span class='n'>Raw Reef Fish</span></div>
+<div class='ic'><img src='icons/i_reef_fish_bucket.png' alt='Reef Fish Bucket' loading='lazy'><span class='n'>Reef Fish Bucket</span></div>
+<div class='ic'><img src='icons/i_reef_fish_spawn_egg.png' alt='Reef Fish Spawn Egg' loading='lazy'><span class='n'>Reef Fish Spawn Egg</span></div>
+<div class='ic'><img src='icons/i_salted_cod.png' alt='Salted Cod' loading='lazy'><span class='n'>Salted Cod</span></div>
+<div class='ic'><img src='icons/i_sea_salt.png' alt='Sea Salt' loading='lazy'><span class='n'>Sea Salt</span></div>
+<div class='ic'><img src='icons/i_sea_urchin.png' alt='Sea Urchin' loading='lazy'><span class='n'>Sea Urchin</span></div>
+<div class='ic'><img src='icons/i_seafood_stew.png' alt='Seafood Stew' loading='lazy'><span class='n'>Seafood Stew</span></div>
+<div class='ic'><img src='icons/i_tidal_axe.png' alt='Tidal Axe' loading='lazy'><span class='n'>Tidal Axe</span></div>
+<div class='ic'><img src='icons/i_tidal_boots.png' alt='Tidal Boots' loading='lazy'><span class='n'>Tidal Boots</span></div>
+<div class='ic'><img src='icons/i_tidal_chestplate.png' alt='Tidal Chestplate' loading='lazy'><span class='n'>Tidal Chestplate</span></div>
+<div class='ic'><img src='icons/i_tidal_helmet.png' alt='Tidal Helmet' loading='lazy'><span class='n'>Tidal Helmet</span></div>
+<div class='ic'><img src='icons/i_tidal_hoe.png' alt='Tidal Hoe' loading='lazy'><span class='n'>Tidal Hoe</span></div>
+<div class='ic'><img src='icons/i_tidal_leggings.png' alt='Tidal Leggings' loading='lazy'><span class='n'>Tidal Leggings</span></div>
+<div class='ic'><img src='icons/i_tidal_pickaxe.png' alt='Tidal Pickaxe' loading='lazy'><span class='n'>Tidal Pickaxe</span></div>
+<div class='ic'><img src='icons/i_tidal_shovel.png' alt='Tidal Shovel' loading='lazy'><span class='n'>Tidal Shovel</span></div>
+<div class='ic'><img src='icons/i_tidal_sword.png' alt='Tidal Sword' loading='lazy'><span class='n'>Tidal Sword</span></div>
+<div class='ic'><img src='icons/i_tide_pearl.png' alt='Tide Pearl' loading='lazy'><span class='n'>Tide Pearl</span></div></div>
+</div></section>
+
+<section id="recipes"><div class="wrap">
+  <h2>Crafting Recipes <span class="count">(57)</span></h2><p class="sub">Every recipe the mod adds, generated from the data files.</p>
+  <div class="recipes"><div class='rc'><img src='recipes/abyssal_coral_block.png' alt='Abyssal Coral Block' loading='lazy'><span class='n'>Abyssal Coral Block</span></div>
+<div class='rc'><img src='recipes/abyssal_fang.png' alt='Abyssal Fang' loading='lazy'><span class='n'>Abyssal Fang</span></div>
+<div class='rc'><img src='recipes/abyssal_pearl_block.png' alt='Abyssal Pearl Block' loading='lazy'><span class='n'>Abyssal Pearl Block</span></div>
+<div class='rc'><img src='recipes/abyssal_pearl_from_block.png' alt='Abyssal Pearl from Block' loading='lazy'><span class='n'>Abyssal Pearl from Block</span></div>
+<div class='rc'><img src='recipes/aquarium.png' alt='Aquarium' loading='lazy'><span class='n'>Aquarium</span></div>
+<div class='rc'><img src='recipes/barnacle_block.png' alt='Barnacle Block' loading='lazy'><span class='n'>Barnacle Block</span></div>
+<div class='rc'><img src='recipes/chiseled_prismarine_tiles.png' alt='Chiseled Prismarine Tiles' loading='lazy'><span class='n'>Chiseled Prismarine Tiles</span></div>
+<div class='rc'><img src='recipes/chiseled_prismarine_tiles_slab.png' alt='Chiseled Prismarine Tiles Slab' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Slab</span></div>
+<div class='rc'><img src='recipes/chiseled_prismarine_tiles_stairs.png' alt='Chiseled Prismarine Tiles Stairs' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Stairs</span></div>
+<div class='rc'><img src='recipes/chiseled_prismarine_tiles_wall.png' alt='Chiseled Prismarine Tiles Wall' loading='lazy'><span class='n'>Chiseled Prismarine Tiles Wall</span></div>
+<div class='rc'><img src='recipes/coral_shard.png' alt='Coral Shard' loading='lazy'><span class='n'>Coral Shard</span></div>
+<div class='rc'><img src='recipes/crushed_coral.png' alt='Crushed Coral' loading='lazy'><span class='n'>Crushed Coral</span></div>
+<div class='rc'><img src='recipes/crushed_coral_block.png' alt='Crushed Coral Block' loading='lazy'><span class='n'>Crushed Coral Block</span></div>
+<div class='rc'><img src='recipes/crushed_coral_from_block.png' alt='Crushed Coral from Block' loading='lazy'><span class='n'>Crushed Coral from Block</span></div>
+<div class='rc'><img src='recipes/deep_sea_helmet.png' alt='Deep Sea Helmet' loading='lazy'><span class='n'>Deep Sea Helmet</span></div>
+<div class='rc'><img src='recipes/driftwood_button.png' alt='Driftwood Button' loading='lazy'><span class='n'>Driftwood Button</span></div>
+<div class='rc'><img src='recipes/driftwood_door.png' alt='Driftwood Door' loading='lazy'><span class='n'>Driftwood Door</span></div>
+<div class='rc'><img src='recipes/driftwood_fence_gate.png' alt='Driftwood Fence Gate' loading='lazy'><span class='n'>Driftwood Fence Gate</span></div>
+<div class='rc'><img src='recipes/driftwood_plank.png' alt='Driftwood Plank' loading='lazy'><span class='n'>Driftwood Plank</span></div>
+<div class='rc'><img src='recipes/driftwood_plank_fence.png' alt='Driftwood Plank Fence' loading='lazy'><span class='n'>Driftwood Plank Fence</span></div>
+<div class='rc'><img src='recipes/driftwood_plank_slab.png' alt='Driftwood Plank Slab' loading='lazy'><span class='n'>Driftwood Plank Slab</span></div>
+<div class='rc'><img src='recipes/driftwood_plank_stairs.png' alt='Driftwood Plank Stairs' loading='lazy'><span class='n'>Driftwood Plank Stairs</span></div>
+<div class='rc'><img src='recipes/driftwood_plank_wall.png' alt='Driftwood Plank Wall' loading='lazy'><span class='n'>Driftwood Plank Wall</span></div>
+<div class='rc'><img src='recipes/driftwood_pressure_plate.png' alt='Driftwood Pressure Plate' loading='lazy'><span class='n'>Driftwood Pressure Plate</span></div>
+<div class='rc'><img src='recipes/driftwood_trapdoor.png' alt='Driftwood Trapdoor' loading='lazy'><span class='n'>Driftwood Trapdoor</span></div>
+<div class='rc'><img src='recipes/flippers.png' alt='Flippers' loading='lazy'><span class='n'>Flippers</span></div>
+<div class='rc'><img src='recipes/harpoon.png' alt='Harpoon' loading='lazy'><span class='n'>Harpoon</span></div>
+<div class='rc'><img src='recipes/kelp_roll.png' alt='Kelp Roll' loading='lazy'><span class='n'>Kelp Roll</span></div>
+<div class='rc'><img src='recipes/oxygen_tank.png' alt='Oxygen Tank' loading='lazy'><span class='n'>Oxygen Tank</span></div>
+<div class='rc'><img src='recipes/pearl_block.png' alt='Pearl Block' loading='lazy'><span class='n'>Pearl Block</span></div>
+<div class='rc'><img src='recipes/pearl_block_slab.png' alt='Pearl Block Slab' loading='lazy'><span class='n'>Pearl Block Slab</span></div>
+<div class='rc'><img src='recipes/pearl_block_stairs.png' alt='Pearl Block Stairs' loading='lazy'><span class='n'>Pearl Block Stairs</span></div>
+<div class='rc'><img src='recipes/pearl_block_wall.png' alt='Pearl Block Wall' loading='lazy'><span class='n'>Pearl Block Wall</span></div>
+<div class='rc'><img src='recipes/pearl_lantern.png' alt='Pearl Lantern' loading='lazy'><span class='n'>Pearl Lantern</span></div>
+<div class='rc'><img src='recipes/polished_prismarine_bricks.png' alt='Polished Prismarine Bricks' loading='lazy'><span class='n'>Polished Prismarine Bricks</span></div>
+<div class='rc'><img src='recipes/polished_prismarine_bricks_slab.png' alt='Polished Prismarine Bricks Slab' loading='lazy'><span class='n'>Polished Prismarine Bricks Slab</span></div>
+<div class='rc'><img src='recipes/polished_prismarine_bricks_stairs.png' alt='Polished Prismarine Bricks Stairs' loading='lazy'><span class='n'>Polished Prismarine Bricks Stairs</span></div>
+<div class='rc'><img src='recipes/polished_prismarine_bricks_wall.png' alt='Polished Prismarine Bricks Wall' loading='lazy'><span class='n'>Polished Prismarine Bricks Wall</span></div>
+<div class='rc'><img src='recipes/prismarine_crystal_block.png' alt='Prismarine Crystal Block' loading='lazy'><span class='n'>Prismarine Crystal Block</span></div>
+<div class='rc'><img src='recipes/salt_block.png' alt='Salt Block' loading='lazy'><span class='n'>Salt Block</span></div>
+<div class='rc'><img src='recipes/salt_block_from_block.png' alt='Salt Block from Block' loading='lazy'><span class='n'>Salt Block from Block</span></div>
+<div class='rc'><img src='recipes/salted_cod.png' alt='Salted Cod' loading='lazy'><span class='n'>Salted Cod</span></div>
+<div class='rc'><img src='recipes/sea_glass.png' alt='Sea Glass' loading='lazy'><span class='n'>Sea Glass</span></div>
+<div class='rc'><img src='recipes/sea_glass_slab.png' alt='Sea Glass Slab' loading='lazy'><span class='n'>Sea Glass Slab</span></div>
+<div class='rc'><img src='recipes/sea_glass_stairs.png' alt='Sea Glass Stairs' loading='lazy'><span class='n'>Sea Glass Stairs</span></div>
+<div class='rc'><img src='recipes/sea_urchin.png' alt='Sea Urchin' loading='lazy'><span class='n'>Sea Urchin</span></div>
+<div class='rc'><img src='recipes/seafood_stew.png' alt='Seafood Stew' loading='lazy'><span class='n'>Seafood Stew</span></div>
+<div class='rc'><img src='recipes/tidal_axe.png' alt='Tidal Axe' loading='lazy'><span class='n'>Tidal Axe</span></div>
+<div class='rc'><img src='recipes/tidal_boots.png' alt='Tidal Boots' loading='lazy'><span class='n'>Tidal Boots</span></div>
+<div class='rc'><img src='recipes/tidal_chestplate.png' alt='Tidal Chestplate' loading='lazy'><span class='n'>Tidal Chestplate</span></div>
+<div class='rc'><img src='recipes/tidal_helmet.png' alt='Tidal Helmet' loading='lazy'><span class='n'>Tidal Helmet</span></div>
+<div class='rc'><img src='recipes/tidal_hoe.png' alt='Tidal Hoe' loading='lazy'><span class='n'>Tidal Hoe</span></div>
+<div class='rc'><img src='recipes/tidal_leggings.png' alt='Tidal Leggings' loading='lazy'><span class='n'>Tidal Leggings</span></div>
+<div class='rc'><img src='recipes/tidal_pickaxe.png' alt='Tidal Pickaxe' loading='lazy'><span class='n'>Tidal Pickaxe</span></div>
+<div class='rc'><img src='recipes/tidal_shovel.png' alt='Tidal Shovel' loading='lazy'><span class='n'>Tidal Shovel</span></div>
+<div class='rc'><img src='recipes/tidal_sword.png' alt='Tidal Sword' loading='lazy'><span class='n'>Tidal Sword</span></div>
+<div class='rc'><img src='recipes/tide_pearl_from_pearl_block.png' alt='Tide Pearl from Pearl Block' loading='lazy'><span class='n'>Tide Pearl from Pearl Block</span></div></div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <h2>Installation</h2><p class="sub">Up and running in four steps.</p>
+  <ol class="steps"><li><b>Install Fabric</b> &mdash; Install <strong>Minecraft 1.21.1</strong> and the <a href='https://fabricmc.net/use/installer/'>Fabric Loader</a>.</li>
+<li><b>Add Fabric API</b> &mdash; Download <a href='https://modrinth.com/mod/fabric-api'>Fabric API</a> for 1.21.1 and drop it in your <code>mods/</code> folder.</li>
+<li><b>Add Ocean Overhaul</b> &mdash; Grab the latest <code>ocean-overhaul</code> jar from the <a href='https://github.com/VoX/ocean-overhaul/releases'>Releases</a> page and drop it in <code>mods/</code> too.</li>
+<li><b>Dive in</b> &mdash; Launch Minecraft with the Fabric profile, start a world, and head for deep water.</li></ol>
+</div></section>
+
+<footer><div class="wrap">
+  Ocean Overhaul &middot; <a href="https://github.com/VoX/ocean-overhaul">GitHub</a> &middot; built with Fabric for Minecraft 1.21.1
+</div></footer>
+</body></html>

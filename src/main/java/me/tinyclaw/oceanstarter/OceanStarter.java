@@ -1,10 +1,15 @@
 package me.tinyclaw.oceanstarter;
 
+import me.tinyclaw.oceanstarter.block.AquariumBlock;
+import me.tinyclaw.oceanstarter.block.AquariumBlockEntity;
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
+import me.tinyclaw.oceanstarter.entity.HarpoonEntity;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
+import me.tinyclaw.oceanstarter.item.AbyssalFangMaterial;
+import me.tinyclaw.oceanstarter.item.HarpoonItem;
 import me.tinyclaw.oceanstarter.item.TidalToolMaterial;
 
 import net.fabricmc.api.ModInitializer;
@@ -28,19 +33,23 @@ import net.minecraft.block.WoodType;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnLocationTypes;
 import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.WaterCreatureEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.EntityBucketItem;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -267,6 +276,41 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem PRISMARINE_CRYSTAL_BLOCK_ITEM = new BlockItem(
 			PRISMARINE_CRYSTAL_BLOCK, new Item.Settings());
 
+	// =====================================================================
+	// The Abyssal Trench — bioluminescent deep-ocean floor content
+	// =====================================================================
+	// Three trench blocks placed procedurally onto the vanilla deep-ocean floor
+	// (see OceanStarterWorldgen) so "finding deep ocean = finding the trench".
+	// All mirror the pearl_lantern Block.Settings shape (copy a vanilla block,
+	// then .luminance(...)) — but dimmer than the full-bright (15) lantern so they
+	// read as a *living/smoldering* glow, not a lamp:
+	//   * Glowing Plankton Block — SEA_LANTERN base, luminance 11 (bright bio-glow,
+	//     still under the lantern so it's clearly "alive" not "lit").
+	//   * Abyssal Vent — PRISMARINE base (stays opaque + pickaxe-mineable, unlike
+	//     sea lantern), luminance 7 (a smoldering ember in the dark).
+	//   * Giant Clam — PRISMARINE base, luminance 5 (faint pearl glow); this is the
+	//     trench DESTINATION: its loot table drops a guaranteed ABYSSAL_PEARL (the
+	//     existing item, NOT re-registered), so diving the deep is worth it.
+
+	// --- Block: Glowing Plankton Block (bioluminescent, luminance 11) -----
+	public static final Block GLOWING_PLANKTON_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SEA_LANTERN).luminance(state -> 11));
+	public static final BlockItem GLOWING_PLANKTON_BLOCK_ITEM = new BlockItem(
+			GLOWING_PLANKTON_BLOCK, new Item.Settings());
+
+	// --- Block: Abyssal Vent (opaque basalt, luminance 7) -----------------
+	public static final Block ABYSSAL_VENT = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 7));
+	public static final BlockItem ABYSSAL_VENT_ITEM = new BlockItem(
+			ABYSSAL_VENT, new Item.Settings());
+
+	// --- Block: Giant Clam (trench destination, luminance 5) --------------
+	// Loot drops a GUARANTEED ABYSSAL_PEARL (the existing item), not itself.
+	public static final Block GIANT_CLAM = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 5));
+	public static final BlockItem GIANT_CLAM_ITEM = new BlockItem(
+			GIANT_CLAM, new Item.Settings());
+
 	// --- Block: Chiseled Prismarine Tiles ---------------------------------
 	public static final Block CHISELED_PRISMARINE_TILES = new Block(
 			AbstractBlock.Settings.copy(Blocks.PRISMARINE_BRICKS));
@@ -288,6 +332,17 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem CHISELED_PRISMARINE_TILES_WALL_ITEM = new BlockItem(
 			CHISELED_PRISMARINE_TILES_WALL, new Item.Settings());
 
+	// =====================================================================
+	// Feature 4 — Aquarium (a glass tank BlockEntity that displays one captured creature)
+	// =====================================================================
+	// The mod's FIRST BlockEntity, so the BLOCK_ENTITY_TYPE wiring below is brand new.
+	// Glass-like settings (copy GLASS + nonOpaque). The BLOCK_ENTITY_TYPE is built from a
+	// BlockEntityType.Builder over AQUARIUM and lives AFTER the block field so it's set.
+	public static final Block AQUARIUM = new AquariumBlock(
+			AbstractBlock.Settings.copy(Blocks.GLASS).nonOpaque());
+	public static final BlockItem AQUARIUM_ITEM = new BlockItem(
+			AQUARIUM, new Item.Settings());
+
 	// --- Item: Tide Pearl -------------------------------------------------
 	public static final Item TIDE_PEARL = new Item(new Item.Settings());
 
@@ -302,6 +357,12 @@ public class OceanStarter implements ModInitializer {
 
 	// --- Item: Crushed Coral (crafting ingredient) ------------------------
 	public static final Item CRUSHED_CORAL = new Item(new Item.Settings());
+
+	// --- Item: Megalodon Tooth (boss drop / apex-gear crafting material) --
+	// A stacking material (default maxCount 64), NOT a 1-of trophy: the Megalodon
+	// drops 1-2 per kill and it's the blade ingredient + repair item for the
+	// Abyssal Fang apex sword. Plain Item (no food).
+	public static final Item MEGALODON_TOOTH = new Item(new Item.Settings());
 
 	// --- Item: Sea Urchin (food) ------------------------------------------
 	public static final Item SEA_URCHIN = new Item(new Item.Settings()
@@ -391,6 +452,77 @@ public class OceanStarter implements ModInitializer {
 			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 
 	// =====================================================================
+	// Feature 3 — Diving Kit (3-piece utility armor: underwater traversal)
+	// =====================================================================
+	// Mirrors the TIDAL armor block above EXACTLY (same 7-arg ArmorMaterial record via
+	// registerReference, same ArmorItem(RegistryEntry, Type, Settings) shape) — only the
+	// material values + the layer/texture id differ. A modest utility tier (below Tidal's
+	// 2/6/5/2 defense + 9 enchantability): defense 1/3/-/1, enchantability 5. It is a
+	// deliberate 3-piece kit (helmet/chestplate/boots, NO leggings); the LEGGINGS/BODY map
+	// entries exist only to mirror the Tidal map's shape. The worn texture resolves from
+	// Layer(id("diving")) -> textures/models/armor/diving_layer_{1,2}.png. The per-piece
+	// underwater effects are wired through the existing END_SERVER_TICK poll (see onInitialize).
+	private static final Map<ArmorItem.Type, Integer> DIVING_DEFENSE = makeDivingDefense();
+
+	private static Map<ArmorItem.Type, Integer> makeDivingDefense() {
+		EnumMap<ArmorItem.Type, Integer> m = new EnumMap<>(ArmorItem.Type.class);
+		m.put(ArmorItem.Type.HELMET, 1);
+		m.put(ArmorItem.Type.CHESTPLATE, 3);
+		m.put(ArmorItem.Type.LEGGINGS, 0);
+		m.put(ArmorItem.Type.BOOTS, 1);
+		m.put(ArmorItem.Type.BODY, 0);
+		return m;
+	}
+
+	public static final RegistryEntry<ArmorMaterial> DIVING_ARMOR = Registry.registerReference(
+			Registries.ARMOR_MATERIAL,
+			id("diving"),
+			new ArmorMaterial(
+					DIVING_DEFENSE,
+					5, // enchantability (below Tidal's 9)
+					SoundEvents.ITEM_ARMOR_EQUIP_TURTLE,
+					() -> Ingredient.ofItems(ABYSSAL_PEARL), // same repair item as Tidal
+					List.of(new ArmorMaterial.Layer(id("diving"))),
+					0.0f, // toughness
+					0.0f  // knockback resistance
+			));
+
+	// Per-slot durability multiplier (just under iron's 15), scaled per slot by ArmorItem.Type.
+	private static final int DIVING_ARMOR_DURABILITY = 13;
+
+	// 3 pieces only — no leggings (intentional). Flippers=boots, Oxygen Tank=chestplate,
+	// Deep-Sea Helmet=helmet. Effects (DOLPHINS_GRACE / WATER_BREATHING / NIGHT_VISION) are
+	// applied per-piece by the worn-bonus poll in onInitialize.
+	public static final Item FLIPPERS = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.BOOTS,
+			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+	public static final Item OXYGEN_TANK = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.CHESTPLATE,
+			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+	public static final Item DEEP_SEA_HELMET = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.HELMET,
+			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+
+	// --- Item: Harpoon (Feature 3) — thrown spear; 1-of, durable ----------
+	// A single-stack, durable spear. On use() it launches the HARPOON_ENTITY (see HarpoonItem).
+	// maxDamage(250) ~ between iron-tier durability; maxCount(1) like a trident.
+	public static final Item HARPOON = new HarpoonItem(
+			new Item.Settings().maxCount(1).maxDamage(250));
+
+	// =====================================================================
+	// Apex weapon — Abyssal Fang (one tier ABOVE Tidal; crafted from the boss drop)
+	// =====================================================================
+	// A NEW ToolMaterial (NOT TIDAL — the point is strictly-better stats), parallel
+	// to TIDAL: durability 2200 / mining 9.0 / base attack 4.0 / netherite-class
+	// mining tier / repaired with MEGALODON_TOOTH. Same construction shape as
+	// TIDAL_SWORD — the attack-damage/attack-speed modifiers are passed explicitly
+	// via Item.Settings.attributeModifiers(...) (the ctor doesn't bake them in).
+	// createAttributeModifiers(mat, 4, -2.4f): +4 + material base 4.0 = +8 attack
+	// => DISPLAYED 9 dmg (vs Tidal 7, netherite 8); -2.4f => the vanilla 1.6/s swing.
+	public static final ToolMaterial ABYSSAL_FANG_MATERIAL = new AbyssalFangMaterial();
+
+	public static final Item ABYSSAL_FANG = new SwordItem(ABYSSAL_FANG_MATERIAL,
+			new Item.Settings().attributeModifiers(
+					SwordItem.createAttributeModifiers(ABYSSAL_FANG_MATERIAL, 4, -2.4f)));
+
+	// =====================================================================
 	// Gear of the Deep — Seafood foods
 	// =====================================================================
 	// --- Item: Raw Reef Fish (drop / smelting input) ----------------------
@@ -449,6 +581,24 @@ public class OceanStarter implements ModInitializer {
 					.disableSaving()
 					.build("megalodon_segment"));
 
+	// --- Projectile: Harpoon (Feature 3) ----------------------------------
+	// A thrown spear projectile (PersistentProjectileEntity, like a trident but no riptide).
+	// Registered here in a static-field initializer (like MEGALODON_SEGMENT) so build-registries.py's
+	// regex matches and HarpoonItem can reference a fully-built EntityType. SpawnGroup.MISC (it never
+	// naturally spawns -> no SpawnRestriction; it carries no attributes -> no FabricDefaultAttributeRegistry).
+	// trackingTickInterval(20) + maxTrackingRange(8): mirror vanilla TridentEntity's EntityType
+	// tracking (vanilla uses interval 20 / range 4) so the billboard syncs to observers exactly like
+	// a thrown trident. A projectile relies on velocityClient interpolation between these tracker
+	// position updates, so the vanilla-trident cadence is the proven-smooth value here.
+	public static final EntityType<HarpoonEntity> HARPOON_ENTITY = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("harpoon"),
+			EntityType.Builder.<HarpoonEntity>create(HarpoonEntity::new, SpawnGroup.MISC)
+					.dimensions(0.5F, 0.5F)
+					.maxTrackingRange(8)
+					.trackingTickInterval(20)
+					.build("harpoon"));
+
 	// --- Spawn egg for the Megalodon (grey body / pale belly) -------------
 	public static final SpawnEggItem MEGALODON_SPAWN_EGG =
 			new SpawnEggItem(MEGALODON, 0x556677, 0xDDDDCC, new Item.Settings());
@@ -502,6 +652,25 @@ public class OceanStarter implements ModInitializer {
 	public static final SpawnEggItem ABYSSAL_LURKER_SPAWN_EGG =
 			new SpawnEggItem(ABYSSAL_LURKER, 0x0E1828, 0x4FE0C0, new Item.Settings());
 
+	// =====================================================================
+	// Feature 4 — Mob buckets + the Aquarium BlockEntityType
+	// =====================================================================
+	// Vanilla EntityBucketItem (concrete — no subclass needed), one per bucketable mob, mirroring
+	// the vanilla tropical-fish/cod buckets: maxCount(1) + recipeRemainder(BUCKET) so crafting with
+	// one leaves an empty bucket. Declared AFTER the REEF_FISH/JELLYFISH EntityType fields so those
+	// are fully built. EntityBucketItem(EntityType, Fluid, emptyingSound, Settings).
+	public static final Item REEF_FISH_BUCKET = new EntityBucketItem(
+			REEF_FISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
+			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
+	public static final Item JELLYFISH_BUCKET = new EntityBucketItem(
+			JELLYFISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
+			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
+
+	// The Aquarium's BlockEntityType — the mod's first. Builder.create(factory, AQUARIUM).build(null);
+	// the null datafixer Type is the standard modded idiom. Declared AFTER the AQUARIUM block field.
+	public static final BlockEntityType<AquariumBlockEntity> AQUARIUM_BLOCK_ENTITY =
+			BlockEntityType.Builder.create(AquariumBlockEntity::new, AQUARIUM).build(null);
+
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
 			RegistryKey.of(Registries.ITEM_GROUP.getKey(), id("ocean_overhaul"));
@@ -537,19 +706,25 @@ public class OceanStarter implements ModInitializer {
 				entries.add(ABYSSAL_PEARL_BLOCK);
 				entries.add(CRUSHED_CORAL_BLOCK);
 				entries.add(PRISMARINE_CRYSTAL_BLOCK);
+				entries.add(GLOWING_PLANKTON_BLOCK);
+				entries.add(ABYSSAL_VENT);
+				entries.add(GIANT_CLAM);
 				entries.add(CHISELED_PRISMARINE_TILES);
 				entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
 				entries.add(CHISELED_PRISMARINE_TILES_SLAB);
 				entries.add(CHISELED_PRISMARINE_TILES_WALL);
+				entries.add(AQUARIUM);
 				entries.add(TIDE_PEARL);
 				entries.add(CORAL_SHARD);
 				entries.add(SEA_SALT);
 				entries.add(ABYSSAL_PEARL);
 				entries.add(CRUSHED_CORAL);
+				entries.add(MEGALODON_TOOTH);
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
 				// Gear of the Deep: tools, armor, foods.
 				entries.add(TIDAL_SWORD);
+				entries.add(ABYSSAL_FANG);
 				entries.add(TIDAL_PICKAXE);
 				entries.add(TIDAL_AXE);
 				entries.add(TIDAL_SHOVEL);
@@ -558,6 +733,11 @@ public class OceanStarter implements ModInitializer {
 				entries.add(TIDAL_CHESTPLATE);
 				entries.add(TIDAL_LEGGINGS);
 				entries.add(TIDAL_BOOTS);
+				// Feature 3: Harpoon + Diving Kit.
+				entries.add(HARPOON);
+				entries.add(DEEP_SEA_HELMET);
+				entries.add(OXYGEN_TANK);
+				entries.add(FLIPPERS);
 				entries.add(RAW_REEF_FISH);
 				entries.add(COOKED_REEF_FISH);
 				entries.add(KELP_ROLL);
@@ -566,6 +746,9 @@ public class OceanStarter implements ModInitializer {
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
 				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+				// Feature 4: mob buckets (after the spawn eggs).
+				entries.add(REEF_FISH_BUCKET);
+				entries.add(JELLYFISH_BUCKET);
 			})
 			.build();
 
@@ -641,6 +824,14 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK);
 		Registry.register(Registries.ITEM, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK_ITEM);
 
+		// The Abyssal Trench blocks (giant_clam's loot drops the existing abyssal_pearl).
+		Registry.register(Registries.BLOCK, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK);
+		Registry.register(Registries.ITEM, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK_ITEM);
+		Registry.register(Registries.BLOCK, id("abyssal_vent"), ABYSSAL_VENT);
+		Registry.register(Registries.ITEM, id("abyssal_vent"), ABYSSAL_VENT_ITEM);
+		Registry.register(Registries.BLOCK, id("giant_clam"), GIANT_CLAM);
+		Registry.register(Registries.ITEM, id("giant_clam"), GIANT_CLAM_ITEM);
+
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES);
 		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES_ITEM);
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_stairs"), CHISELED_PRISMARINE_TILES_STAIRS);
@@ -650,12 +841,19 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL);
 		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL_ITEM);
 
+		// Feature 4: the Aquarium block + its item (paired, same id) and its BlockEntityType
+		// (Registries.BLOCK_ENTITY_TYPE, same 'aquarium' id — legal across different registries).
+		Registry.register(Registries.BLOCK, id("aquarium"), AQUARIUM);
+		Registry.register(Registries.ITEM, id("aquarium"), AQUARIUM_ITEM);
+		Registry.register(Registries.BLOCK_ENTITY_TYPE, id("aquarium"), AQUARIUM_BLOCK_ENTITY);
+
 		// Register the standalone items.
 		Registry.register(Registries.ITEM, id("tide_pearl"), TIDE_PEARL);
 		Registry.register(Registries.ITEM, id("coral_shard"), CORAL_SHARD);
 		Registry.register(Registries.ITEM, id("sea_salt"), SEA_SALT);
 		Registry.register(Registries.ITEM, id("abyssal_pearl"), ABYSSAL_PEARL);
 		Registry.register(Registries.ITEM, id("crushed_coral"), CRUSHED_CORAL);
+		Registry.register(Registries.ITEM, id("megalodon_tooth"), MEGALODON_TOOTH);
 		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
 		Registry.register(Registries.ITEM, id("salted_cod"), SALTED_COD);
 
@@ -666,11 +864,24 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("tidal_axe"), TIDAL_AXE);
 		Registry.register(Registries.ITEM, id("tidal_hoe"), TIDAL_HOE);
 
+		// Apex weapon: Abyssal Fang (crafted from the Megalodon Tooth drop).
+		Registry.register(Registries.ITEM, id("abyssal_fang"), ABYSSAL_FANG);
+
 		// Gear of the Deep: Tidal diving armor.
 		Registry.register(Registries.ITEM, id("tidal_helmet"), TIDAL_HELMET);
 		Registry.register(Registries.ITEM, id("tidal_chestplate"), TIDAL_CHESTPLATE);
 		Registry.register(Registries.ITEM, id("tidal_leggings"), TIDAL_LEGGINGS);
 		Registry.register(Registries.ITEM, id("tidal_boots"), TIDAL_BOOTS);
+
+		// Feature 3: Harpoon item (the EntityType is registered in its static-field initializer
+		// above; both share the id "harpoon" in DIFFERENT registries — ITEM vs ENTITY_TYPE — which
+		// is legal, the same convention BlockItems use).
+		Registry.register(Registries.ITEM, id("harpoon"), HARPOON);
+
+		// Feature 3: Diving Kit (3-piece utility armor).
+		Registry.register(Registries.ITEM, id("flippers"), FLIPPERS);
+		Registry.register(Registries.ITEM, id("oxygen_tank"), OXYGEN_TANK);
+		Registry.register(Registries.ITEM, id("deep_sea_helmet"), DEEP_SEA_HELMET);
 
 		// Gear of the Deep: Seafood foods.
 		Registry.register(Registries.ITEM, id("raw_reef_fish"), RAW_REEF_FISH);
@@ -704,6 +915,10 @@ public class OceanStarter implements ModInitializer {
 		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
 
+		// Feature 4: mob buckets for the two bucketable mobs (reef fish + jellyfish).
+		Registry.register(Registries.ITEM, id("reef_fish_bucket"), REEF_FISH_BUCKET);
+		Registry.register(Registries.ITEM, id("jellyfish_bucket"), JELLYFISH_BUCKET);
+
 		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
 		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
 		// so WaterCreatureEntity.canSpawn can't be reused (type-bound mismatch) — the
@@ -724,6 +939,9 @@ public class OceanStarter implements ModInitializer {
 			entries.add(BARNACLE_BLOCK);
 			entries.add(CRUSHED_CORAL_BLOCK);
 			entries.add(PRISMARINE_CRYSTAL_BLOCK);
+			entries.add(GLOWING_PLANKTON_BLOCK);
+			entries.add(ABYSSAL_VENT);
+			entries.add(GIANT_CLAM);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(entries -> {
 			entries.add(SEA_GLASS);
@@ -752,6 +970,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
 			entries.add(CHISELED_PRISMARINE_TILES_SLAB);
 			entries.add(CHISELED_PRISMARINE_TILES_WALL);
+			entries.add(AQUARIUM);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
 			entries.add(TIDE_PEARL);
@@ -759,6 +978,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(SEA_SALT);
 			entries.add(ABYSSAL_PEARL);
 			entries.add(CRUSHED_CORAL);
+			entries.add(MEGALODON_TOOTH);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(entries -> {
 			entries.add(SEA_URCHIN);
@@ -773,13 +993,22 @@ public class OceanStarter implements ModInitializer {
 			entries.add(TIDAL_AXE);
 			entries.add(TIDAL_SHOVEL);
 			entries.add(TIDAL_HOE);
+			// Feature 4: mob buckets (vanilla puts fish buckets in the Tools tab).
+			entries.add(REEF_FISH_BUCKET);
+			entries.add(JELLYFISH_BUCKET);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
 			entries.add(TIDAL_SWORD);
+			entries.add(ABYSSAL_FANG);
 			entries.add(TIDAL_HELMET);
 			entries.add(TIDAL_CHESTPLATE);
 			entries.add(TIDAL_LEGGINGS);
 			entries.add(TIDAL_BOOTS);
+			// Feature 3: Harpoon (thrown weapon) + Diving Kit pieces.
+			entries.add(HARPOON);
+			entries.add(DEEP_SEA_HELMET);
+			entries.add(OXYGEN_TANK);
+			entries.add(FLIPPERS);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
 			entries.add(DRIFTWOOD_BUTTON);
@@ -795,33 +1024,73 @@ public class OceanStarter implements ModInitializer {
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		// Gear of the Deep — worn-armor effect: wearing the FULL Tidal set (all four
-		// pieces — helmet/chestplate/leggings/boots) grants WATER_BREATHING. No mixin:
-		// poll every server tick and refresh a short-duration effect (220 ticks > the
-		// poll gap so it never lapses). The effect is silent (no particles, no HUD
-		// icon) and harmless on land. A partial set grants nothing — it's a set bonus.
+		// Gear of the Deep — worn-armor effects (no mixin): poll every server tick and refresh
+		// short-duration effects so they never lapse. All grants go through refreshEffect(...),
+		// which gates re-application to ~once per refresh (absent-or-about-to-lapse) instead of
+		// one status packet every tick — the packet-storm-safe pattern.
+		//   * Tidal FULL SET (all four pieces) -> WATER_BREATHING (set bonus; partial grants nothing).
+		//   * Feature 3 Diving Kit, PER PIECE (wear any one alone -> its effect):
+		//       Flippers (boots)      -> DOLPHINS_GRACE while in water (swim speed; no-op on land)
+		//       Oxygen Tank (chest)   -> WATER_BREATHING (harmless on land; no gate)
+		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (short duration so it fades
+		//                                within ~3 s of surfacing, avoiding the night-vision flash)
+		// The effects are silent (no particles, no HUD icon).
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-				boolean fullSet =
+				// Tidal full-set water breathing (rerouted through refreshEffect — same 220/40
+				// numbers, identical behavior, just deduped).
+				boolean fullTidalSet =
 						player.getEquippedStack(EquipmentSlot.HEAD).getItem() == TIDAL_HELMET
 						&& player.getEquippedStack(EquipmentSlot.CHEST).getItem() == TIDAL_CHESTPLATE
 						&& player.getEquippedStack(EquipmentSlot.LEGS).getItem() == TIDAL_LEGGINGS
 						&& player.getEquippedStack(EquipmentSlot.FEET).getItem() == TIDAL_BOOTS;
-				if (fullSet) {
-					// Only re-apply when the effect is absent or about to lapse, so we emit
-					// ~one status packet per refresh instead of one every tick (the 220-tick
-					// duration stays well above the <40 reapply threshold, so it never
-					// actually wears off for a full-set wearer).
-					var e = player.getStatusEffect(StatusEffects.WATER_BREATHING);
-					if (e == null || e.getDuration() < 40) {
-						player.addStatusEffect(new StatusEffectInstance(
-								StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
-					}
+				if (fullTidalSet) {
+					refreshEffect(player, StatusEffects.WATER_BREATHING, 220, 40);
+				}
+
+				// Feature 3 — Diving Kit per-piece effects (independent of one another).
+				if (player.getEquippedStack(EquipmentSlot.FEET).getItem() == FLIPPERS
+						&& player.isTouchingWater()) {
+					refreshEffect(player, StatusEffects.DOLPHINS_GRACE, 220, 40);
+				}
+				if (player.getEquippedStack(EquipmentSlot.CHEST).getItem() == OXYGEN_TANK) {
+					refreshEffect(player, StatusEffects.WATER_BREATHING, 220, 40);
+				}
+				if (player.getEquippedStack(EquipmentSlot.HEAD).getItem() == DEEP_SEA_HELMET
+						&& player.isSubmergedInWater()) {
+					// Applied duration (300t/15s) stays comfortably above Minecraft's 200-tick
+					// steady-render threshold the entire time it is worn, so night vision renders
+					// STEADY underwater instead of strobing; the 220-tick reapply window keeps it
+					// always >200 while submerged yet lets it expire within ~4s of surfacing/removal.
+					refreshEffect(player, StatusEffects.NIGHT_VISION, 300, 220);
 				}
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 21 items (incl. Tidal tools/armor + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 68 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods + Reef Fish/Jellyfish mob buckets), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
+	}
+
+	/**
+	 * Refresh a worn-bonus status effect on a player without spamming status packets.
+	 *
+	 * <p>Re-applies {@code effect} only when it is absent or its remaining duration has dropped
+	 * below {@code reapplyBelow} — so a continuously-worn piece emits roughly one status packet per
+	 * refresh window instead of one every server tick. The effect is applied ambient + silent (no
+	 * particles, no HUD icon). Shared by the Tidal full-set water-breathing grant and all three
+	 * Feature 3 Diving Kit per-piece grants so the gating logic lives in exactly one place.</p>
+	 *
+	 * @param durationTicks duration to (re)apply; keep it comfortably above {@code reapplyBelow}
+	 *                      for an always-on effect (e.g. 220/40), or set both short for an effect
+	 *                      that should fade quickly once its condition stops holding (e.g. 60/25).
+	 * @param reapplyBelow  remaining-duration threshold under which the effect is refreshed.
+	 */
+	private static void refreshEffect(ServerPlayerEntity player, RegistryEntry<StatusEffect> effect,
+			int durationTicks, int reapplyBelow) {
+		StatusEffectInstance current = player.getStatusEffect(effect);
+		if (current == null || current.getDuration() < reapplyBelow) {
+			player.addStatusEffect(new StatusEffectInstance(
+					effect, durationTicks, 0, true, false, false));
+		}
 	}
 
 	/**

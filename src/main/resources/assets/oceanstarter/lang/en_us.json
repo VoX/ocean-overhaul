@@ -59,5 +59,17 @@
 	"item.oceanstarter.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
 	"entity.oceanstarter.abyssal_lurker": "Abyssal Lurker",
 	"item.oceanstarter.abyssal_lurker_spawn_egg": "Abyssal Lurker Spawn Egg",
+	"item.oceanstarter.megalodon_tooth": "Megalodon Tooth",
+	"item.oceanstarter.abyssal_fang": "Abyssal Fang",
+	"block.oceanstarter.glowing_plankton_block": "Glowing Plankton Block",
+	"block.oceanstarter.abyssal_vent": "Abyssal Vent",
+	"block.oceanstarter.giant_clam": "Giant Clam",
+	"item.oceanstarter.harpoon": "Harpoon",
+	"item.oceanstarter.flippers": "Flippers",
+	"item.oceanstarter.oxygen_tank": "Oxygen Tank",
+	"item.oceanstarter.deep_sea_helmet": "Deep-Sea Helmet",
+	"block.oceanstarter.aquarium": "Aquarium",
+	"item.oceanstarter.reef_fish_bucket": "Bucket of Reef Fish",
+	"item.oceanstarter.jellyfish_bucket": "Bucket of Jellyfish",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

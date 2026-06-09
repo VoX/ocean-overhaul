@@ -55,7 +55,11 @@ PARTS = {
     'body':       (0, 0, 26, 30, 20),
     'head':       (0, 51, 24, 12, 16),
     'lower_jaw':  (0, 80, 22, 7, 16),
-    'lure_stalk': (94, 26, 2, 16, 2),
+    # Jointed lure stalk: three segments (base/mid/tip) matching the model's
+    # lure_stalk -> lure_mid -> lure_tip chain; the bulb hangs off the tip.
+    'lure_stalk': (94, 26, 2, 6, 2),
+    'lure_mid':   (104, 36, 2, 6, 2),
+    'lure_tip':   (114, 36, 2, 5, 2),
     'lure_bulb':  (104, 26, 4, 4, 4),
     'tail':       (80, 51, 12, 16, 12),
     'caudal_fin': (78, 82, 1, 18, 9),
@@ -114,23 +118,24 @@ def paint_body():
     fillbox(F['head'], BODY_TOP, BODY_SIDE, BODY_BELLY)
     # mouth roof: head's +Y face ('up' rect) is render-BOTTOM = roof of the mouth.
     rect(*F['head']['up'], MOUTH)
-    # needle teeth hanging from the front edge of the mouth roof.
+    # needle teeth hanging from the front edge of the mouth roof. The roof ('up')
+    # rect shares the floor ('down') rect's v-sense, so the FRONT lip is the
+    # HIGH-v edge — same anchoring as the lower-jaw teeth (pindyj caught the old
+    # low-v row sitting backwards at the throat).
     ux, uy, uw, uh = [int(v) for v in F['head']['up']]
     for i in range(uw):
         spike = 3 if i % 2 == 0 else 2
-        rect(ux + i, uy, 1, spike, TEETH)
-    # BIG pale eye high on the head front (north) face, with a dark pupil.
-    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
-    ex, ey = nx + 2, ny + 1
-    rect(ex, ey, 4, 4, EYE)
-    rect(ex + 1, ey + 1, 2, 2, PUPIL)
-    rect(nx + nw - 6, ey, 4, 4, EYE)
-    rect(nx + nw - 5, ey + 1, 2, 2, PUPIL)
-    # also a big eye on each side (east/west) of the head, near the top-front.
+        rect(ux + i, uy + uh - spike, 1, spike, TEETH)
+    # ONE big pale eye per side (east/west) of the head, set toward the BACK of the
+    # head (VoX's pick), with a dark pupil. No eyes on the front (north) face — a
+    # front pair plus the side pair read as four eyes. Side faces unwrap with
+    # OPPOSITE u-senses (east: low-u = back, west: high-u = back), so the anchor
+    # mirrors per face.
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        rect(sx0 + 1, sy0 + 1, 4, 4, EYE)
-        rect(sx0 + 2, sy0 + 2, 2, 2, PUPIL)
+        ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
+        rect(ex0, sy0 + 1, 4, 4, EYE)
+        rect(ex0 + 1, sy0 + 2, 2, 2, PUPIL)
 
     # ---- LOWER_JAW ----
     fillbox(F['lower_jaw'], BODY_SIDE, BODY_SIDE, BODY_BELLY)
@@ -142,9 +147,10 @@ def paint_body():
         spike = 3 if i % 2 == 0 else 2
         rect(dx + i, dy + dh - spike, 1, spike, TEETH)
 
-    # ---- LURE_STALK ----
-    for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-        rect(*F['lure_stalk'][k], FIN)
+    # ---- LURE_STALK (three jointed segments) ----
+    for seg in ('lure_stalk', 'lure_mid', 'lure_tip'):
+        for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+            rect(*F[seg][k], FIN)
 
     # ---- LURE_BULB ----  pale-blue/white all 6 faces (bright so it reads from far).
     for k in ('down', 'up', 'north', 'south', 'east', 'west'):
@@ -188,21 +194,20 @@ def paint_emissive():
     # LURE BULB — all 6 faces glow.
     for k in ('down', 'up', 'north', 'south', 'east', 'west'):
         rect(*F['lure_bulb'][k], GLOW)
-    # the stalk's tip glows faintly too (top 3 px of each long face) so the glow
-    # reads as bleeding down the esca filament, not a floating cube.
+    # the stalk's TIP SEGMENT glows faintly too (top 3 px of each long face) so the
+    # glow reads as bleeding down the esca filament, not a floating cube. Only the
+    # tip — the base/mid segments stay dark like the body.
     for k in ('north', 'south', 'east', 'west'):
-        x, y, w, h = [int(v) for v in F['lure_stalk'][k]]
+        x, y, w, h = [int(v) for v in F['lure_tip'][k]]
         rect(x, y, w, min(3, h), GLOW)
 
     # EYES — glow them too (anglerfish eyes catch the lure light). Mirror the body
-    # script's eye placements EXACTLY so registration matches.
-    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
-    ey = ny + 1
-    rect(nx + 2, ey, 4, 4, GLOW)
-    rect(nx + nw - 6, ey, 4, 4, GLOW)
+    # script's eye placements EXACTLY so registration matches: side faces only,
+    # back-of-head anchor per face (east: low-u = back, west: high-u = back).
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        rect(sx0 + 1, sy0 + 1, 4, 4, GLOW)
+        ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
+        rect(ex0, sy0 + 1, 4, 4, GLOW)
 
     out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker_emissive.png"
     img.save(out)

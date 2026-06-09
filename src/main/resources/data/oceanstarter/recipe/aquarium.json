@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": {
+      "item": "oceanstarter:sea_glass"
+    },
+    "B": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GBG",
+    "GGG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanstarter:aquarium"
+  }
+}
