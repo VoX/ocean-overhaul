@@ -63,6 +63,7 @@ public class RecipeGameTest implements FabricGameTest {
 		assertRecipeResult(context, recipes, lookup, "tidal_boots", OceanStarter.TIDAL_BOOTS);
 		assertRecipeResult(context, recipes, lookup, "tidal_sword", OceanStarter.TIDAL_SWORD);
 		assertRecipeResult(context, recipes, lookup, "tidal_pickaxe", OceanStarter.TIDAL_PICKAXE);
+		assertRecipeResult(context, recipes, lookup, "abyssal_fang", OceanStarter.ABYSSAL_FANG);
 		assertRecipeResult(context, recipes, lookup, "salt_block", OceanStarter.SALT_BLOCK.asItem());
 
 		// --- shapeless: foods ---

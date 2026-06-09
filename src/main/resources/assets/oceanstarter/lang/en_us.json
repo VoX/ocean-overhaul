@@ -59,5 +59,7 @@
 	"item.oceanstarter.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
 	"entity.oceanstarter.abyssal_lurker": "Abyssal Lurker",
 	"item.oceanstarter.abyssal_lurker_spawn_egg": "Abyssal Lurker Spawn Egg",
+	"item.oceanstarter.megalodon_tooth": "Megalodon Tooth",
+	"item.oceanstarter.abyssal_fang": "Abyssal Fang",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

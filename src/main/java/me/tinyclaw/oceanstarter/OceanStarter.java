@@ -5,6 +5,7 @@ import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
+import me.tinyclaw.oceanstarter.item.AbyssalFangMaterial;
 import me.tinyclaw.oceanstarter.item.TidalToolMaterial;
 
 import net.fabricmc.api.ModInitializer;
@@ -303,6 +304,12 @@ public class OceanStarter implements ModInitializer {
 	// --- Item: Crushed Coral (crafting ingredient) ------------------------
 	public static final Item CRUSHED_CORAL = new Item(new Item.Settings());
 
+	// --- Item: Megalodon Tooth (boss drop / apex-gear crafting material) --
+	// A stacking material (default maxCount 64), NOT a 1-of trophy: the Megalodon
+	// drops 1-2 per kill and it's the blade ingredient + repair item for the
+	// Abyssal Fang apex sword. Plain Item (no food).
+	public static final Item MEGALODON_TOOTH = new Item(new Item.Settings());
+
 	// --- Item: Sea Urchin (food) ------------------------------------------
 	public static final Item SEA_URCHIN = new Item(new Item.Settings()
 			.food(new FoodComponent.Builder()
@@ -389,6 +396,22 @@ public class OceanStarter implements ModInitializer {
 			new Item.Settings().maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 	public static final Item TIDAL_BOOTS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.BOOTS,
 			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
+
+	// =====================================================================
+	// Apex weapon — Abyssal Fang (one tier ABOVE Tidal; crafted from the boss drop)
+	// =====================================================================
+	// A NEW ToolMaterial (NOT TIDAL — the point is strictly-better stats), parallel
+	// to TIDAL: durability 2200 / mining 9.0 / base attack 4.0 / netherite-class
+	// mining tier / repaired with MEGALODON_TOOTH. Same construction shape as
+	// TIDAL_SWORD — the attack-damage/attack-speed modifiers are passed explicitly
+	// via Item.Settings.attributeModifiers(...) (the ctor doesn't bake them in).
+	// createAttributeModifiers(mat, 4, -2.4f): +4 + material base 4.0 = +8 attack
+	// => DISPLAYED 9 dmg (vs Tidal 7, netherite 8); -2.4f => the vanilla 1.6/s swing.
+	public static final ToolMaterial ABYSSAL_FANG_MATERIAL = new AbyssalFangMaterial();
+
+	public static final Item ABYSSAL_FANG = new SwordItem(ABYSSAL_FANG_MATERIAL,
+			new Item.Settings().attributeModifiers(
+					SwordItem.createAttributeModifiers(ABYSSAL_FANG_MATERIAL, 4, -2.4f)));
 
 	// =====================================================================
 	// Gear of the Deep — Seafood foods
@@ -546,10 +569,12 @@ public class OceanStarter implements ModInitializer {
 				entries.add(SEA_SALT);
 				entries.add(ABYSSAL_PEARL);
 				entries.add(CRUSHED_CORAL);
+				entries.add(MEGALODON_TOOTH);
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
 				// Gear of the Deep: tools, armor, foods.
 				entries.add(TIDAL_SWORD);
+				entries.add(ABYSSAL_FANG);
 				entries.add(TIDAL_PICKAXE);
 				entries.add(TIDAL_AXE);
 				entries.add(TIDAL_SHOVEL);
@@ -656,6 +681,7 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("sea_salt"), SEA_SALT);
 		Registry.register(Registries.ITEM, id("abyssal_pearl"), ABYSSAL_PEARL);
 		Registry.register(Registries.ITEM, id("crushed_coral"), CRUSHED_CORAL);
+		Registry.register(Registries.ITEM, id("megalodon_tooth"), MEGALODON_TOOTH);
 		Registry.register(Registries.ITEM, id("sea_urchin"), SEA_URCHIN);
 		Registry.register(Registries.ITEM, id("salted_cod"), SALTED_COD);
 
@@ -665,6 +691,9 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("tidal_shovel"), TIDAL_SHOVEL);
 		Registry.register(Registries.ITEM, id("tidal_axe"), TIDAL_AXE);
 		Registry.register(Registries.ITEM, id("tidal_hoe"), TIDAL_HOE);
+
+		// Apex weapon: Abyssal Fang (crafted from the Megalodon Tooth drop).
+		Registry.register(Registries.ITEM, id("abyssal_fang"), ABYSSAL_FANG);
 
 		// Gear of the Deep: Tidal diving armor.
 		Registry.register(Registries.ITEM, id("tidal_helmet"), TIDAL_HELMET);
@@ -759,6 +788,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(SEA_SALT);
 			entries.add(ABYSSAL_PEARL);
 			entries.add(CRUSHED_CORAL);
+			entries.add(MEGALODON_TOOTH);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(entries -> {
 			entries.add(SEA_URCHIN);
@@ -776,6 +806,7 @@ public class OceanStarter implements ModInitializer {
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
 			entries.add(TIDAL_SWORD);
+			entries.add(ABYSSAL_FANG);
 			entries.add(TIDAL_HELMET);
 			entries.add(TIDAL_CHESTPLATE);
 			entries.add(TIDAL_LEGGINGS);
@@ -821,7 +852,7 @@ public class OceanStarter implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 21 items (incl. Tidal tools/armor + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 23 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 8 worldgen deposits.");
 	}
 
 	/**
