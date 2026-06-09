@@ -30,13 +30,27 @@ There is no GUI client on the build box, so **all testing is headless + server-s
 ```
 ./gradlew runGametest --no-daemon
 ```
-Boots a real headless dedicated server, runs ALL four gametest classes registered on the `fabric-gametest` entrypoint (`MegalodonGameTest`, `ReefLifeGameTest`, `DepthsGameTest`, `GearGameTest` — 14 tests total), writes JUnit to `build/gametest/report.xml`, exits non-zero on failure. The four boss tests in `MegalodonGameTest`:
-- `megalodonSpawnsAliveAtFullHealth` — spawn in water, tick 40, assert alive + HP ≥199 (catches crash-on-spawn).
-- `megalodonSpawnsFiveHitboxSegments` — assert exactly 5 segments owned by *this* boss (filtered via `isPartOf`, not radius — avoids cross-test pollution in the shared gametest world).
-- `megalodonDoesNotDrownInWater` — flood area, tick 120, assert HP ≥199 (`tickLimit=140` on this one; the default `@GameTest tickLimit` is 100).
-- `megalodonBiteDealsDamage` — anchor an AI-disabled target adjacent, drive `boss.tryAttack(prey)` directly, assert damage. (Direct tryAttack, NOT AI-timed — an AI-timed bite is flaky in a gametest world. The boss only auto-targets players, of which there are none headless.)
-The other three suites: `ReefLifeGameTest` (Reef Fish + Jellyfish spawn-liveness / no-drown), `DepthsGameTest` (the Abyssal Lurker — spawn liveness, the no-drown air-pin, and the melee bite dealing damage; same direct-tryAttack pattern as the boss), and `GearGameTest` (the Tidal diving set's worn full-set Water Breathing bonus — a real mock server player wearing all four pieces gets the effect, with partial-set + non-Tidal-head negative controls).
-Wiring: `loom { runs { gametest {...} } }` in `build.gradle` (creates the `runGametest` task + sets the `fabric-api.gametest` property + report path) and a `fabric-gametest` entrypoint in `fabric.mod.json`. The gametest API (`net.fabricmc.fabric.api.gametest.v1.FabricGameTest`, `FabricGameTest.EMPTY_STRUCTURE`) resolves transitively from fabric-api 0.116.5 — no extra dependency.
+Boots a real headless dedicated server, runs ALL **eight** gametest classes registered on the `fabric-gametest` entrypoint (**28 tests total** — count is the load-bearing number; re-derive it from the `runGametest` output / `build/gametest/report.xml` after adding tests, don't trust this line blindly), writes JUnit to `build/gametest/report.xml`, exits non-zero on failure.
+
+**Entity suites (the original four):**
+- `MegalodonGameTest` (4 — the boss):
+  - `megalodonSpawnsAliveAtFullHealth` — spawn in water, tick 40, assert alive + HP ≥199 (catches crash-on-spawn).
+  - `megalodonSpawnsFiveHitboxSegments` — assert exactly 5 segments owned by *this* boss (filtered via `isPartOf`, not radius — avoids cross-test pollution in the shared gametest world).
+  - `megalodonDoesNotDrownInWater` — flood area, tick 120, assert HP ≥199 (`tickLimit=140` on this one; the default `@GameTest tickLimit` is 100).
+  - `megalodonBiteDealsDamage` — anchor an AI-disabled target adjacent, drive `boss.tryAttack(prey)` directly, assert damage. (Direct tryAttack, NOT AI-timed — an AI-timed bite is flaky in a gametest world. The boss only auto-targets players, of which there are none headless.)
+- `ReefLifeGameTest` (4) — Reef Fish + Jellyfish spawn-liveness / no-drown, plus jellyfish-variant NBT round-trip-and-clamp.
+- `DepthsGameTest` (3) — the Abyssal Lurker: spawn liveness, the no-drown air-pin, and the melee bite dealing damage (same direct-tryAttack pattern as the boss).
+- `GearGameTest` (3) — the Tidal diving set's worn full-set Water Breathing bonus (a real mock server player wearing all four pieces gets the effect), with partial-set + non-Tidal-head negative controls.
+
+**Content suites (newly added — cover the non-entity content that `build` + `validate-data.py` can't behaviorally check):**
+- `BlockGameTest` (3) — mod blocks place + round-trip their state, salt block places as itself, and blocks drop themselves when mined.
+- `ItemGameTest` (4) — food items carry FoodComponents (+ a non-food negative control), and the Tidal tools / armor use the Tidal material in the correct slots.
+- `RecipeGameTest` (3) — key recipes are actually loaded with the right results, the Tidal-helmet shaped recipe matches its grid, and the kelp-roll shapeless recipe matches its ingredients. (This is the live, server-side counterpart to the static `category`-enum check in `validate-data.py` — it catches a recipe that fails to LOAD, not just a malformed JSON.)
+- `MobGameTest` (4) — jellyfish-variant NBT round-trips + the absent-key default stays in range, reef fish report a large school size, and the Abyssal Lurker's spawn predicate gates on water + depth.
+
+**Shared helper:** `GameTestSupport` (a `final`, static-only, non-`@GameTest` class — so it is intentionally NOT on the `fabric-gametest` entrypoint) holds the canonical `SPAWN` `BlockPos` + `fillWaterPocket(TestContext)` that every aquatic suite used to inline-duplicate. Change the flooded-pocket dimensions once, every suite follows.
+
+Wiring: `loom { runs { gametest {...} } }` in `build.gradle` (creates the `runGametest` task + sets the `fabric-api.gametest` property + report path) and the `fabric-gametest` entrypoint in `fabric.mod.json` (now lists all **eight** suite classes — add new suites there too, or they won't run). The gametest API (`net.fabricmc.fabric.api.gametest.v1.FabricGameTest`, `FabricGameTest.EMPTY_STRUCTURE`) resolves transitively from fabric-api 0.116.5 — no extra dependency.
 
 ### 2. Dedicated-server smoke test (manual, deeper end-to-end)
 ```
@@ -56,27 +70,75 @@ PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recip
 bug class) — none of which `./gradlew build` sees. Pure Python, no JDK. Regen
 procedure + provenance: `scripts/validation/README.md` + `build-registries.py`.
 
-### 4. Headless visual render (dev tool — SEE the model, don't ship blind)
+### 4. Headless visual render (dev tool — SEE the asset, don't ship blind)
+
+There are two layers here: per-subject wrappers (one entity at a time) and the
+comprehensive contact-sheet harness (EVERYTHING at once). Both render REAL
+in-game screenshots **headless** — Xvfb + Mesa llvmpipe software GL, no GPU
+needed (the LWJGL aarch64 natives are already in the gradle cache, so a 1.21.1
+dev client boots fine on this ARM box). Each shot stands up an ephemeral loopback
+server with the subject pre-staged in a lit tank/arena, joins a headless dev
+client (the **dev-only `renderprobe` source set** — a separate fabric mod that
+NEVER ships in the release jar; `jar`/`remapJar` only bundle `sourceSets.main`),
+settles ~200 frames under slow software GL, then writes the PNG. Full how-to + the
+4 render gotchas (accessibility screen / world-vs-title / peaceful-despawns-boss /
+stale framebuffer): `notes/headless-client-findings.md`.
+
+**Per-subject wrappers** (quick, one subject):
 ```
 bash scripts/render-megalodon.sh        # → /tmp/megalodon-render.png (854x480)
-# generic: ./gradlew runClientProbe -Poo.probe.out=/abs/path.png -Poo.probe.target="x y z"
+bash scripts/render-jellyfish.sh        # one jellyfish
+bash scripts/render-entity.sh <id> <out.png>   # generic entity (the engine the others + render-all wrap)
+bash scripts/render-blocks.sh / render-armor.sh
+# lowest level: ./gradlew runClientProbe -Poo.probe.out=/abs/path.png -Poo.probe.target="x y z"
 ```
-Renders a REAL in-game screenshot of an entity **headless** — Xvfb + Mesa llvmpipe
-software GL, no GPU needed (the LWJGL aarch64 natives are already in the gradle
-cache, so a 1.21.1 dev client boots fine on this ARM box). It stands up an
-ephemeral loopback server with the entity pre-summoned in a lit water tank, joins
-a headless dev client (the **dev-only `renderprobe` source set** — a separate
-fabric mod that NEVER ships in the release jar; `jar`/`remapJar` only bundle
-`sourceSets.main`), settles ~200 frames under slow software GL, then writes the
-PNG. Full how-to + the 4 render gotchas (accessibility screen / world-vs-title /
-peaceful-despawns-boss / stale framebuffer): `notes/headless-client-findings.md`.
 
-**POLICY — use this on visual work.** Any feature work that creates or changes
-visual assets (entity models/textures, block/item textures): render a test image
-with this tool and post it to the user for **review**. This is **informative, NOT
-gating** — surface the render so the user can eyeball it, but do **not** block
-progress waiting on a response; keep working. (Without it, visual bugs like the
-inside-out mouth ship blind.)
+**Comprehensive contact-sheet harness — `scripts/render-all.sh`** (the
+centerpiece visual-QA tool; renders EVERYTHING):
+```
+bash scripts/render-all.sh              # all three sheets (default)
+bash scripts/render-all.sh --blocks --items --mobs   # pick subsets
+```
+It produces three labeled CONTACT SHEETS so a human can eyeball EVERY block,
+EVERY item, and EVERY mob (incl. all 5 jellyfish color variants) for visual
+errors in one glance:
+- `docs/renders/all-blocks.png` — every block as a `setblock` wall (AIR arena), 3×3 per shot, position legend.
+- `docs/renders/all-items.png` — every item in an item_frame on a backing wall, 5×5 per shot (flat icon view — exactly the view that exposes a missing-model purple/black cube).
+- `docs/renders/all-mobs.png` — the 4 mobs each in a water tank + all 5 jellyfish variants, tiled + labeled.
+
+Content is enumerated **dynamically** from the resource dirs (blocks = blockstate
+JSON basenames, items = `models/item/*.json` basenames, mobs = the 4 entity ids +
+jellyfish Variant 0..4), so new content is auto-included with no edit to the
+script. It's a pure orchestrator: it primes one mod build, then fans each subject
+through `scripts/render-entity.sh` and montages the captured PNGs via
+`scripts/montage-renders.py` (PIL). **Heavy + slow + niced + STRICTLY SEQUENTIAL**
+— it runs exactly one MC server+client at a time (two software-GL clients would
+OOM this 4-core box), every sub-render is `nice -n 19 ionice -c3`, loopback-only,
+and self-tearing. Because each shot is a full dev-client boot under software GL,
+the whole run is long — the OPERATOR runs this, NOT CI, NOT the build/verify pass.
+
+**POLICY — render and eyeball after ANY significant visual change.** This is the
+session's hard lesson: **`./gradlew build`, `runGametest`, AND
+`validate-data.py` can all pass green while a client-only / visual asset is
+broken** — items rendering as the purple/black missing-texture cube, an
+all-black emissive mob — and that breakage ships green, because none of those
+gates ever look at rendered pixels. **An in-game render is the ONLY thing that
+catches the client-asset break class.**
+
+So: after **any** significant change — a new or changed block, item, mob, model,
+texture, OR a version bump — **run `scripts/render-all.sh` and VISUALLY INSPECT
+the three contact sheets** for missing-texture cubes, all-black / untextured
+mobs, wrong colors, and mis-seated / wrong-scale models **before considering the
+change done.** Surface the sheets to the user for review.
+
+This policy is **informative + strongly recommended, NOT a hard CI gate** —
+rendering needs the dev client + Xvfb + software GL and is too heavy/slow to run
+on every push, so it stays out of CI by design. It is on the author to run it.
+(The older per-subject `render-megalodon.sh`-style review of a single new
+entity/texture still applies for quick checks; `render-all.sh` is the
+whole-mod sweep that catches the regression class above. Without it, visual bugs
+like the inside-out mouth, the missing-model cube, and the all-black lurker ship
+blind.)
 
 ### 5. CI
 - `.github/workflows/gametest.yml` — runs `./gradlew runGametest` on every push + PR, uploads `build/gametest/report.xml`. **This is the regression net — keep it green.**
@@ -109,8 +171,9 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 - `.../client/MegalodonModel.java` / `MegalodonRenderer.java` / `NoopEntityRenderer.java` — boss model/renderer + the segment's invisible renderer.
 - `.../client/ReefFishModel.java` / `ReefFishRenderer.java` / `JellyfishModel.java` / `JellyfishRenderer.java` — the two passive mobs' `SinglePartEntityModel`s + `MobEntityRenderer`s (both on a 32x32 atlas; animated parts grabbed in the ctor).
 - `.../client/AbyssalLurkerModel.java` / `AbyssalLurkerRenderer.java` / `AbyssalLurkerEyesFeature.java` — the anglerfish model (128x128 atlas, built natively at ~2-block scale, no `scale()` override) + its renderer + an emissive feature that re-draws only the lure bulb/eye full-bright on the additive `RenderLayer.getEyes` layer (the glow mask is `textures/entity/abyssal_lurker_emissive.png`).
-- `.../gametest/MegalodonGameTest.java` / `ReefLifeGameTest.java` / `DepthsGameTest.java` / `GearGameTest.java` — the four gametest suites (14 tests): 4 boss, 4 Reef Life (fish + jelly) spawn/no-drown, 3 Abyssal Lurker (spawn/no-drown/bite), 3 Tidal gear (worn full-set water-breathing + negatives).
-- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [4 classes]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
+- `.../gametest/` — the **eight** gametest suites + a helper (28 tests total — see §1 / `runGametest` output): `MegalodonGameTest` (4 boss), `ReefLifeGameTest` (4 fish+jelly spawn/no-drown/variant), `DepthsGameTest` (3 Abyssal Lurker), `GearGameTest` (3 Tidal gear), `BlockGameTest` (3 block place/round-trip/drops), `ItemGameTest` (4 food + Tidal tool/armor material), `RecipeGameTest` (3 recipe-load + shaped/shapeless), `MobGameTest` (4 jellyfish-NBT/variant + reef school + lurker spawn predicate), and `GameTestSupport` (static-only shared `SPAWN` + `fillWaterPocket`, NOT a suite).
+- `scripts/render-all.sh` — the comprehensive contact-sheet visual-QA harness (see §4): renders `docs/renders/all-{blocks,items,mobs}.png`. Wraps `render-entity.sh` + montages via `montage-renders.py`.
+- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [**8 classes**]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
 - `paint_reef_fish.py` / `paint_jellyfish.py` (repo root + /tmp) — the entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look).
 - `scripts/playtest-server.sh` — the smoke test. `paint_megalodon.py` (in repo root or /tmp) — the entity texture painter.
 

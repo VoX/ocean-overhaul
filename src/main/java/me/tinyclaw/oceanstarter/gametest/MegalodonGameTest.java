@@ -1,14 +1,15 @@
 package me.tinyclaw.oceanstarter.gametest;
 
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.SPAWN;
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.fillWaterPocket;
+
 import java.util.List;
 
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.SalmonEntity;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
-import net.minecraft.util.math.BlockPos;
 
 import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
@@ -30,8 +31,6 @@ import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
  * radius would catch a sibling test's boss + its 5 segments and give false failures.</p>
  */
 public class MegalodonGameTest implements FabricGameTest {
-
-	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
 	/**
 	 * (a) spawn-no-crash: summon the boss in a small water pocket, let it run its
@@ -158,16 +157,5 @@ public class MegalodonGameTest implements FabricGameTest {
 					+ " removed=" + prey.isRemoved());
 			context.complete();
 		});
-	}
-
-	/** Flood a small cube around the spawn so the aquatic boss has water to sit in. */
-	private static void fillWaterPocket(TestContext context) {
-		for (int x = 0; x <= 4; x++) {
-			for (int y = 1; y <= 4; y++) {
-				for (int z = 0; z <= 4; z++) {
-					context.setBlockState(new BlockPos(x, y, z), Blocks.WATER);
-				}
-			}
-		}
 	}
 }

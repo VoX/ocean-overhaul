@@ -1,7 +1,9 @@
 package me.tinyclaw.oceanstarter.gametest;
 
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.SPAWN;
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.fillWaterPocket;
+
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
@@ -44,8 +46,6 @@ import me.tinyclaw.oceanstarter.OceanStarter;
  * to the players it created and asserts against those — never by radius.</p>
  */
 public class GearGameTest implements FabricGameTest {
-
-	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
 	/**
 	 * Worn-effect proof: a player submerged in water wearing the FULL Tidal set (all four
@@ -193,16 +193,5 @@ public class GearGameTest implements FabricGameTest {
 		BlockPos abs = context.getAbsolutePos(relPos);
 		player.refreshPositionAndAngles(abs.getX() + 0.5, abs.getY(), abs.getZ() + 0.5, 0.0F, 0.0F);
 		player.setVelocity(net.minecraft.util.math.Vec3d.ZERO);
-	}
-
-	/** Flood a small cube around the spawn so the test players are submerged. */
-	private static void fillWaterPocket(TestContext context) {
-		for (int x = 0; x <= 4; x++) {
-			for (int y = 1; y <= 4; y++) {
-				for (int z = 0; z <= 4; z++) {
-					context.setBlockState(new BlockPos(x, y, z), Blocks.WATER);
-				}
-			}
-		}
 	}
 }

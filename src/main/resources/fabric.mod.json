@@ -24,7 +24,11 @@
 			"me.tinyclaw.oceanstarter.gametest.MegalodonGameTest",
 			"me.tinyclaw.oceanstarter.gametest.ReefLifeGameTest",
 			"me.tinyclaw.oceanstarter.gametest.GearGameTest",
-			"me.tinyclaw.oceanstarter.gametest.DepthsGameTest"
+			"me.tinyclaw.oceanstarter.gametest.DepthsGameTest",
+			"me.tinyclaw.oceanstarter.gametest.BlockGameTest",
+			"me.tinyclaw.oceanstarter.gametest.RecipeGameTest",
+			"me.tinyclaw.oceanstarter.gametest.ItemGameTest",
+			"me.tinyclaw.oceanstarter.gametest.MobGameTest"
 		]
 	},
 	"depends": {

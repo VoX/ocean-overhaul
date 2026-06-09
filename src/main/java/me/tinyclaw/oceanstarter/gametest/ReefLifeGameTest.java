@@ -1,10 +1,11 @@
 package me.tinyclaw.oceanstarter.gametest;
 
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.SPAWN;
+import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.fillWaterPocket;
+
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.block.Blocks;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
-import net.minecraft.util.math.BlockPos;
 
 import me.tinyclaw.oceanstarter.OceanStarter;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
@@ -26,8 +27,6 @@ import me.tinyclaw.oceanstarter.entity.ReefFish;
  * reference to the entity it spawned and asserts against that — never counts by radius.</p>
  */
 public class ReefLifeGameTest implements FabricGameTest {
-
-	private static final BlockPos SPAWN = new BlockPos(2, 2, 2);
 
 	/**
 	 * Reef fish spawns, survives its settle ticks (swim AI / schooling / water-breathing
@@ -139,16 +138,5 @@ public class ReefLifeGameTest implements FabricGameTest {
 				"Jellyfish took drown/suffocation damage: health was " + jelly.getHealth());
 			context.complete();
 		});
-	}
-
-	/** Flood a small cube around the spawn so the aquatic mobs have water to sit in. */
-	private static void fillWaterPocket(TestContext context) {
-		for (int x = 0; x <= 4; x++) {
-			for (int y = 1; y <= 4; y++) {
-				for (int z = 0; z <= 4; z++) {
-					context.setBlockState(new BlockPos(x, y, z), Blocks.WATER);
-				}
-			}
-		}
 	}
 }
