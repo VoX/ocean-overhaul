@@ -64,5 +64,9 @@
 	"block.oceanstarter.glowing_plankton_block": "Glowing Plankton Block",
 	"block.oceanstarter.abyssal_vent": "Abyssal Vent",
 	"block.oceanstarter.giant_clam": "Giant Clam",
+	"item.oceanstarter.harpoon": "Harpoon",
+	"item.oceanstarter.flippers": "Flippers",
+	"item.oceanstarter.oxygen_tank": "Oxygen Tank",
+	"item.oceanstarter.deep_sea_helmet": "Deep-Sea Helmet",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

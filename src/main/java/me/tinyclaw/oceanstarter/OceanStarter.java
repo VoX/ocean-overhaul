@@ -1,11 +1,13 @@
 package me.tinyclaw.oceanstarter;
 
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
+import me.tinyclaw.oceanstarter.entity.HarpoonEntity;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import me.tinyclaw.oceanstarter.entity.Megalodon;
 import me.tinyclaw.oceanstarter.entity.MegalodonSegment;
 import me.tinyclaw.oceanstarter.entity.ReefFish;
 import me.tinyclaw.oceanstarter.item.AbyssalFangMaterial;
+import me.tinyclaw.oceanstarter.item.HarpoonItem;
 import me.tinyclaw.oceanstarter.item.TidalToolMaterial;
 
 import net.fabricmc.api.ModInitializer;
@@ -35,6 +37,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnLocationTypes;
 import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.WaterCreatureEntity;
@@ -433,6 +436,61 @@ public class OceanStarter implements ModInitializer {
 			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 
 	// =====================================================================
+	// Feature 3 — Diving Kit (3-piece utility armor: underwater traversal)
+	// =====================================================================
+	// Mirrors the TIDAL armor block above EXACTLY (same 7-arg ArmorMaterial record via
+	// registerReference, same ArmorItem(RegistryEntry, Type, Settings) shape) — only the
+	// material values + the layer/texture id differ. A modest utility tier (below Tidal's
+	// 2/6/5/2 defense + 9 enchantability): defense 1/3/-/1, enchantability 5. It is a
+	// deliberate 3-piece kit (helmet/chestplate/boots, NO leggings); the LEGGINGS/BODY map
+	// entries exist only to mirror the Tidal map's shape. The worn texture resolves from
+	// Layer(id("diving")) -> textures/models/armor/diving_layer_{1,2}.png. The per-piece
+	// underwater effects are wired through the existing END_SERVER_TICK poll (see onInitialize).
+	private static final Map<ArmorItem.Type, Integer> DIVING_DEFENSE = makeDivingDefense();
+
+	private static Map<ArmorItem.Type, Integer> makeDivingDefense() {
+		EnumMap<ArmorItem.Type, Integer> m = new EnumMap<>(ArmorItem.Type.class);
+		m.put(ArmorItem.Type.HELMET, 1);
+		m.put(ArmorItem.Type.CHESTPLATE, 3);
+		m.put(ArmorItem.Type.LEGGINGS, 0);
+		m.put(ArmorItem.Type.BOOTS, 1);
+		m.put(ArmorItem.Type.BODY, 0);
+		return m;
+	}
+
+	public static final RegistryEntry<ArmorMaterial> DIVING_ARMOR = Registry.registerReference(
+			Registries.ARMOR_MATERIAL,
+			id("diving"),
+			new ArmorMaterial(
+					DIVING_DEFENSE,
+					5, // enchantability (below Tidal's 9)
+					SoundEvents.ITEM_ARMOR_EQUIP_TURTLE,
+					() -> Ingredient.ofItems(ABYSSAL_PEARL), // same repair item as Tidal
+					List.of(new ArmorMaterial.Layer(id("diving"))),
+					0.0f, // toughness
+					0.0f  // knockback resistance
+			));
+
+	// Per-slot durability multiplier (just under iron's 15), scaled per slot by ArmorItem.Type.
+	private static final int DIVING_ARMOR_DURABILITY = 13;
+
+	// 3 pieces only — no leggings (intentional). Flippers=boots, Oxygen Tank=chestplate,
+	// Deep-Sea Helmet=helmet. Effects (DOLPHINS_GRACE / WATER_BREATHING / NIGHT_VISION) are
+	// applied per-piece by the worn-bonus poll in onInitialize.
+	public static final Item FLIPPERS = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.BOOTS,
+			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+	public static final Item OXYGEN_TANK = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.CHESTPLATE,
+			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+	public static final Item DEEP_SEA_HELMET = new ArmorItem(DIVING_ARMOR, ArmorItem.Type.HELMET,
+			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(DIVING_ARMOR_DURABILITY)));
+
+	// --- Item: Harpoon (Feature 3) — thrown spear; 1-of, durable ----------
+	// A single-stack, durable spear. On use() it launches the HARPOON_ENTITY (see HarpoonItem).
+	// maxDamage(250) ~ between iron-tier durability; maxCount(1) like a trident.
+	public static final Item HARPOON = new HarpoonItem(
+			new Item.Settings().maxCount(1).maxDamage(250));
+
+	// =====================================================================
 	// Apex weapon — Abyssal Fang (one tier ABOVE Tidal; crafted from the boss drop)
 	// =====================================================================
 	// A NEW ToolMaterial (NOT TIDAL — the point is strictly-better stats), parallel
@@ -506,6 +564,24 @@ public class OceanStarter implements ModInitializer {
 					.maxTrackingRange(10)
 					.disableSaving()
 					.build("megalodon_segment"));
+
+	// --- Projectile: Harpoon (Feature 3) ----------------------------------
+	// A thrown spear projectile (PersistentProjectileEntity, like a trident but no riptide).
+	// Registered here in a static-field initializer (like MEGALODON_SEGMENT) so build-registries.py's
+	// regex matches and HarpoonItem can reference a fully-built EntityType. SpawnGroup.MISC (it never
+	// naturally spawns -> no SpawnRestriction; it carries no attributes -> no FabricDefaultAttributeRegistry).
+	// trackingTickInterval(20) + maxTrackingRange(8): mirror vanilla TridentEntity's EntityType
+	// tracking (vanilla uses interval 20 / range 4) so the billboard syncs to observers exactly like
+	// a thrown trident. A projectile relies on velocityClient interpolation between these tracker
+	// position updates, so the vanilla-trident cadence is the proven-smooth value here.
+	public static final EntityType<HarpoonEntity> HARPOON_ENTITY = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("harpoon"),
+			EntityType.Builder.<HarpoonEntity>create(HarpoonEntity::new, SpawnGroup.MISC)
+					.dimensions(0.5F, 0.5F)
+					.maxTrackingRange(8)
+					.trackingTickInterval(20)
+					.build("harpoon"));
 
 	// --- Spawn egg for the Megalodon (grey body / pale belly) -------------
 	public static final SpawnEggItem MEGALODON_SPAWN_EGG =
@@ -621,6 +697,11 @@ public class OceanStarter implements ModInitializer {
 				entries.add(TIDAL_CHESTPLATE);
 				entries.add(TIDAL_LEGGINGS);
 				entries.add(TIDAL_BOOTS);
+				// Feature 3: Harpoon + Diving Kit.
+				entries.add(HARPOON);
+				entries.add(DEEP_SEA_HELMET);
+				entries.add(OXYGEN_TANK);
+				entries.add(FLIPPERS);
 				entries.add(RAW_REEF_FISH);
 				entries.add(COOKED_REEF_FISH);
 				entries.add(KELP_ROLL);
@@ -747,6 +828,16 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.ITEM, id("tidal_leggings"), TIDAL_LEGGINGS);
 		Registry.register(Registries.ITEM, id("tidal_boots"), TIDAL_BOOTS);
 
+		// Feature 3: Harpoon item (the EntityType is registered in its static-field initializer
+		// above; both share the id "harpoon" in DIFFERENT registries — ITEM vs ENTITY_TYPE — which
+		// is legal, the same convention BlockItems use).
+		Registry.register(Registries.ITEM, id("harpoon"), HARPOON);
+
+		// Feature 3: Diving Kit (3-piece utility armor).
+		Registry.register(Registries.ITEM, id("flippers"), FLIPPERS);
+		Registry.register(Registries.ITEM, id("oxygen_tank"), OXYGEN_TANK);
+		Registry.register(Registries.ITEM, id("deep_sea_helmet"), DEEP_SEA_HELMET);
+
 		// Gear of the Deep: Seafood foods.
 		Registry.register(Registries.ITEM, id("raw_reef_fish"), RAW_REEF_FISH);
 		Registry.register(Registries.ITEM, id("cooked_reef_fish"), COOKED_REEF_FISH);
@@ -860,6 +951,11 @@ public class OceanStarter implements ModInitializer {
 			entries.add(TIDAL_CHESTPLATE);
 			entries.add(TIDAL_LEGGINGS);
 			entries.add(TIDAL_BOOTS);
+			// Feature 3: Harpoon (thrown weapon) + Diving Kit pieces.
+			entries.add(HARPOON);
+			entries.add(DEEP_SEA_HELMET);
+			entries.add(OXYGEN_TANK);
+			entries.add(FLIPPERS);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
 			entries.add(DRIFTWOOD_BUTTON);
@@ -875,33 +971,69 @@ public class OceanStarter implements ModInitializer {
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanStarterWorldgen.register();
 
-		// Gear of the Deep — worn-armor effect: wearing the FULL Tidal set (all four
-		// pieces — helmet/chestplate/leggings/boots) grants WATER_BREATHING. No mixin:
-		// poll every server tick and refresh a short-duration effect (220 ticks > the
-		// poll gap so it never lapses). The effect is silent (no particles, no HUD
-		// icon) and harmless on land. A partial set grants nothing — it's a set bonus.
+		// Gear of the Deep — worn-armor effects (no mixin): poll every server tick and refresh
+		// short-duration effects so they never lapse. All grants go through refreshEffect(...),
+		// which gates re-application to ~once per refresh (absent-or-about-to-lapse) instead of
+		// one status packet every tick — the packet-storm-safe pattern.
+		//   * Tidal FULL SET (all four pieces) -> WATER_BREATHING (set bonus; partial grants nothing).
+		//   * Feature 3 Diving Kit, PER PIECE (wear any one alone -> its effect):
+		//       Flippers (boots)      -> DOLPHINS_GRACE while in water (swim speed; no-op on land)
+		//       Oxygen Tank (chest)   -> WATER_BREATHING (harmless on land; no gate)
+		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (short duration so it fades
+		//                                within ~3 s of surfacing, avoiding the night-vision flash)
+		// The effects are silent (no particles, no HUD icon).
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-				boolean fullSet =
+				// Tidal full-set water breathing (rerouted through refreshEffect — same 220/40
+				// numbers, identical behavior, just deduped).
+				boolean fullTidalSet =
 						player.getEquippedStack(EquipmentSlot.HEAD).getItem() == TIDAL_HELMET
 						&& player.getEquippedStack(EquipmentSlot.CHEST).getItem() == TIDAL_CHESTPLATE
 						&& player.getEquippedStack(EquipmentSlot.LEGS).getItem() == TIDAL_LEGGINGS
 						&& player.getEquippedStack(EquipmentSlot.FEET).getItem() == TIDAL_BOOTS;
-				if (fullSet) {
-					// Only re-apply when the effect is absent or about to lapse, so we emit
-					// ~one status packet per refresh instead of one every tick (the 220-tick
-					// duration stays well above the <40 reapply threshold, so it never
-					// actually wears off for a full-set wearer).
-					var e = player.getStatusEffect(StatusEffects.WATER_BREATHING);
-					if (e == null || e.getDuration() < 40) {
-						player.addStatusEffect(new StatusEffectInstance(
-								StatusEffects.WATER_BREATHING, 220, 0, true, false, false));
-					}
+				if (fullTidalSet) {
+					refreshEffect(player, StatusEffects.WATER_BREATHING, 220, 40);
+				}
+
+				// Feature 3 — Diving Kit per-piece effects (independent of one another).
+				if (player.getEquippedStack(EquipmentSlot.FEET).getItem() == FLIPPERS
+						&& player.isTouchingWater()) {
+					refreshEffect(player, StatusEffects.DOLPHINS_GRACE, 220, 40);
+				}
+				if (player.getEquippedStack(EquipmentSlot.CHEST).getItem() == OXYGEN_TANK) {
+					refreshEffect(player, StatusEffects.WATER_BREATHING, 220, 40);
+				}
+				if (player.getEquippedStack(EquipmentSlot.HEAD).getItem() == DEEP_SEA_HELMET
+						&& player.isSubmergedInWater()) {
+					refreshEffect(player, StatusEffects.NIGHT_VISION, 60, 25);
 				}
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 44 blocks, 23 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 44 blocks, 27 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, ocean_overhaul tab, 11 worldgen deposits.");
+	}
+
+	/**
+	 * Refresh a worn-bonus status effect on a player without spamming status packets.
+	 *
+	 * <p>Re-applies {@code effect} only when it is absent or its remaining duration has dropped
+	 * below {@code reapplyBelow} — so a continuously-worn piece emits roughly one status packet per
+	 * refresh window instead of one every server tick. The effect is applied ambient + silent (no
+	 * particles, no HUD icon). Shared by the Tidal full-set water-breathing grant and all three
+	 * Feature 3 Diving Kit per-piece grants so the gating logic lives in exactly one place.</p>
+	 *
+	 * @param durationTicks duration to (re)apply; keep it comfortably above {@code reapplyBelow}
+	 *                      for an always-on effect (e.g. 220/40), or set both short for an effect
+	 *                      that should fade quickly once its condition stops holding (e.g. 60/25).
+	 * @param reapplyBelow  remaining-duration threshold under which the effect is refreshed.
+	 */
+	private static void refreshEffect(ServerPlayerEntity player, RegistryEntry<StatusEffect> effect,
+			int durationTicks, int reapplyBelow) {
+		StatusEffectInstance current = player.getStatusEffect(effect);
+		if (current == null || current.getDuration() < reapplyBelow) {
+			player.addStatusEffect(new StatusEffectInstance(
+					effect, durationTicks, 0, true, false, false));
+		}
 	}
 
 	/**
