@@ -120,17 +120,22 @@ def _face(tex, size, O, e1, e2, br):
     warped.putalpha(Image.composite(warped.split()[3], Image.new("L", (W, H), 0), mask))
     return _bright(warped, br)
 
-def iso_cube(tex, W=30, Vh=30, frac=1.0):
+def iso_cube(tex, W=30, Vh=None, frac=1.0):
     tex = tex.convert("RGBA")
     if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
+    # True isometric: top-face half-height is W*tan(30deg) and the vertical edge
+    # equals the projected cube edge (2*T), so a full cube renders ~15% taller
+    # than wide instead of squished into a square bounding box.
+    T = max(1, round(W * 3 ** -0.5))
+    if Vh is None: Vh = 2 * T
     # For a partial-height block (slab, frac<1) the side faces only show the BOTTOM
     # frac of the block, so crop the texture to that strip instead of squishing the
     # full texture into the shortened face. Top face always uses the full texture.
     side = tex if frac >= 1.0 else tex.crop((0, 16 - max(1, int(round(16*frac))), 16, 16))
     toff = int(Vh*(1-frac)); vh = int(Vh*frac); cx = W
-    A=(cx,toff); B=(2*W,toff+W//2); C=(cx,toff+W); D=(0,toff+W//2)
-    E=(2*W,toff+W//2+vh); G=(0,toff+W//2+vh)
-    cw, ch = 2*W+1, toff+W+vh+1
+    A=(cx,toff); B=(2*W,toff+T); C=(cx,toff+2*T); D=(0,toff+T)
+    E=(2*W,toff+T+vh); G=(0,toff+T+vh)
+    cw, ch = 2*W+1, toff+2*T+vh+1
     cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     for O, e1, e2, br, ft in [
         (D, (A[0]-D[0],A[1]-D[1]), (C[0]-D[0],C[1]-D[1]), 1.00, tex),    # top
@@ -140,16 +145,18 @@ def iso_cube(tex, W=30, Vh=30, frac=1.0):
         if f: cv.alpha_composite(f)
     return cv
 
-def iso_stair(tex, W=30, Vh=30):
+def iso_stair(tex, W=30, Vh=None):
     """True iso stair: an upper step occupying the BACK half-depth (full height)
     plus a lower step on the FRONT half (half height), so the front tread + riser
     are visible. Steps along the j axis; same projection/brightness as iso_cube.
     Visible faces only (top + i=0 left + j=1 front), drawn back-to-front."""
     tex = tex.convert("RGBA")
     if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
+    T = max(1, round(W * 3 ** -0.5))
+    if Vh is None: Vh = 2 * T
     def S(i, j, y):
-        return (int(i*W + j*W), int((W//2) - i*(W//2) + j*(W//2) + y*Vh))
-    cw, ch = 2*W+1, W+Vh+1
+        return (int(i*W + j*W), int(T - i*T + j*T + y*Vh))
+    cw, ch = 2*W+1, 2*T+Vh+1
     cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     def quad(O, U, V, src, br):
         sub = tex.crop(src)
