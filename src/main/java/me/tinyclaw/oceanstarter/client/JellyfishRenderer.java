@@ -6,7 +6,6 @@ import me.tinyclaw.oceanstarter.entity.Jellyfish;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -14,29 +13,22 @@ import net.minecraft.util.math.MathHelper;
  * hand-painted bell+tentacle texture, and renders the jelly as a self-lit, neon
  * bioluminescent creature.
  *
- * <p><b>Per-color variant.</b> {@link #getTexture} maps the entity's synced variant index
+ * <p><b>Per-color variant.</b> {@link #updateRenderState} snapshots the entity's synced
+ * variant index into the {@link JellyfishRenderState}, and {@link #getTexture} maps that
  * (0..4 → green/blue/pink/red/orange) to the matching texture in {@link #TEXTURES}. The
- * index is clamped defensively (even though {@link Jellyfish#setVariant} already clamps)
- * so a corrupt value can never throw {@code ArrayIndexOutOfBounds} on the client. This is
- * a Java {@link Identifier} array, NOT a JSON model, so the data validator does NOT police
- * it — every path here must resolve to a real PNG on disk.</p>
+ * index is clamped defensively so a corrupt value can never throw
+ * {@code ArrayIndexOutOfBounds} on the render thread. This is a Java {@link Identifier}
+ * array, NOT a JSON model, so the data validator does NOT police it — every path here must
+ * resolve to a real PNG on disk.</p>
  *
  * <p><b>Glow in the dark.</b> {@link #getBlockLight} is overridden to a constant 15
  * (full block-light). {@code getLight} is {@code final} and combines sky light with
  * {@code getBlockLight}, so pinning the block-light component to max forces the jelly to
- * render at full brightness regardless of ambient darkness — reading as "glows in the
- * dark / stays vivid in deep water." It does NOT emit light into the world (that would
- * need a mixin / dynamic-lighting mod); the effect is purely the entity's own render
- * brightness, which is the intended contained behavior. Combined with the translucent
- * layer below, the bell reads as self-lit neon.</p>
- *
- * <p>The translucent look is baked into the PNGs (semi-transparent pixels); the actual
- * alpha-blending comes from {@link JellyfishModel} constructing itself on the
- * {@code RenderLayer::getEntityTranslucent} layer. (The EntityModel default,
- * {@code getEntityCutoutNoCull}, is alpha-TESTED — it would drop the soft pixels and
- * draw a solid blob, so the layer must be set on the model, not left to default.)</p>
+ * render at full brightness regardless of ambient darkness. Combined with the translucent
+ * layer set on {@link JellyfishModel}, the bell reads as self-lit neon.</p>
  */
-public class JellyfishRenderer extends MobEntityRenderer<Jellyfish, JellyfishModel> {
+public class JellyfishRenderer
+		extends MobEntityRenderer<Jellyfish, JellyfishRenderState, JellyfishModel> {
 
 	/** Variant index → texture. Order MUST match {@code Jellyfish} variant ordering. */
 	private static final Identifier[] TEXTURES = {
@@ -52,12 +44,25 @@ public class JellyfishRenderer extends MobEntityRenderer<Jellyfish, JellyfishMod
 	}
 
 	@Override
-	public Identifier getTexture(Jellyfish entity) {
-		return TEXTURES[MathHelper.clamp(entity.getVariant(), 0, TEXTURES.length - 1)];
+	public JellyfishRenderState createRenderState() {
+		return new JellyfishRenderState();
 	}
 
 	@Override
-	protected int getBlockLight(Jellyfish entity, BlockPos pos) {
+	public void updateRenderState(Jellyfish entity, JellyfishRenderState state, float tickDelta) {
+		super.updateRenderState(entity, state, tickDelta);
+		// Snapshot the live variant so getTexture (off the render thread) reads the state,
+		// not the entity.
+		state.variant = entity.getVariant();
+	}
+
+	@Override
+	public Identifier getTexture(JellyfishRenderState state) {
+		return TEXTURES[MathHelper.clamp(state.variant, 0, TEXTURES.length - 1)];
+	}
+
+	@Override
+	protected int getBlockLight(Jellyfish entity, net.minecraft.util.math.BlockPos pos) {
 		// Full-bright: the neon bell stays vivid in dark / deep water (visual only).
 		return 15;
 	}

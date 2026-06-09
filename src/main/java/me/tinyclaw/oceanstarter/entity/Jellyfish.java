@@ -72,9 +72,9 @@ public class Jellyfish extends WaterCreatureEntity {
 		// WaterCreatureEntity has no createWaterCreatureAttributes factory; the generic
 		// mob attribute set is the right base.
 		return MobEntity.createMobAttributes()
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 4.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 8.0);
+				.add(EntityAttributes.MAX_HEALTH, 4.0)
+				.add(EntityAttributes.MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.FOLLOW_RANGE, 8.0);
 	}
 
 	@Override

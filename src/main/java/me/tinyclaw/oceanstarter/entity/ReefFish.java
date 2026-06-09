@@ -37,9 +37,9 @@ public class ReefFish extends SchoolingFishEntity {
 
 	public static DefaultAttributeContainer.Builder createAttributes() {
 		return FishEntity.createFishAttributes()
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 3.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.9)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 16.0);
+				.add(EntityAttributes.MAX_HEALTH, 3.0)
+				.add(EntityAttributes.MOVEMENT_SPEED, 0.9)
+				.add(EntityAttributes.FOLLOW_RANGE, 16.0);
 	}
 
 	/** Bigger schools than the default 5 — reef fish move in tight shoals. */

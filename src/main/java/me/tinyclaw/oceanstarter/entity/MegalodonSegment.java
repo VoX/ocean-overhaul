@@ -40,7 +40,8 @@ public class MegalodonSegment extends Entity {
 	}
 
 	@Override
-	public boolean isCollidable() {
+	public boolean isCollidable(Entity entity) {
+		// 1.21.2+: isCollidable now takes the colliding entity.
 		return false;
 	}
 
@@ -71,7 +72,8 @@ public class MegalodonSegment extends Entity {
 		super.tick();
 		// Self-clean if our shark is gone — covers removal paths that bypass the
 		// owner's remove() override (e.g. chunk unload calls setRemoved directly).
-		if (!this.getWorld().isClient() && (this.owner == null || this.owner.isRemoved())) {
+		// 1.21.5+: Entity.getWorld() was renamed getEntityWorld().
+		if (!this.getEntityWorld().isClient() && (this.owner == null || this.owner.isRemoved())) {
 			this.discard();
 		}
 	}

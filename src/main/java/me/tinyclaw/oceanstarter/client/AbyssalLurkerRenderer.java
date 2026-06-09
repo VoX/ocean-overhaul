@@ -5,6 +5,7 @@ import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Identifier;
 
 /**
@@ -19,16 +20,15 @@ import net.minecraft.util.Identifier;
  * <p><b>Only the lure glows.</b> {@link AbyssalLurkerEyesFeature} (added below) re-draws
  * the model through a black-background emissive mask on the additive
  * {@code RenderLayer.getEyes} layer at full brightness, so just the bulb + eye pixels add
- * their colour over the world and POP as a glowing esca while the body stays normally lit
- * — the actual deep-sea-anglerfish look. {@code addFeature} is {@code protected final} on
- * {@code LivingEntityRenderer} and this renderer IS a {@code FeatureRendererContext}, so
- * passing {@code this} is valid.</p>
+ * their colour over the world and POP as a glowing esca while the body stays normally lit.</p>
  *
- * <p>The shadow radius is sized for the ~2-block (elder-guardian-sized) fish; the model is
- * built natively at that scale so there is no {@code scale()} override — the visual stays
- * coupled to the hitbox.</p>
+ * <p>1.21.5+ render pipeline: a {@link MobEntityRenderer} on
+ * {@code <AbyssalLurker, LivingEntityRenderState, AbyssalLurkerModel>}; no extra per-frame
+ * data beyond the base living state. The model is built natively at ~2-block scale so
+ * there is no {@code scale()} override — the visual stays coupled to the hitbox.</p>
  */
-public class AbyssalLurkerRenderer extends MobEntityRenderer<AbyssalLurker, AbyssalLurkerModel> {
+public class AbyssalLurkerRenderer
+		extends MobEntityRenderer<AbyssalLurker, LivingEntityRenderState, AbyssalLurkerModel> {
 
 	private static final Identifier TEXTURE =
 			OceanStarter.id("textures/entity/abyssal_lurker.png");
@@ -41,7 +41,12 @@ public class AbyssalLurkerRenderer extends MobEntityRenderer<AbyssalLurker, Abys
 	}
 
 	@Override
-	public Identifier getTexture(AbyssalLurker entity) {
+	public LivingEntityRenderState createRenderState() {
+		return new LivingEntityRenderState();
+	}
+
+	@Override
+	public Identifier getTexture(LivingEntityRenderState state) {
 		return TEXTURE;
 	}
 }

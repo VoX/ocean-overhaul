@@ -64,13 +64,14 @@ public class Megalodon extends HostileEntity {
 	}
 
 	public static DefaultAttributeContainer.Builder createAttributes() {
+		// 1.21.2+: the EntityAttributes constants dropped their GENERIC_ prefix.
 		return HostileEntity.createHostileAttributes()
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 200.0)
-				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 12.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.6)
-				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.6)
-				.add(EntityAttributes.GENERIC_ATTACK_KNOCKBACK, 1.5)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32.0);
+				.add(EntityAttributes.MAX_HEALTH, 200.0)
+				.add(EntityAttributes.ATTACK_DAMAGE, 12.0)
+				.add(EntityAttributes.MOVEMENT_SPEED, 0.6)
+				.add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.6)
+				.add(EntityAttributes.ATTACK_KNOCKBACK, 1.5)
+				.add(EntityAttributes.FOLLOW_RANGE, 32.0);
 	}
 
 	@Override
@@ -130,8 +131,9 @@ public class Megalodon extends HostileEntity {
 	}
 
 	@Override
-	protected void mobTick() {
-		super.mobTick();
+	protected void mobTick(ServerWorld world) {
+		// 1.21.2+: mobTick now takes the ServerWorld.
+		super.mobTick(world);
 		// Drive the boss bar from current health (server-side hook).
 		this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
 	}
@@ -146,8 +148,9 @@ public class Megalodon extends HostileEntity {
 	 * gape actually connects, while keeping the small-box + segments design intact.
 	 */
 	@Override
-	protected Box getAttackBox() {
-		Box base = super.getAttackBox();
+	protected Box getAttackBox(double extraReach) {
+		// 1.21.2+: getAttackBox now takes the attack-reach distance; super applies it.
+		Box base = super.getAttackBox(extraReach);
 		// Forward horizontal unit vector from bodyYaw — same convention as
 		// updateSegments(): fx = -sin(yaw), fz = cos(yaw).
 		float yawRad = this.bodyYaw * ((float) Math.PI / 180.0F);
@@ -175,7 +178,8 @@ public class Megalodon extends HostileEntity {
 	@Override
 	public void tick() {
 		super.tick();
-		if (this.getWorld() instanceof ServerWorld serverWorld) {
+		// 1.21.5+: Entity.getWorld() was renamed getEntityWorld().
+		if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
 			this.updateSegments(serverWorld);
 		}
 	}
