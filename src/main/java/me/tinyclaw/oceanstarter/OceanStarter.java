@@ -1058,12 +1058,16 @@ public class OceanStarter implements ModInitializer {
 				}
 				if (player.getEquippedStack(EquipmentSlot.HEAD).getItem() == DEEP_SEA_HELMET
 						&& player.isSubmergedInWater()) {
-					refreshEffect(player, StatusEffects.NIGHT_VISION, 60, 25);
+					// Applied duration (300t/15s) stays comfortably above Minecraft's 200-tick
+					// steady-render threshold the entire time it is worn, so night vision renders
+					// STEADY underwater instead of strobing; the 220-tick reapply window keeps it
+					// always >200 while submerged yet lets it expire within ~4s of surfacing/removal.
+					refreshEffect(player, StatusEffects.NIGHT_VISION, 300, 220);
 				}
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 45 blocks (incl. the Aquarium tank), 30 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods + Reef Fish/Jellyfish mob buckets), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 68 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods + Reef Fish/Jellyfish mob buckets), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**

@@ -104,15 +104,17 @@ public final class OceanStarterWorldgen {
 				6, 1, 3);
 
 		// The Abyssal Trench: a hostile deep-sea predator, CONCENTRATED into the deep.
-		// Deep oceans only (IS_DEEP_OCEAN), MONSTER group, weight raised 8 -> 16 so the
-		// trench is a genuine threat — but kept to small groups of 1-2 so it's danger,
-		// not a swarm. The lurker's static canSpawn predicate further gates each spawn
-		// on submerged water (no light check — it lurks day or night).
+		// Deep oceans only (IS_DEEP_OCEAN), MONSTER group, weight 8 — concentrated enough
+		// to make the trench a genuine threat without dogpiling a diver (a 24HP/5-dmg hostile
+		// sharing the MONSTER cap; 16 read as too swarmy). Kept to small groups of 1-2 so
+		// it's danger, not a swarm. The lurker's static canSpawn predicate further gates each
+		// spawn on submerged water (no light check — it lurks day or night).
+		// TUNABLE: bump back up for a more crowded trench or down for a sparser one.
 		BiomeModifications.addSpawn(
 				BiomeSelectors.tag(BiomeTags.IS_DEEP_OCEAN),
 				SpawnGroup.MONSTER,
 				OceanStarter.ABYSSAL_LURKER,
-				16, 1, 2);
+				8, 1, 2);
 
 		// The Abyssal Trench: the apex predator, CONCENTRATED into the deep. The
 		// Megalodon boss spawns naturally in deep oceans only; weight raised 1 -> 3 so

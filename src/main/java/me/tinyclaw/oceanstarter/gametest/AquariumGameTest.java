@@ -3,10 +3,14 @@ package me.tinyclaw.oceanstarter.gametest;
 import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.SPAWN;
 import static me.tinyclaw.oceanstarter.gametest.GameTestSupport.fillWaterPocket;
 
+import java.util.List;
+
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -251,5 +255,86 @@ public class AquariumGameTest implements FabricGameTest {
 				"AquariumBlockEntity still present after the block was removed");
 
 		context.complete();
+	}
+
+	/**
+	 * 8. THE destructive-loss path (the high-value gap the review flagged): breaking a STOCKED tank
+	 * must scatter the captured creature back as its FILLED bucket — with the right variant — so a
+	 * survival player who mines an occupied aquarium never silently loses the fish/jelly. Exercises
+	 * {@link me.tinyclaw.oceanstarter.block.AquariumBlock#onStateReplaced}, which the existing
+	 * place/break lifecycle test does NOT (it breaks an EMPTY tank).
+	 *
+	 * <p>Stock the BE with a variant-3 jelly, set the block to AIR (firing {@code onStateReplaced}),
+	 * and assert a Bucket-of-Jellyfish {@link ItemEntity} carrying {@code Variant==3} spawned at the
+	 * block. {@code ItemScatterer.spawn} (the 4-arg form {@code onStateReplaced} calls) adds the
+	 * ItemEntity synchronously via {@code world.spawnEntity} (javap-verified), so it exists the moment
+	 * {@code setBlockState} returns — no tick wait needed. As a control, an EMPTY tank broken at a
+	 * separate position must scatter NO jellyfish bucket (the empty-tank branch).</p>
+	 *
+	 * <p>Shared-world note (see {@link MegalodonGameTest}): the world is batched, so we never trust a
+	 * radius count alone — every candidate {@link ItemEntity} is matched on BOTH stack type+variant
+	 * AND proximity to the absolute block position it should have scattered from, so a sibling test's
+	 * dropped bucket can't satisfy either assertion.</p>
+	 */
+	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	public void aquariumScattersStoredCreatureBucketOnBreak(TestContext context) {
+		// --- stocked tank: must scatter a Bucket of Jellyfish with the stored variant ---
+		BlockPos stockedRel = new BlockPos(1, 2, 1);
+		BlockPos stockedAbs = context.getAbsolutePos(stockedRel);
+		context.setBlockState(stockedRel, OceanStarter.AQUARIUM);
+		AquariumBlockEntity be = context.getBlockEntity(stockedRel);
+		context.assertTrue(be != null, "Aquarium BlockEntity was null after placement");
+		be.setStored(OceanStarter.JELLYFISH, 3);
+
+		// Break it — onStateReplaced runs ItemScatterer.spawn synchronously.
+		context.setBlockState(stockedRel, Blocks.AIR);
+
+		// A Bucket of Jellyfish with Variant==3 must now be on the ground near the broken block.
+		long scattered = bucketItemsNear(context, stockedAbs, OceanStarter.JELLYFISH_BUCKET, 3);
+		context.assertTrue(
+				scattered >= 1,
+				"breaking a stocked aquarium did NOT scatter a Bucket of Jellyfish with Variant 3 — "
+						+ "the captured creature was silently voided (onStateReplaced regression)");
+
+		// --- control: an EMPTY tank broken elsewhere must scatter NO jellyfish bucket ---
+		BlockPos emptyRel = new BlockPos(5, 2, 1);
+		BlockPos emptyAbs = context.getAbsolutePos(emptyRel);
+		context.setBlockState(emptyRel, OceanStarter.AQUARIUM);
+		AquariumBlockEntity emptyBe = context.getBlockEntity(emptyRel);
+		context.assertTrue(emptyBe != null, "control Aquarium BlockEntity was null after placement");
+		context.assertTrue(emptyBe.storedType() == null, "control tank was unexpectedly stocked");
+
+		context.setBlockState(emptyRel, Blocks.AIR);
+		long fromEmpty = bucketItemsNear(context, emptyAbs, OceanStarter.JELLYFISH_BUCKET, null);
+		context.assertTrue(
+				fromEmpty == 0,
+				"breaking an EMPTY aquarium scattered " + fromEmpty
+						+ " jellyfish bucket(s) — onStateReplaced must scatter nothing for an empty tank");
+
+		context.complete();
+	}
+
+	/**
+	 * Count item entities within ~2 blocks of {@code centerAbs} whose stack is the given mob bucket —
+	 * and, when {@code expectedVariant} is non-null, whose {@code BUCKET_ENTITY_DATA} Variant matches.
+	 * Filters by absolute position (not radius alone) so a sibling suite's scattered bucket in the
+	 * shared batched world can't be miscounted; pulls all {@link ItemEntity}s via
+	 * {@link TestContext#getEntities} (the same world-wide-then-filter style the boss suite uses).
+	 */
+	private static long bucketItemsNear(TestContext context, BlockPos centerAbs, net.minecraft.item.Item bucket,
+			Integer expectedVariant) {
+		List<ItemEntity> items = context.getEntities(EntityType.ITEM);
+		return items.stream()
+				.filter(e -> e.getBlockPos().isWithinDistance(centerAbs, 2.5))
+				.map(ItemEntity::getStack)
+				.filter(stack -> stack.isOf(bucket))
+				.filter(stack -> {
+					if (expectedVariant == null) {
+						return true;
+					}
+					NbtComponent data = stack.get(DataComponentTypes.BUCKET_ENTITY_DATA);
+					return data != null && data.getNbt().getInt("Variant") == expectedVariant;
+				})
+				.count();
 	}
 }

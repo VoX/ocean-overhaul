@@ -65,7 +65,8 @@ public class BlockGameTest implements FabricGameTest {
 			OceanStarter.CHISELED_PRISMARINE_TILES,  // chiseled full block
 			OceanStarter.PEARL_BLOCK_STAIRS,         // StairsBlock shape (has facing/half state)
 			OceanStarter.POLISHED_PRISMARINE_BRICKS_SLAB, // SlabBlock shape (has type state)
-			OceanStarter.DRIFTWOOD_PLANK_WALL);      // WallBlock shape (has connection state)
+			OceanStarter.DRIFTWOOD_PLANK_WALL,       // WallBlock shape (has connection state)
+			OceanStarter.AQUARIUM);                  // BlockWithEntity (places + creates its BlockEntity)
 
 	/**
 	 * Place each representative block at its own position and assert the world reads it back.
@@ -119,6 +120,10 @@ public class BlockGameTest implements FabricGameTest {
 		assertDropsSelf(context, world, OceanStarter.PEARL_BLOCK);
 		assertDropsSelf(context, world, OceanStarter.SEA_GLASS);
 		assertDropsSelf(context, world, OceanStarter.ABYSSAL_CORAL_BLOCK);
+		// The Aquarium (a BlockWithEntity) must also drop itself when mined — its loot_table/blocks/
+		// aquarium.json self-drop is the only survival source besides the recipe, and a rename would
+		// otherwise ship a tank that breaks into nothing.
+		assertDropsSelf(context, world, OceanStarter.AQUARIUM);
 
 		context.complete();
 	}

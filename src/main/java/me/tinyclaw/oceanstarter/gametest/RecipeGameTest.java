@@ -63,8 +63,23 @@ public class RecipeGameTest implements FabricGameTest {
 		assertRecipeResult(context, recipes, lookup, "tidal_boots", OceanStarter.TIDAL_BOOTS);
 		assertRecipeResult(context, recipes, lookup, "tidal_sword", OceanStarter.TIDAL_SWORD);
 		assertRecipeResult(context, recipes, lookup, "tidal_pickaxe", OceanStarter.TIDAL_PICKAXE);
+		// Tidal tools — the axe/shovel/hoe outputs the sword+pickaxe asserts above left uncovered.
+		assertRecipeResult(context, recipes, lookup, "tidal_axe", OceanStarter.TIDAL_AXE);
+		assertRecipeResult(context, recipes, lookup, "tidal_shovel", OceanStarter.TIDAL_SHOVEL);
+		assertRecipeResult(context, recipes, lookup, "tidal_hoe", OceanStarter.TIDAL_HOE);
 		assertRecipeResult(context, recipes, lookup, "abyssal_fang", OceanStarter.ABYSSAL_FANG);
+		// Harpoon — the only survival source of the throwable tether spear.
+		assertRecipeResult(context, recipes, lookup, "harpoon", OceanStarter.HARPOON);
+		// Diving Kit — the only survival source of each diving piece.
+		assertRecipeResult(context, recipes, lookup, "flippers", OceanStarter.FLIPPERS);
+		assertRecipeResult(context, recipes, lookup, "oxygen_tank", OceanStarter.OXYGEN_TANK);
+		assertRecipeResult(context, recipes, lookup, "deep_sea_helmet", OceanStarter.DEEP_SEA_HELMET);
+		// Aquarium — the only survival source of the display tank (block recipe).
+		assertRecipeResult(context, recipes, lookup, "aquarium", OceanStarter.AQUARIUM.asItem());
 		assertRecipeResult(context, recipes, lookup, "salt_block", OceanStarter.SALT_BLOCK.asItem());
+		// Salt block UNPACK — the 9x sea_salt round-trip recipe; locks the storage-block symmetry
+		// so a dropped/renamed unpack recipe (the loses-8/9 regression) is caught at load.
+		assertRecipeResult(context, recipes, lookup, "salt_block_from_block", OceanStarter.SEA_SALT);
 
 		// --- shapeless: foods ---
 		assertRecipeResult(context, recipes, lookup, "kelp_roll", OceanStarter.KELP_ROLL);
