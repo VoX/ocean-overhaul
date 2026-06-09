@@ -126,13 +126,14 @@ def paint_body():
     for i in range(uw):
         spike = 3 if i % 2 == 0 else 2
         rect(ux + i, uy + uh - spike, 1, spike, TEETH)
-    # ONE big pale eye per side (east/west) of the head, near the top-front, with a
-    # dark pupil. No eyes on the front (north) face — a front pair plus the side
-    # pair read as four eyes (VoX). Side faces unwrap with OPPOSITE u-senses
-    # (east: high-u = snout, west: low-u = snout), so the anchor mirrors per face.
+    # ONE big pale eye per side (east/west) of the head, set toward the BACK of the
+    # head (VoX's pick), with a dark pupil. No eyes on the front (north) face — a
+    # front pair plus the side pair read as four eyes. Side faces unwrap with
+    # OPPOSITE u-senses (east: low-u = back, west: high-u = back), so the anchor
+    # mirrors per face.
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        ex0 = sx0 + 1 if side == 'west' else sx0 + sw - 5
+        ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
         rect(ex0, sy0 + 1, 4, 4, EYE)
         rect(ex0 + 1, sy0 + 2, 2, 2, PUPIL)
 
@@ -202,10 +203,10 @@ def paint_emissive():
 
     # EYES — glow them too (anglerfish eyes catch the lure light). Mirror the body
     # script's eye placements EXACTLY so registration matches: side faces only,
-    # per-face anchor (east: high-u = snout, west: low-u = snout).
+    # back-of-head anchor per face (east: low-u = back, west: high-u = back).
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        ex0 = sx0 + 1 if side == 'west' else sx0 + sw - 5
+        ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
         rect(ex0, sy0 + 1, 4, 4, GLOW)
 
     out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker_emissive.png"
