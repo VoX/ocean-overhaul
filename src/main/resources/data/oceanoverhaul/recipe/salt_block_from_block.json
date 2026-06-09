@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "oceanoverhaul:salt_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "oceanoverhaul:sea_salt"
+  }
+}

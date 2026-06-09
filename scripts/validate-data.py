@@ -14,7 +14,7 @@ This script closes that gap WITHOUT booting Minecraft: it loads the authoritativ
 registry id set dumped from the MC server's `--reports` registry dump (vanilla +
 this mod's own registered ids, merged once into
 `scripts/validation/registries-1.21.1.json`) and statically resolves every id
-referenced by every mod JSON under `src/main/resources/{data,assets}/oceanstarter`.
+referenced by every mod JSON under `src/main/resources/{data,assets}/oceanoverhaul`.
 
 WHAT IT VALIDATES
 -----------------
@@ -46,9 +46,9 @@ Resolution rules:
     the loom cache (catches a vanilla model/texture ref that doesn't exist in
     this MC version), else assumed present (we can't see vanilla's assets from a
     server-side dump, and they aren't registry ids).
-  * Ids in `oceanstarter:` MUST resolve — to a registry id (recipes/loot/worldgen
+  * Ids in `oceanoverhaul:` MUST resolve — to a registry id (recipes/loot/worldgen
     blocks) or to a shipped file (models/textures/blockstates). A dangling
-    `oceanstarter:` ref is always an error.
+    `oceanoverhaul:` ref is always an error.
 
 Exit code: 0 if everything resolves, non-zero (1) on any dangling ref / missing
 texture / bad category. Designed to run in CI on push + PR.
@@ -63,7 +63,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-MOD_ID = "oceanstarter"
+MOD_ID = "oceanoverhaul"
 VANILLA_NS = "minecraft"
 
 REPO = Path(__file__).resolve().parents[1]
@@ -195,7 +195,7 @@ def load_registries() -> dict[str, set]:
 # trusted (we don't ship vanilla assets); mod refs must exist on disk.
 # --------------------------------------------------------------------------- #
 def model_file_exists(fqid: str) -> bool:
-    """`oceanstarter:block/foo` -> assets/oceanstarter/models/block/foo.json"""
+    """`oceanoverhaul:block/foo` -> assets/oceanoverhaul/models/block/foo.json"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
         # Vanilla model: check the client jar if we have it (catches refs to a
@@ -206,7 +206,7 @@ def model_file_exists(fqid: str) -> bool:
 
 
 def texture_file_exists(fqid: str) -> bool:
-    """`oceanstarter:block/foo` -> assets/oceanstarter/textures/block/foo.png"""
+    """`oceanoverhaul:block/foo` -> assets/oceanoverhaul/textures/block/foo.png"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
         return _VANILLA_TEXTURES is None or path in _VANILLA_TEXTURES
@@ -497,35 +497,35 @@ def main() -> int:
     def bump(k):
         counts[k] = counts.get(k, 0) + 1
 
-    # data/oceanstarter/recipe
+    # data/oceanoverhaul/recipe
     for f in iter_json(DATA / "recipe"):
         d = load_json(errs, f)
         if d is not None:
             validate_recipe(errs, f, d, reg)
             bump("recipes")
 
-    # data/oceanstarter/loot_table  (singular folder, per 1.21.1)
+    # data/oceanoverhaul/loot_table  (singular folder, per 1.21.1)
     for f in iter_json(DATA / "loot_table"):
         d = load_json(errs, f)
         if d is not None:
             validate_loot(errs, f, d, reg)
             bump("loot_tables")
 
-    # data/oceanstarter/worldgen/configured_feature
+    # data/oceanoverhaul/worldgen/configured_feature
     for f in iter_json(DATA / "worldgen" / "configured_feature"):
         d = load_json(errs, f)
         if d is not None:
             validate_configured_feature(errs, f, d, reg)
             bump("configured_features")
 
-    # data/oceanstarter/worldgen/placed_feature
+    # data/oceanoverhaul/worldgen/placed_feature
     for f in iter_json(DATA / "worldgen" / "placed_feature"):
         d = load_json(errs, f)
         if d is not None:
             validate_placed_feature(errs, f, d, reg)
             bump("placed_features")
 
-    # data/oceanstarter/tags/{item,block}/**
+    # data/oceanoverhaul/tags/{item,block}/**
     for kind in ("item", "block"):
         for f in iter_json(DATA / "tags" / kind):
             d = load_json(errs, f)
@@ -533,14 +533,14 @@ def main() -> int:
                 validate_tag(errs, f, d, reg, kind)
                 bump("tags")
 
-    # assets/oceanstarter/blockstates
+    # assets/oceanoverhaul/blockstates
     for f in iter_json(ASSETS / "blockstates"):
         d = load_json(errs, f)
         if d is not None:
             validate_blockstate(errs, f, d, reg)
             bump("blockstates")
 
-    # assets/oceanstarter/models/**
+    # assets/oceanoverhaul/models/**
     for f in iter_json(ASSETS / "models"):
         d = load_json(errs, f)
         if d is not None:

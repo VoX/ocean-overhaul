@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "minecraft:oak_planks"
+    },
+    {
+      "item": "oceanoverhaul:sea_salt"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:driftwood_plank"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_left_open",
+  "textures": {
+    "bottom": "oceanoverhaul:block/driftwood_door_bottom",
+    "top": "oceanoverhaul:block/driftwood_door_top"
+  }
+}

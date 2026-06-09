@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "oceanoverhaul:block/sea_glass_slab"
+    },
+    "type=double": {
+      "model": "oceanoverhaul:block/sea_glass"
+    },
+    "type=top": {
+      "model": "oceanoverhaul:block/sea_glass_slab_top"
+    }
+  }
+}

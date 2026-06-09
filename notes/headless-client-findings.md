@@ -2,7 +2,7 @@
 
 Persisted knowledge from the attempt to run a **real Minecraft 1.21.1 Fabric dev
 client headless** on this GPU-less aarch64 EC2 box (Graviton, 4c/16GB), in order
-to capture an actual in-game render of `oceanstarter:megalodon`. Documented here
+to capture an actual in-game render of `oceanoverhaul:megalodon`. Documented here
 so the result survives regardless of whether the render scaffolding stays in the
 repo (it does NOT — see "What stays in the repo" at the bottom).
 
@@ -56,13 +56,13 @@ world background + the first-launch accessibility/narrator dialog. Confirmation
 shot: `/tmp/oc-screenshot2.png`. (These are scratch evidence outside the repo.)
 
 Boot progression (single run, from `run/logs/latest.log`):
-Knot/Fabric bootstrap → full mod list incl `oceanstarter 0.7.1` / `minecraft
+Knot/Fabric bootstrap → full mod list incl `oceanoverhaul 0.7.1` / `minecraft
 1.21.1` / `java 21` → "Setting user: Player380" → **our mod's onInitialize ran:**
 "Ocean Overhaul loaded: 41 blocks, 8 items, 1 boss entity (Megalodon)..." → LWJGL
 backend → OpenAL "Dummy Output" + sound engine → 15 GL texture-atlas uploads
 ("Created: 1024x512x4 .../blocks.png-atlas" — real `glTexImage2D` to the live
 context) → core shader program compiled → ResourceManager reload (incl
-oceanstarter) → title screen rendered. Window-create + GL-context-create are both
+oceanoverhaul) → title screen rendered. Window-create + GL-context-create are both
 implicit-proven by the texture uploads + shader compile + the rendered frame.
 
 ### Probe B — in-game Megalodon render (the actual deliverable)
@@ -115,7 +115,7 @@ on a nested part in `setAngles` — is already fixed in the current
 
 **YES.** `docs/renders/megalodon.png` exists and is committed: 854×480, valid
 PNG, 13379 distinct colors, not blank — a real in-game render of
-`oceanstarter:megalodon` in the glass water tank. (Byte-identical scratch copy
+`oceanoverhaul:megalodon` in the glass water tank. (Byte-identical scratch copy
 was at `/tmp/megalodon-render.png`.)
 
 ## 6. Resource use + teardown (safety)
@@ -150,7 +150,7 @@ sidesteps auth entirely.
 The render-probe scaffolding was **ephemeral dev tooling and is intentionally NOT
 committed** — it kept the shipped jar/build clean:
 - `src/renderprobe/` (the `RenderProbeClient` dev-only client driver + its own
-  `fabric.mod.json`, id `oceanstarter_renderprobe`) — removed.
+  `fabric.mod.json`, id `oceanoverhaul_renderprobe`) — removed.
 - `scripts/render-megalodon.sh` (the Xvfb + llvmpipe + ephemeral-server harness)
   — removed.
 - the `renderprobe` source set + `clientProbe` loom run config + `loom.mods`

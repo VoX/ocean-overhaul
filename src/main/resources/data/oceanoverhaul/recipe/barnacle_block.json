@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "oceanoverhaul:crushed_coral"
+    },
+    {
+      "item": "oceanoverhaul:crushed_coral"
+    },
+    {
+      "item": "oceanoverhaul:sea_salt"
+    },
+    {
+      "item": "oceanoverhaul:sea_salt"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:barnacle_block"
+  }
+}

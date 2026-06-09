@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/template_trapdoor_bottom",
+  "textures": {
+    "texture": "oceanoverhaul:block/driftwood_trapdoor"
+  }
+}

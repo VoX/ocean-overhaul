@@ -21,7 +21,7 @@ def gametestReport = "${projectDir}/build/gametest/report.xml"
 // ---------------------------------------------------------------------------
 // DEV-ONLY render-probe source set. This is a SEPARATE source set + a separate
 // fabric mod (src/renderprobe/resources/fabric.mod.json, id
-// `oceanstarter_renderprobe`) used ONLY to drive a headless dev client and grab
+// `oceanoverhaul_renderprobe`) used ONLY to drive a headless dev client and grab
 // a real screenshot of the Megalodon (task: runClientProbe). It is deliberately
 // kept OUT of the shipped jar: `jar`/`remapJar` only bundle sourceSets.main, and
 // nothing in the release flow references the `renderprobe` source set, so the
@@ -70,10 +70,10 @@ loom {
 	// Register BOTH the main mod and the dev-only probe as loom mods so each is
 	// loaded from its own source set with its own fabric.mod.json in dev runs.
 	mods {
-		register("oceanstarter") {
+		register("oceanoverhaul") {
 			sourceSet sourceSets.main
 		}
-		register("oceanstarter_renderprobe") {
+		register("oceanoverhaul_renderprobe") {
 			sourceSet sourceSets.renderprobe
 		}
 	}

@@ -19,4 +19,4 @@ OUT="${1:-${OUT:-/tmp/megalodon-render.png}}"
 # 270) — far enough back to fit the 2x-scaled shark + its segment chain.
 SUMMON_AT="${SUMMON_AT:-7 100 7}" \
 VANTAGE="${VANTAGE:--1 101 7 270}" \
-exec bash "$HERE/render-entity.sh" oceanstarter:megalodon "$OUT"
+exec bash "$HERE/render-entity.sh" oceanoverhaul:megalodon "$OUT"

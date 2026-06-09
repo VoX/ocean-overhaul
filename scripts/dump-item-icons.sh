@@ -37,7 +37,7 @@ if [ -z "${ICON_ITEMS:-}" ]; then
     ICON_ITEMS=$(REPO="$REPO" python3 - <<'EOF'
 import json, glob, os
 ids = set()
-for p in glob.glob(os.environ["REPO"] + "/src/main/resources/data/oceanstarter/recipe/*.json"):
+for p in glob.glob(os.environ["REPO"] + "/src/main/resources/data/oceanoverhaul/recipe/*.json"):
     def walk(o):
         if isinstance(o, dict):
             v = o.get("item")

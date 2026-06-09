@@ -15,8 +15,8 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPTS = os.path.join(ROOT, "scripts")
 RES = os.path.join(ROOT, "src/main/resources")
-BS = os.path.join(RES, "assets/oceanstarter/blockstates")
-IM = os.path.join(RES, "assets/oceanstarter/models/item")
+BS = os.path.join(RES, "assets/oceanoverhaul/blockstates")
+IM = os.path.join(RES, "assets/oceanoverhaul/models/item")
 DOCS = os.path.join(ROOT, "docs")
 ICONS = os.path.join(DOCS, "icons")
 RECIPES = os.path.join(DOCS, "recipes")
@@ -41,7 +41,7 @@ def tc(n):
 # tinted spawn eggs — all exactly as the crafting screen shows them) into
 # docs/icons-src/, and these just downscale per gallery entry.
 def _dumped_icon(name):
-    p = os.path.join(DOCS, "icons-src", "oceanstarter__%s.png" % name)
+    p = os.path.join(DOCS, "icons-src", "oceanoverhaul__%s.png" % name)
     return Image.open(p).convert("RGBA")
 
 

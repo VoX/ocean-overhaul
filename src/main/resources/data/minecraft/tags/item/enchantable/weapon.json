@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanstarter:tidal_sword",
-    "oceanstarter:tidal_axe"
+    "oceanoverhaul:tidal_sword",
+    "oceanoverhaul:tidal_axe"
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "oceanoverhaul:abyssal_coral_block"
+  },
+  "result": {
+    "id": "oceanoverhaul:abyssal_pearl"
+  },
+  "experience": 0.3,
+  "cookingtime": 200
+}

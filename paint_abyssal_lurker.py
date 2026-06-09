@@ -164,7 +164,7 @@ def paint_body():
         for k in ('down', 'up', 'north', 'south', 'east', 'west'):
             rect(*F[fin][k], FIN)
 
-    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker.png"
+    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker.png"
     img.save(out)
     chk = Image.open(out)
     assert chk.size == (128, 128), "PNG is %s, expected (128, 128)" % (chk.size,)
@@ -209,7 +209,7 @@ def paint_emissive():
         ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
         rect(ex0, sy0 + 1, 4, 4, GLOW)
 
-    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker_emissive.png"
+    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker_emissive.png"
     img.save(out)
     chk = Image.open(out)
     assert chk.size == (128, 128), "emissive PNG is %s, expected (128, 128)" % (chk.size,)

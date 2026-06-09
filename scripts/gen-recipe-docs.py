@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the "## Recipes" section of README.md from the actual recipe JSON.
 
-Parses every file in src/main/resources/data/oceanstarter/recipe/*.json and emits
+Parses every file in src/main/resources/data/oceanoverhaul/recipe/*.json and emits
 a human-readable, grouped Markdown section. Run from the repo root:
 
     python3 scripts/gen-recipe-docs.py            # print the section to stdout
@@ -21,7 +21,7 @@ import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RECIPE_DIR = os.path.join(
-    REPO_ROOT, "src", "main", "resources", "data", "oceanstarter", "recipe"
+    REPO_ROOT, "src", "main", "resources", "data", "oceanoverhaul", "recipe"
 )
 README = os.path.join(REPO_ROOT, "README.md")
 
@@ -37,7 +37,7 @@ TAG_NAMES = {
 
 
 def titleize(path):
-    """oceanstarter:sea_glass -> Sea Glass ; minecraft:prismarine_shard -> Prismarine Shard."""
+    """oceanoverhaul:sea_glass -> Sea Glass ; minecraft:prismarine_shard -> Prismarine Shard."""
     bare = path.split(":", 1)[-1]
     return " ".join(w.capitalize() for w in bare.split("_"))
 

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "oceanoverhaul:block/polished_prismarine_bricks"
+  }
+}

@@ -96,7 +96,7 @@ rect(*t['south'], TAIL)
 vgrad(*t['east'], TAIL, TAIL_D)
 vgrad(*t['west'], TAIL, TAIL_D)
 
-out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/reef_fish.png"
+out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/reef_fish.png"
 img.save(out)
 print("saved", out, img.size)
 

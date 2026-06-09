@@ -14,7 +14,7 @@ shifting every hue to teal. Alpha is copied through unchanged (exact), so the
 silhouette is identical to vanilla iron.
 
 Source iron icons: extracted from the 1.21.1 client jar into /tmp/iron-extract.
-Output: overwrites assets/oceanstarter/textures/item/tidal_*.png (16x16).
+Output: overwrites assets/oceanoverhaul/textures/item/tidal_*.png (16x16).
 """
 import os
 from PIL import Image
@@ -87,7 +87,7 @@ MAP = {f"iron_{p}": f"tidal_{p}" for p in
 
 if __name__ == "__main__":
     srcdir = "/tmp/iron-extract"
-    dstdir = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/item"
+    dstdir = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/item"
     ok = True
     for src in ICONS:
         dst = MAP[src]

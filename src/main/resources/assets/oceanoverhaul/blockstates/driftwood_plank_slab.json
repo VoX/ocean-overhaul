@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "oceanoverhaul:block/driftwood_plank_slab"
+    },
+    "type=double": {
+      "model": "oceanoverhaul:block/driftwood_plank"
+    },
+    "type=top": {
+      "model": "oceanoverhaul:block/driftwood_plank_slab_top"
+    }
+  }
+}

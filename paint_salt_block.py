@@ -10,7 +10,7 @@ import random
 from PIL import Image
 
 W = H = 16
-OUT = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/block/salt_block.png"
+OUT = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/block/salt_block.png"
 
 # Sand-tan base palette (a few tones for subtle grainy variation).
 SAND = [

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "oceanoverhaul:tide_pearl"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "pattern": [
+    "A A",
+    "AGA",
+    "AAA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:oxygen_tank"
+  }
+}

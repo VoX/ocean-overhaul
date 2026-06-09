@@ -1,6 +1,0 @@
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "oceanstarter:block/prismarine_crystal_block"
-  }
-}

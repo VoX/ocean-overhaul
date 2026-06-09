@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "oceanoverhaul:driftwood_plank"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:driftwood_button"
+  }
+}

@@ -1,14 +1,14 @@
 {
   "replace": false,
   "values": [
-    "oceanstarter:tidal_sword",
-    "oceanstarter:tidal_pickaxe",
-    "oceanstarter:tidal_axe",
-    "oceanstarter:tidal_shovel",
-    "oceanstarter:tidal_hoe",
-    "oceanstarter:tidal_helmet",
-    "oceanstarter:tidal_chestplate",
-    "oceanstarter:tidal_leggings",
-    "oceanstarter:tidal_boots"
+    "oceanoverhaul:tidal_sword",
+    "oceanoverhaul:tidal_pickaxe",
+    "oceanoverhaul:tidal_axe",
+    "oceanoverhaul:tidal_shovel",
+    "oceanoverhaul:tidal_hoe",
+    "oceanoverhaul:tidal_helmet",
+    "oceanoverhaul:tidal_chestplate",
+    "oceanoverhaul:tidal_leggings",
+    "oceanoverhaul:tidal_boots"
   ]
 }

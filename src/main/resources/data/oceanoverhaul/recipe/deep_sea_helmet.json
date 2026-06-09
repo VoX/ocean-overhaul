@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "oceanoverhaul:abyssal_pearl"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "pattern": [
+    "AAA",
+    "AGA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:deep_sea_helmet"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "oceanoverhaul:abyssal_pearl"
+    }
+  },
+  "pattern": [
+    "A A",
+    "AAA",
+    "AAA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:tidal_chestplate"
+  }
+}

@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/door_top_right",
-  "textures": {
-    "bottom": "oceanstarter:block/driftwood_door_bottom",
-    "top": "oceanstarter:block/driftwood_door_top"
-  }
-}

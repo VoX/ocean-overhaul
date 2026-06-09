@@ -34,8 +34,8 @@
 #
 # Content is enumerated DYNAMICALLY from the resource dirs, so new blocks/items
 # are auto-included with no edit here:
-#   BLOCKS = basenames of assets/oceanstarter/blockstates/*.json  (authoritative)
-#   ITEMS  = basenames of assets/oceanstarter/models/item/*.json
+#   BLOCKS = basenames of assets/oceanoverhaul/blockstates/*.json  (authoritative)
+#   ITEMS  = basenames of assets/oceanoverhaul/models/item/*.json
 #   MOBS   = the 4 fixed entity ids + 5 jellyfish variants (0..4)
 #
 # SAFETY (this box also runs a live Discord bot, cowgame + caddy):
@@ -66,7 +66,7 @@ export JAVA_HOME
 RES_SHEET="${RES_SHEET:-854x480}"
 SETTLE_SHEET="${SETTLE_SHEET:-100}"
 
-ASSETS="$REPO/src/main/resources/assets/oceanstarter"
+ASSETS="$REPO/src/main/resources/assets/oceanoverhaul"
 BLOCKSTATES="$ASSETS/blockstates"
 ITEMMODELS="$ASSETS/models/item"
 RENDERS="$REPO/docs/renders"
@@ -185,7 +185,7 @@ out_manifest = sys.argv[2]
 shots = sys.argv[3]
 content = sys.argv[4:]
 
-NS = "oceanstarter"
+NS = "oceanoverhaul"
 scenes = []
 pairs = []   # "png::legend" lines for the montage
 

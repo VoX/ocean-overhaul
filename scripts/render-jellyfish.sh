@@ -20,4 +20,4 @@ DISPLAY_NUM="${DISPLAY_NUM:-98}" \
 SCRATCH="${SCRATCH:-/tmp/oo-render-jelly}" \
 SUMMON_AT="${SUMMON_AT:-7 100 7}" \
 VANTAGE="${VANTAGE:-5 100 7 270}" \
-exec bash "$HERE/render-entity.sh" oceanstarter:jellyfish "$OUT"
+exec bash "$HERE/render-entity.sh" oceanoverhaul:jellyfish "$OUT"

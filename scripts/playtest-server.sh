@@ -11,7 +11,7 @@
 #
 # Assertions (all must hold; exits non-zero if any fail):
 #   A0  mod datapack loaded + boss summons cleanly
-#   A1  exactly 5 oceanstarter:megalodon_segment entities spawn around the boss
+#   A1  exactly 5 oceanoverhaul:megalodon_segment entities spawn around the boss
 #   A2  the boss is alive with ~200 HP (boss-tier health)
 #   A3  bite capability: the boss is a working mob_attack damage SOURCE
 #       (boss-dealt mob_attack drops a durable living target's HP)
@@ -205,7 +205,7 @@ send "fill 2 98 2 13 102 13 minecraft:water"    # boss pool y98..102
 send "setblock 12 98 12 minecraft:glass"        # dry pad: bite target
 send "setblock 3 98 3 minecraft:glass"          # dry pad: attacker
 sleep 1
-send "summon oceanstarter:megalodon 7 100 7"
+send "summon oceanoverhaul:megalodon 7 100 7"
 sleep 4                                          # segments spawn on first ticks
 grep -q 'Summoned new Megalodon' "$LOG" && pass "A0 boss summoned" || fail "A0 boss did not summon"
 
@@ -217,14 +217,14 @@ sleep 2
 # --- A1: exactly 5 segments (scoreboard counter is robust for multi-entity) ---
 send "scoreboard objectives add oo_cnt dummy"
 send "scoreboard players set SEG oo_cnt 0"
-send "execute as @e[type=oceanstarter:megalodon_segment] run scoreboard players add SEG oo_cnt 1"
+send "execute as @e[type=oceanoverhaul:megalodon_segment] run scoreboard players add SEG oo_cnt 1"
 send "say SEGCOUNT_MARKER"
 send "scoreboard players get SEG oo_cnt"
 sleep 2
 
 # --- A2: boss alive ~200 HP --------------------------------------------------
 send "say HEALTH_MARKER"
-send "data get entity @e[type=oceanstarter:megalodon,limit=1] Health"
+send "data get entity @e[type=oceanoverhaul:megalodon,limit=1] Health"
 sleep 2
 
 # --- A3: bite capability — boss as a working mob_attack SOURCE ----------------
@@ -236,7 +236,7 @@ send "summon minecraft:iron_golem 12 99 12 {NoAI:1b,Silent:1b,PersistenceRequire
 sleep 1
 grep -q 'Summoned new Iron Golem' "$LOG" && note "bite target iron_golem placed" || note "WARN golem not summoned"
 send "execute store result score TGT0 oo_cnt run data get entity @e[type=minecraft:iron_golem,limit=1] Health 10"
-send "damage @e[type=minecraft:iron_golem,limit=1] 12 minecraft:mob_attack by @e[type=oceanstarter:megalodon,limit=1]"
+send "damage @e[type=minecraft:iron_golem,limit=1] 12 minecraft:mob_attack by @e[type=oceanoverhaul:megalodon,limit=1]"
 sleep 1
 send "execute store result score TGT1 oo_cnt run data get entity @e[type=minecraft:iron_golem,limit=1] Health 10"
 send "say BITE_HP0"
@@ -250,20 +250,20 @@ sleep 2
 # `by <entity>` clause is required. Record boss HP, hit a segment for 25 with
 # the armor stand as the named attacker, re-read boss HP — it must drop ~25.
 send "say HPBEFORE_MARKER"
-send "data get entity @e[type=oceanstarter:megalodon,limit=1] Health"
+send "data get entity @e[type=oceanoverhaul:megalodon,limit=1] Health"
 sleep 1
-send "damage @e[type=oceanstarter:megalodon_segment,limit=1] 25 minecraft:mob_attack by @e[type=minecraft:armor_stand,limit=1]"
+send "damage @e[type=oceanoverhaul:megalodon_segment,limit=1] 25 minecraft:mob_attack by @e[type=minecraft:armor_stand,limit=1]"
 sleep 1
 send "say HPAFTER_MARKER"
-send "data get entity @e[type=oceanstarter:megalodon,limit=1] Health"
+send "data get entity @e[type=oceanoverhaul:megalodon,limit=1] Health"
 sleep 2
 
 # --- A5: kill + cleanup — segments self-clean to 0 ---------------------------
 send "say KILL_MARKER"
-send "kill @e[type=oceanstarter:megalodon]"
+send "kill @e[type=oceanoverhaul:megalodon]"
 sleep 2
 send "scoreboard players set SEG2 oo_cnt 0"
-send "execute as @e[type=oceanstarter:megalodon_segment] run scoreboard players add SEG2 oo_cnt 1"
+send "execute as @e[type=oceanoverhaul:megalodon_segment] run scoreboard players add SEG2 oo_cnt 1"
 send "say SEGCOUNT2_MARKER"
 send "scoreboard players get SEG2 oo_cnt"
 sleep 2
@@ -304,7 +304,7 @@ if [ -n "${hbn:-}" ] && [ -n "${han:-}" ] && awk "BEGIN{exit !($han < $hbn)}"; t
 else
     fail "A4 segment-forward: boss HP before='${hb:-none}' after='${ha:-none}' (want after<before)"
 fi
-grep -q 'Applied 25.0 damage to entity.oceanstarter.megalodon_segment' "$LOG" \
+grep -q 'Applied 25.0 damage to entity.oceanoverhaul.megalodon_segment' "$LOG" \
     && pass "A4b /damage landed on a segment" || fail "A4b segment did not take the /damage"
 
 # A5: segment count after boss death must be 0 (anchor after 'has ')

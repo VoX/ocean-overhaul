@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/stairs",
-  "textures": {
-    "bottom": "oceanstarter:block/chiseled_prismarine_tiles",
-    "side": "oceanstarter:block/chiseled_prismarine_tiles",
-    "top": "oceanstarter:block/chiseled_prismarine_tiles"
-  }
-}

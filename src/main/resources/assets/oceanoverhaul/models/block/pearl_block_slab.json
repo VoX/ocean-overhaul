@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "oceanoverhaul:block/pearl_block",
+    "side": "oceanoverhaul:block/pearl_block",
+    "top": "oceanoverhaul:block/pearl_block"
+  }
+}

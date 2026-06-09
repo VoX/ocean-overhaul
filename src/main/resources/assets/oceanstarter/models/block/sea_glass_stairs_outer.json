@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/outer_stairs",
-  "textures": {
-    "bottom": "oceanstarter:block/sea_glass",
-    "side": "oceanstarter:block/sea_glass",
-    "top": "oceanstarter:block/sea_glass"
-  }
-}

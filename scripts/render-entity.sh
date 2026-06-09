@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Ocean Overhaul — headless REAL screenshot of ANY oceanstarter entity.
+# Ocean Overhaul — headless REAL screenshot of ANY oceanoverhaul entity.
 #
 # Generalized render harness (factored out of render-megalodon.sh). Boots a
 # fresh EPHEMERAL, loopback-only Fabric 1.21.1 dedicated server in a /tmp
@@ -8,12 +8,12 @@
 # entity pre-summoned), then launches the dev CLIENT fully headless under
 # Xvfb + Mesa llvmpipe (software GL). A dev-only client driver (the
 # `renderprobe` source set, NOT in the shipped jar) auto-connects to
-# 127.0.0.1, aims the camera at the summoned mob (it frames any oceanstarter:*
+# 127.0.0.1, aims the camera at the summoned mob (it frames any oceanoverhaul:*
 # entity it finds in-world), lets ~200 frames render under slow software GL,
 # and writes a PNG via net.minecraft.client.util.ScreenshotRecorder.
 #
 #   Usage:  bash scripts/render-entity.sh <entity_id> <out.png>
-#   e.g.    bash scripts/render-entity.sh oceanstarter:reef_fish docs/renders/reef_fish.png
+#   e.g.    bash scripts/render-entity.sh oceanoverhaul:reef_fish docs/renders/reef_fish.png
 #
 # The summoned entity id and the output path are the two positional args. Mob
 # framing (camera distance) varies by mob size, so the camera VANTAGE and the

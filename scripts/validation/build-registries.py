@@ -16,8 +16,8 @@ registry dump merged with this mod's own registered ids.
 
   Step 2 — this script merges the mod's own ids into that dump. The mod's
   registered ids are parsed straight from the single registration source of truth,
-  OceanStarter.java (every `Registry.register(Registries.<REG>, id("<path>"), ...)`),
-  so the dump ends up with BOTH vanilla and oceanstarter ids — the same set a
+  OceanOverhaul.java (every `Registry.register(Registries.<REG>, id("<path>"), ...)`),
+  so the dump ends up with BOTH vanilla and oceanoverhaul ids — the same set a
   fully-loaded modded server would expose.
 
 Usage:
@@ -27,7 +27,7 @@ import json, re, sys, pathlib
 
 VANILLA = pathlib.Path(sys.argv[1])
 REPO = pathlib.Path(sys.argv[2])
-JAVA = REPO / "src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java"
+JAVA = REPO / "src/main/java/me/tinyclaw/oceanoverhaul/OceanOverhaul.java"
 OUT = REPO / "scripts/validation/registries-1.21.1.json"
 
 reg = json.loads(VANILLA.read_text())
@@ -44,14 +44,14 @@ for m in pat.finditer(src):
     if key is None:
         continue
     entries = reg.setdefault(key, {"entries": {}})["entries"]
-    fqid = f"oceanstarter:{path}"
+    fqid = f"oceanoverhaul:{path}"
     if fqid not in entries:
         entries[fqid] = {"protocol_id": -1}
         added.setdefault(key, []).append(fqid)
 
 total_added = sum(len(v) for v in added.values())
 if total_added == 0:
-    sys.exit("ERROR: parsed ZERO mod registrations from OceanStarter.java — regex drift?")
+    sys.exit("ERROR: parsed ZERO mod registrations from OceanOverhaul.java — regex drift?")
 
 OUT.write_text(json.dumps(reg, separators=(",", ":"), sort_keys=True))
 print(f"wrote {OUT} ({OUT.stat().st_size} bytes)")

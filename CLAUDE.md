@@ -2,7 +2,7 @@
 
 Context for anyone (human or subagent) working on this repo. Read this before touching code — it captures the build/test/release flow and the load-bearing design decisions + gotchas that are NOT obvious from the source.
 
-/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
+/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanoverhaul`, package `me.tinyclaw.oceanoverhaul`, maven group `me.tinyclaw.oceanoverhaul`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
 
 ## Toolchain (pin exactly — mismatches fail the build)
 
@@ -63,7 +63,7 @@ Self-contained + re-runnable: builds the mod, downloads the Fabric installer (ca
 python3 scripts/validate-data.py
 ```
 Resolves EVERY id referenced by the mod's data + asset JSON against the MC
-`--reports` registry dump (vanilla + oceanstarter ids, baked into
+`--reports` registry dump (vanilla + oceanoverhaul ids, baked into
 `scripts/validation/registries-1.21.1.json` — self-contained, no regen per run).
 Catches dangling recipe/loot/worldgen/blockstate/model/tag refs, missing texture
 PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recipe
@@ -108,9 +108,9 @@ camera to the scene's `camera` pose + aims, settles, screenshots to the scene's
 doubles; `camera` is `[x,y,z,yaw,pitch]`):
 ```json
 { "reset":  ["fill 10 99 6 10 101 8 minecraft:air", "kill @e[type=minecraft:item_display]"],
-  "scenes": [ { "name":"s0", "setup":["setblock 10 101 7 oceanstarter:pearl_block"],
+  "scenes": [ { "name":"s0", "setup":["setblock 10 101 7 oceanoverhaul:pearl_block"],
                "camera":[6,100,7,270,0], "settleTicks":100,
-               "aimType":"oceanstarter:megalodon", "out":"/abs/s0.png" } ] }
+               "aimType":"oceanoverhaul:megalodon", "out":"/abs/s0.png" } ] }
 ```
 `reset` runs before EVERY scene's setup (clear the prior scene); `aimType` (optional)
 re-aims at that entity each frame (drifting mobs stay framed) — omit it to hold the
@@ -192,19 +192,19 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 
 ## Repo layout
 
-- `src/main/java/me/tinyclaw/oceanstarter/OceanStarter.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment + ReefFish + Jellyfish + AbyssalLurker `EntityType`s, spawn eggs, `FabricDefaultAttributeRegistry`, `SpawnRestriction` (the two passive mobs + the Abyssal Lurker), the worn-Tidal-set Water Breathing `END_SERVER_TICK` handler, worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
+- `src/main/java/me/tinyclaw/oceanoverhaul/OceanOverhaul.java` — `ModInitializer`. ALL registration: blocks, items, the creative tab, the Megalodon + MegalodonSegment + ReefFish + Jellyfish + AbyssalLurker `EntityType`s, spawn eggs, `FabricDefaultAttributeRegistry`, `SpawnRestriction` (the two passive mobs + the Abyssal Lurker), the worn-Tidal-set Water Breathing `END_SERVER_TICK` handler, worldgen `BiomeModifications`. EntityTypes are registered in static field initializers (so the spawn-egg field can reference a built type).
 - `.../entity/Megalodon.java` — the boss (`extends HostileEntity`).
 - `.../entity/MegalodonSegment.java` — invisible body-following hitbox part (`extends Entity`).
 - `.../entity/ReefFish.java` — passive schooling fish (`extends SchoolingFishEntity`; only overrides getBucketItem + getFlopSound + getMaxGroupSize + sounds; AI/nav/flop/water-breathing all inherited).
 - `.../entity/Jellyfish.java` — passive drifter (`extends WaterCreatureEntity`; AquaticMoveControl + SwimNavigation, passive-only goals, no targets, no sting this round).
 - `.../entity/AbyssalLurker.java` — hostile deep-sea anglerfish (`extends HostileEntity`; aquatic move/nav, MeleeAttackGoal + ActiveTargetGoal on players, the `getNextAirUnderwater` no-drown air-pin).
-- `.../client/OceanStarterClient.java` — `ClientModInitializer`: model layer + entity renderer registration (Megalodon, ReefFish, Jellyfish, AbyssalLurker).
+- `.../client/OceanOverhaulClient.java` — `ClientModInitializer`: model layer + entity renderer registration (Megalodon, ReefFish, Jellyfish, AbyssalLurker).
 - `.../client/MegalodonModel.java` / `MegalodonRenderer.java` / `NoopEntityRenderer.java` — boss model/renderer + the segment's invisible renderer.
 - `.../client/ReefFishModel.java` / `ReefFishRenderer.java` / `JellyfishModel.java` / `JellyfishRenderer.java` — the two passive mobs' `SinglePartEntityModel`s + `MobEntityRenderer`s (both on a 32x32 atlas; animated parts grabbed in the ctor).
 - `.../client/AbyssalLurkerModel.java` / `AbyssalLurkerRenderer.java` / `AbyssalLurkerEyesFeature.java` — the anglerfish model (128x128 atlas, built natively at ~2-block scale, no `scale()` override) + its renderer + an emissive feature that re-draws only the lure bulb/eye full-bright on the additive `RenderLayer.getEyes` layer (the glow mask is `textures/entity/abyssal_lurker_emissive.png`).
 - `.../gametest/` — the **twelve** gametest suites + a helper (52 tests total — see §1 / `runGametest` output): `MegalodonGameTest` (6 — boss spawn/segments/bite/no-drown + segment damage-forwarding-with-environmental-guard + canSpawn water/depth/rarity predicate), `ReefLifeGameTest` (4 fish+jelly spawn/no-drown/variant), `DepthsGameTest` (3 Abyssal Lurker), `GearGameTest` (3 Tidal gear), `BlockGameTest` (3 block place/round-trip/drops — round-trip + self-drop now also cover the Aquarium), `ItemGameTest` (6 — food + Tidal tool/armor material + Abyssal Fang apex weapon), `RecipeGameTest` (3 recipe-load + shaped/shapeless — load test now also asserts tidal axe/shovel/hoe, harpoon, the 3 diving pieces + aquarium), `MobGameTest` (4 jellyfish-NBT/variant + reef school + lurker spawn predicate), `WorldgenGameTest` (3 — trench feature registry-resolve + real `disk` placement via `generate()` + new-block place/break/drop incl. clam→pearl), `HarpoonGameTest` (7 — entity registered + `use()` spawns projectile + on-hit yank-toward-thrower tether + loyalty return + throw-wears-1-durability/consumes-held + owner-gone stays-retrievable/stops-homing + DealtDamage NBT round-trip), `DivingKitGameTest` (2 — per-piece worn effects gated + material values/slots), `AquariumGameTest` (8 — bucket variant store/restore + aquarium BlockEntity NBT round-trip + store-via-bucket/retrieve-via-empty + place/break lifecycle + stocked-tank break scatters the creature's filled bucket), and `GameTestSupport` (static-only shared `SPAWN` + `fillWaterPocket`, NOT a suite).
 - `scripts/render-all.sh` — the comprehensive contact-sheet visual-QA harness (see §4): renders `docs/renders/all-{blocks,items,mobs}.png`. Wraps `render-entity.sh` + montages via `montage-renders.py`.
-- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [**12 classes**]), `assets/oceanstarter/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanstarter/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
+- `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [**12 classes**]), `assets/oceanoverhaul/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanoverhaul/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
 - `paint_reef_fish.py` / `paint_jellyfish.py` (repo root + /tmp) — the entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look).
 - `scripts/playtest-server.sh` — the smoke test. `paint_megalodon.py` (in repo root or /tmp) — the entity texture painter.
 
@@ -246,7 +246,7 @@ The Tidal armor + tool **inventory sprites** are made by recoloring the **vanill
 
 ## Worldgen
 
-`data/oceanstarter/worldgen/configured_feature/*.json` + `placed_feature/*.json` + a `BiomeModifications.addFeature(...)` hook in OceanStarter. Loom does NOT validate worldgen/data JSON at build — validate by hand: every placed_feature must reference an existing configured_feature, the Java `RegistryKey` ids must EXACTLY match the JSON filenames, and referenced block/item ids must exist. Id mismatches = silent no-spawn.
+`data/oceanoverhaul/worldgen/configured_feature/*.json` + `placed_feature/*.json` + a `BiomeModifications.addFeature(...)` hook in OceanOverhaul. Loom does NOT validate worldgen/data JSON at build — validate by hand: every placed_feature must reference an existing configured_feature, the Java `RegistryKey` ids must EXACTLY match the JSON filenames, and referenced block/item ids must exist. Id mismatches = silent no-spawn.
 
 ## Hard rules / recurring gotchas
 

@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "oceanstarter",
+	"id": "oceanoverhaul",
 	"version": "${version}",
 	"name": "Ocean Overhaul",
 	"description": "Adds 32 ocean-themed blocks (decorative: Abyssal Coral Block, Sea Glass, Polished Prismarine Bricks, Pearl Block, Chiseled Prismarine Tiles — most with stairs/slab/wall; driftwood functional set: Driftwood Plank + stairs/slab/wall, Fence, Fence Gate, Trapdoor, Door, Button, Pressure Plate; plus Pearl Lantern, Salt Block, Barnacle Block, Abyssal Pearl Block, Crushed Coral Block, Prismarine Crystal Block), items (Tide Pearl, Coral Shard, Sea Salt, Abyssal Pearl, Crushed Coral, Sea Urchin, Salted Cod, plus the Tidal diving tool + armor set), four entities (the Megalodon boss, the hostile deep-sea Abyssal Lurker anglerfish, and Reef Fish + Jellyfish passive mobs that naturally spawn in oceans), and a dedicated Ocean Overhaul creative tab.",
@@ -15,24 +15,24 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"me.tinyclaw.oceanstarter.OceanStarter"
+			"me.tinyclaw.oceanoverhaul.OceanOverhaul"
 		],
 		"client": [
-			"me.tinyclaw.oceanstarter.client.OceanStarterClient"
+			"me.tinyclaw.oceanoverhaul.client.OceanOverhaulClient"
 		],
 		"fabric-gametest": [
-			"me.tinyclaw.oceanstarter.gametest.MegalodonGameTest",
-			"me.tinyclaw.oceanstarter.gametest.ReefLifeGameTest",
-			"me.tinyclaw.oceanstarter.gametest.GearGameTest",
-			"me.tinyclaw.oceanstarter.gametest.DepthsGameTest",
-			"me.tinyclaw.oceanstarter.gametest.BlockGameTest",
-			"me.tinyclaw.oceanstarter.gametest.RecipeGameTest",
-			"me.tinyclaw.oceanstarter.gametest.ItemGameTest",
-			"me.tinyclaw.oceanstarter.gametest.MobGameTest",
-			"me.tinyclaw.oceanstarter.gametest.WorldgenGameTest",
-			"me.tinyclaw.oceanstarter.gametest.HarpoonGameTest",
-			"me.tinyclaw.oceanstarter.gametest.DivingKitGameTest",
-			"me.tinyclaw.oceanstarter.gametest.AquariumGameTest"
+			"me.tinyclaw.oceanoverhaul.gametest.MegalodonGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.ReefLifeGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.GearGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.DepthsGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.BlockGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.RecipeGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.ItemGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.MobGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.WorldgenGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.HarpoonGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.DivingKitGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.AquariumGameTest"
 		]
 	},
 	"depends": {

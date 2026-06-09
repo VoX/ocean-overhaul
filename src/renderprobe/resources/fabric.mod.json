@@ -1,19 +1,19 @@
 {
 	"schemaVersion": 1,
-	"id": "oceanstarter_renderprobe",
+	"id": "oceanoverhaul_renderprobe",
 	"version": "1.0.0",
 	"name": "Ocean Overhaul Render Probe (dev-only)",
 	"description": "Dev-only headless render driver. NOT shipped — lives in the renderprobe source set and is loaded only by the runClientProbe loom run config.",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"me.tinyclaw.oceanstarter.renderprobe.RenderProbeClient"
+			"me.tinyclaw.oceanoverhaul.renderprobe.RenderProbeClient"
 		]
 	},
 	"depends": {
 		"fabricloader": ">=0.16.10",
 		"minecraft": "~1.21.1",
 		"fabric-api": "*",
-		"oceanstarter": "*"
+		"oceanoverhaul": "*"
 	}
 }

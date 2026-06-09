@@ -1,15 +1,15 @@
 {
   "replace": false,
   "values": [
-    "oceanstarter:driftwood_plank",
-    "oceanstarter:driftwood_plank_stairs",
-    "oceanstarter:driftwood_plank_slab",
-    "oceanstarter:driftwood_plank_wall",
-    "oceanstarter:driftwood_plank_fence",
-    "oceanstarter:driftwood_button",
-    "oceanstarter:driftwood_pressure_plate",
-    "oceanstarter:driftwood_fence_gate",
-    "oceanstarter:driftwood_trapdoor",
-    "oceanstarter:driftwood_door"
+    "oceanoverhaul:driftwood_plank",
+    "oceanoverhaul:driftwood_plank_stairs",
+    "oceanoverhaul:driftwood_plank_slab",
+    "oceanoverhaul:driftwood_plank_wall",
+    "oceanoverhaul:driftwood_plank_fence",
+    "oceanoverhaul:driftwood_button",
+    "oceanoverhaul:driftwood_pressure_plate",
+    "oceanoverhaul:driftwood_fence_gate",
+    "oceanoverhaul:driftwood_trapdoor",
+    "oceanoverhaul:driftwood_door"
   ]
 }

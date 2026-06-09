@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "oceanoverhaul:crushed_coral"
+    },
+    {
+      "item": "oceanoverhaul:coral_shard"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:sea_urchin"
+  }
+}

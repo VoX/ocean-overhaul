@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "minecraft:prismarine_crystals"
+  },
+  "result": {
+    "id": "oceanoverhaul:tide_pearl"
+  },
+  "experience": 0.3,
+  "cookingtime": 200
+}

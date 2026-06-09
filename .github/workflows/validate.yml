@@ -1,5 +1,5 @@
 # Static data/id validator — resolves every id referenced by the mod's data &
-# asset JSON against the MC `--reports` registry dump (vanilla + oceanstarter,
+# asset JSON against the MC `--reports` registry dump (vanilla + oceanoverhaul,
 # baked into scripts/validation/registries-1.21.1.json). Catches dangling recipe
 # /loot/worldgen/model/tag refs, missing texture PNGs, and bad recipe-category
 # enums — the silent datapack-load failures that `./gradlew build` does NOT see.

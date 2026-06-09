@@ -30,10 +30,10 @@ OUT="${1:-${OUT:-docs/renders/tidal-armor-worn.png}}"
 # equipment-NBT change (stand spawned naked); `/item replace` is slot-based + stable.
 SUMMON_CMD='summon minecraft:armor_stand 7 100 7 {NoGravity:1b,ShowArms:1b,Invulnerable:1b,PersistenceRequired:1b}'
 EQUIP="\
-item replace entity @e[type=minecraft:armor_stand,limit=1] armor.head with oceanstarter:tidal_helmet;\
-item replace entity @e[type=minecraft:armor_stand,limit=1] armor.chest with oceanstarter:tidal_chestplate;\
-item replace entity @e[type=minecraft:armor_stand,limit=1] armor.legs with oceanstarter:tidal_leggings;\
-item replace entity @e[type=minecraft:armor_stand,limit=1] armor.feet with oceanstarter:tidal_boots"
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.head with oceanoverhaul:tidal_helmet;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.chest with oceanoverhaul:tidal_chestplate;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.legs with oceanoverhaul:tidal_leggings;\
+item replace entity @e[type=minecraft:armor_stand,limit=1] armor.feet with oceanoverhaul:tidal_boots"
 
 # Camera ~4 blocks back at chest height looking +X (yaw 270) — fits the whole
 # ~2-block humanoid stand in frame so plate detail on every piece is visible.

@@ -81,7 +81,7 @@ for u in (0, 4, 8, 12):
 
 import colorsys
 
-OUT_DIR = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity"
+OUT_DIR = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity"
 
 # Keep the base purple/pink texture (variant source / legacy name).
 base_out = OUT_DIR + "/jellyfish.png"

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "minecraft:prismarine"
+    },
+    "C": {
+      "tag": "oceanoverhaul:coral_blocks"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "CPC",
+    "PCP"
+  ],
+  "result": {
+    "count": 4,
+    "id": "oceanoverhaul:abyssal_coral_block"
+  }
+}

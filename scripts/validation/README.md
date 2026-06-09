@@ -23,9 +23,9 @@ validator resolves every referenced id against it:
 
 - `minecraft:`/vanilla ids → checked against the dump (vanilla model/texture
   *resources* are trusted — they aren't shipped here and aren't registry ids).
-- `oceanstarter:` ids → must resolve, to a registry id (recipe/loot/worldgen
+- `oceanoverhaul:` ids → must resolve, to a registry id (recipe/loot/worldgen
   block & item refs) **or** to a shipped file (model parents, textures,
-  blockstate model refs, configured-feature refs). A dangling `oceanstarter:`
+  blockstate model refs, configured-feature refs). A dangling `oceanoverhaul:`
   ref is always an error.
 
 ## Regenerating the dump
@@ -50,8 +50,8 @@ Only needed when bumping the MC version or adding registered content.
    python3 scripts/validation/build-registries.py /tmp/gen/reports/registries.json .
    ```
 
-   This parses `OceanStarter.java`'s `Registry.register(...)` calls and writes
-   `registries-1.21.1.json` (vanilla + oceanstarter). It fails loudly if it
+   This parses `OceanOverhaul.java`'s `Registry.register(...)` calls and writes
+   `registries-1.21.1.json` (vanilla + oceanoverhaul). It fails loudly if it
    parses zero mod registrations (regex drift guard).
 
 3. Clean up the `/tmp` scratch + kill the java pid. Never leave an orphan MC

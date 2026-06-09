@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "oceanoverhaul:sea_glass"
+  },
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:sea_glass_stairs"
+  }
+}

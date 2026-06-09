@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "oceanoverhaul:block/chiseled_prismarine_tiles",
+    "side": "oceanoverhaul:block/chiseled_prismarine_tiles",
+    "top": "oceanoverhaul:block/chiseled_prismarine_tiles"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "oceanoverhaul:block/driftwood_plank",
+    "side": "oceanoverhaul:block/driftwood_plank",
+    "top": "oceanoverhaul:block/driftwood_plank"
+  }
+}

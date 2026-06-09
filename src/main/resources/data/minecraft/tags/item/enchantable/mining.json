@@ -1,9 +1,9 @@
 {
   "replace": false,
   "values": [
-    "oceanstarter:tidal_pickaxe",
-    "oceanstarter:tidal_axe",
-    "oceanstarter:tidal_shovel",
-    "oceanstarter:tidal_hoe"
+    "oceanoverhaul:tidal_pickaxe",
+    "oceanoverhaul:tidal_axe",
+    "oceanoverhaul:tidal_shovel",
+    "oceanoverhaul:tidal_hoe"
   ]
 }

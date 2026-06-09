@@ -1,0 +1,6 @@
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "oceanoverhaul:block/chiseled_prismarine_tiles"
+	}
+}

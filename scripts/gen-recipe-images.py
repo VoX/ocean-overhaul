@@ -10,7 +10,7 @@ its count badge. BLOCKS render as wiki-style isometric 3D cubes (slabs as
 half-cubes); flat items (tools, ingredients, food, doors) stay flat.
 
 Icons resolve from:
-  - mod item/block textures under assets/oceanstarter/textures/{item,block}/
+  - mod item/block textures under assets/oceanoverhaul/textures/{item,block}/
   - block-items without a flat icon (stairs/slabs/walls/fences/...) fall back to
     the base block's texture
   - vanilla items/blocks: straight from the cached MC 1.21.1 client jar
@@ -23,9 +23,9 @@ from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES  = os.path.join(ROOT, "src/main/resources")
-RD   = os.path.join(RES, "data/oceanstarter/recipe")
-ITEM = os.path.join(RES, "assets/oceanstarter/textures/item")
-BLOCK= os.path.join(RES, "assets/oceanstarter/textures/block")
+RD   = os.path.join(RES, "data/oceanoverhaul/recipe")
+ITEM = os.path.join(RES, "assets/oceanoverhaul/textures/item")
+BLOCK= os.path.join(RES, "assets/oceanoverhaul/textures/block")
 OUT  = os.path.join(ROOT, "docs/recipes")
 README = os.path.join(ROOT, "README.md")
 JAR  = os.path.expanduser("~/.gradle/caches/fabric-loom/1.21.1/minecraft-client.jar")
@@ -58,7 +58,7 @@ def load_tex(idv):
     if idv in _tex_cache: return _tex_cache[idv]
     img = None
     ns, name = idv.split(":") if ":" in idv else ("minecraft", idv)
-    if ns == "oceanstarter":
+    if ns == "oceanoverhaul":
         for p in (os.path.join(ITEM, name + ".png"), os.path.join(BLOCK, name + ".png")):
             if os.path.exists(p):
                 img = Image.open(p).convert("RGBA"); break

@@ -17,7 +17,7 @@ OUT="${1:-${OUT:-docs/renders/blocks.png}}"
 
 # 3x3 grid of distinctive blocks, wall in the Y-Z plane at x=10.
 # columns z=6,7,8 ; rows y=101 (top), 100 (mid), 99 (bottom).
-B=oceanstarter
+B=oceanoverhaul
 STAGE="\
 setblock 10 101 6 ${B}:pearl_lantern;\
 setblock 10 101 7 ${B}:prismarine_crystal_block;\
