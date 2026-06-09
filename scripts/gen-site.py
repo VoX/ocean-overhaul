@@ -39,10 +39,16 @@ def tc(n):
 def render_block_icon(name):
     rel = "icons/b_%s.png" % name
     tex = gri.load_tex("oceanstarter:" + name)
+    if name.endswith("_door"):
+        # vanilla doors show their flat item sprite in inventories, never a cube
+        tex.resize((96, 96), Image.NEAREST).save(os.path.join(DOCS, rel))
+        return rel
     if name.endswith("_stairs"):
         img = gri.iso_stair(tex)
     elif name.endswith("_slab"):
         img = gri.iso_cube(tex, frac=0.5)
+    elif name.endswith("_trapdoor"):
+        img = gri.iso_cube(tex, frac=0.1875)
     else:
         img = gri.iso_cube(tex, frac=1.0)
     img = img.resize((img.width * 2, img.height * 2), Image.NEAREST)

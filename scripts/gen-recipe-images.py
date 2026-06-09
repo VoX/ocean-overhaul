@@ -167,13 +167,14 @@ def iso_stair(tex, W=30, Vh=30):
 
 def cell_display(tex, idv, size):
     """Rendered icon ready to paste in a slot of `size`px: iso cube for blocks
-    (slabs half-height, stairs two-tier), flat for items."""
+    (slabs half-height, trapdoors 3/16, stairs two-tier), flat for items."""
     if idv and is_block(idv):
         n = idv.split(":")[-1]
         if n.endswith("_stairs"):
             cube = iso_stair(tex)
         else:
-            cube = iso_cube(tex, frac=0.5 if n.endswith("_slab") else 1.0)
+            frac = 0.5 if n.endswith("_slab") else 0.1875 if n.endswith("_trapdoor") else 1.0
+            cube = iso_cube(tex, frac=frac)
         sc = min((size - 6) / cube.width, (size - 2) / cube.height)
         return cube.resize((max(1, int(cube.width*sc)), max(1, int(cube.height*sc))), Image.NEAREST)
     s = size - 12
