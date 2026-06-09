@@ -55,7 +55,11 @@ PARTS = {
     'body':       (0, 0, 26, 30, 20),
     'head':       (0, 51, 24, 12, 16),
     'lower_jaw':  (0, 80, 22, 7, 16),
-    'lure_stalk': (94, 26, 2, 16, 2),
+    # Jointed lure stalk: three segments (base/mid/tip) matching the model's
+    # lure_stalk -> lure_mid -> lure_tip chain; the bulb hangs off the tip.
+    'lure_stalk': (94, 26, 2, 6, 2),
+    'lure_mid':   (104, 36, 2, 6, 2),
+    'lure_tip':   (114, 36, 2, 5, 2),
     'lure_bulb':  (104, 26, 4, 4, 4),
     'tail':       (80, 51, 12, 16, 12),
     'caudal_fin': (78, 82, 1, 18, 9),
@@ -142,9 +146,10 @@ def paint_body():
         spike = 3 if i % 2 == 0 else 2
         rect(dx + i, dy + dh - spike, 1, spike, TEETH)
 
-    # ---- LURE_STALK ----
-    for k in ('down', 'up', 'north', 'south', 'east', 'west'):
-        rect(*F['lure_stalk'][k], FIN)
+    # ---- LURE_STALK (three jointed segments) ----
+    for seg in ('lure_stalk', 'lure_mid', 'lure_tip'):
+        for k in ('down', 'up', 'north', 'south', 'east', 'west'):
+            rect(*F[seg][k], FIN)
 
     # ---- LURE_BULB ----  pale-blue/white all 6 faces (bright so it reads from far).
     for k in ('down', 'up', 'north', 'south', 'east', 'west'):
@@ -188,10 +193,11 @@ def paint_emissive():
     # LURE BULB — all 6 faces glow.
     for k in ('down', 'up', 'north', 'south', 'east', 'west'):
         rect(*F['lure_bulb'][k], GLOW)
-    # the stalk's tip glows faintly too (top 3 px of each long face) so the glow
-    # reads as bleeding down the esca filament, not a floating cube.
+    # the stalk's TIP SEGMENT glows faintly too (top 3 px of each long face) so the
+    # glow reads as bleeding down the esca filament, not a floating cube. Only the
+    # tip — the base/mid segments stay dark like the body.
     for k in ('north', 'south', 'east', 'west'):
-        x, y, w, h = [int(v) for v in F['lure_stalk'][k]]
+        x, y, w, h = [int(v) for v in F['lure_tip'][k]]
         rect(x, y, w, min(3, h), GLOW)
 
     # EYES — glow them too (anglerfish eyes catch the lure light). Mirror the body

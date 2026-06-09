@@ -92,15 +92,22 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 				ModelPartBuilder.create().uv(0, 80).cuboid(-11.0F, 0.0F, -16.0F, 22.0F, 7.0F, 16.0F),
 				ModelTransform.of(0.0F, -2.0F, -10.0F, 0.7F, 0.0F, 0.0F));
 
-		// Anglerfish lure: a thin stalk arcing off the top-front of the head, bearing
-		// the glowing esca bulb at its tip. The stalk pivots at the head top-front and
-		// tilts forward (setAngles) so the bulb hangs out over the gape. The bulb is a
-		// child of the stalk so it swings with it. uv(94,26) stalk / uv(104,26) bulb.
+		// Anglerfish lure: a JOINTED stalk off the top-front of the head — the base
+		// rises near-vertically, then each segment bends further forward so the arc
+		// ends pointing forward/down with the glowing esca bulb hung out over the
+		// gape. The bends are baked into the mid/tip transforms; setAngles sways only
+		// the base. uv(94,26)/(104,36)/(114,36) segments, uv(104,26) bulb.
 		ModelPartData lureStalk = head.addChild("lure_stalk",
-				ModelPartBuilder.create().uv(94, 26).cuboid(-1.0F, -18.0F, -1.0F, 2.0F, 16.0F, 2.0F),
+				ModelPartBuilder.create().uv(94, 26).cuboid(-1.0F, -6.0F, -1.0F, 2.0F, 6.0F, 2.0F),
 				ModelTransform.pivot(0.0F, -10.0F, -14.0F));
-		lureStalk.addChild("lure_bulb",
-				ModelPartBuilder.create().uv(104, 26).cuboid(-2.0F, -22.0F, -2.0F, 4.0F, 4.0F, 4.0F),
+		ModelPartData lureMid = lureStalk.addChild("lure_mid",
+				ModelPartBuilder.create().uv(104, 36).cuboid(-1.0F, -6.0F, -1.0F, 2.0F, 6.0F, 2.0F),
+				ModelTransform.of(0.0F, -6.0F, 0.0F, 0.72F, 0.0F, 0.0F));
+		ModelPartData lureTip = lureMid.addChild("lure_tip",
+				ModelPartBuilder.create().uv(114, 36).cuboid(-1.0F, -5.0F, -1.0F, 2.0F, 5.0F, 2.0F),
+				ModelTransform.of(0.0F, -6.0F, 0.0F, 0.95F, 0.0F, 0.0F));
+		lureTip.addChild("lure_bulb",
+				ModelPartBuilder.create().uv(104, 26).cuboid(-2.0F, -9.0F, -2.0F, 4.0F, 4.0F, 4.0F),
 				ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
 		// Tail — tapering rear section behind the body. ~12 wide x 16 tall x 12 long.
@@ -143,9 +150,9 @@ public class AbyssalLurkerModel extends SinglePartEntityModel<AbyssalLurker> {
 		this.tail.yaw = MathHelper.cos(animationProgress * 0.1F) * 0.2F;
 		// Lazy chomp on the lower jaw (oscillates around the wide-open pose).
 		this.lowerJaw.pitch = 0.7F + MathHelper.cos(animationProgress * 0.12F) * 0.15F;
-		// The lure arcs FORWARD so the bulb dangles out over the gape/face. The stalk
-		// extends up (-Y), so a POSITIVE pitch tips its tip toward -Z (forward); the
-		// old -0.9 wrongly swung it BACK over the body (pindyj: "wrong direction").
-		this.lureStalk.pitch = 2.0F + MathHelper.cos(animationProgress * 0.08F) * 0.12F;
+		// Sway only the BASE segment around its mostly-upright pose; the fixed bends in
+		// lure_mid/lure_tip carry the arc forward/down (cumulative ~2.1 rad at the tip)
+		// so the bulb dangles out ahead of the gape. Positive pitch = toward -Z (forward).
+		this.lureStalk.pitch = 0.45F + MathHelper.cos(animationProgress * 0.08F) * 0.12F;
 	}
 }
