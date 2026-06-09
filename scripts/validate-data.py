@@ -42,7 +42,9 @@ WHAT IT VALIDATES
 Resolution rules:
   * Ids in `minecraft:` (or vanilla resource paths like `block/cube_all`) are
     trusted as vanilla — registry ids checked against the dump; vanilla model/
-    texture *resources* are assumed present (we can't see vanilla's assets from a
+    texture *resources* are checked against the cached client jar when it's in
+    the loom cache (catches a vanilla model/texture ref that doesn't exist in
+    this MC version), else assumed present (we can't see vanilla's assets from a
     server-side dump, and they aren't registry ids).
   * Ids in `oceanstarter:` MUST resolve — to a registry id (recipes/loot/worldgen
     blocks) or to a shipped file (models/textures/blockstates). A dangling
@@ -54,9 +56,11 @@ texture / bad category. Designed to run in CI on push + PR.
 
 from __future__ import annotations
 
+import glob
 import json
 import os
 import sys
+import zipfile
 from pathlib import Path
 
 MOD_ID = "oceanstarter"
@@ -67,6 +71,63 @@ RES = REPO / "src" / "main" / "resources"
 DATA = RES / "data" / MOD_ID
 ASSETS = RES / "assets" / MOD_ID
 REGISTRIES = REPO / "scripts" / "validation" / "registries-1.21.1.json"
+
+
+def _read_minecraft_version() -> str:
+    """The MC version this mod targets, from gradle.properties (falls back to the
+    pinned 1.21.1). Used to pick the matching client jar out of the loom cache."""
+    gp = REPO / "gradle.properties"
+    try:
+        for line in gp.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("minecraft_version"):
+                return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return "1.21.1"
+
+
+MC_VERSION = _read_minecraft_version()
+
+
+# --------------------------------------------------------------------------- #
+# Vanilla client-jar asset index (best-effort). Lets us validate VANILLA model/
+# texture *resource* refs (not registry ids) against what the shipped jar
+# actually contains — the gap that let `minecraft:item/template_spawn_egg`
+# (deleted in 1.21.4) ship green twice. If the jar isn't in the loom cache
+# (e.g. a CI validate job that runs before any gradle build), we degrade to
+# trusting vanilla refs so the validator never hard-fails on its absence.
+#
+# 1.21.1 backport note: the loom cache can hold client jars for SEVERAL MC
+# versions at once (1.20.1 / 1.21.1 / 1.21.11 …). We MUST index the jar that
+# matches THIS mod's minecraft_version — using a newer jar would false-fail on
+# vanilla refs that exist in 1.21.1 but were later removed (e.g. the spawn-egg
+# model template). So prefer the jar whose cache dir == MC_VERSION.
+# --------------------------------------------------------------------------- #
+def _load_vanilla_assets():
+    cache = Path.home() / ".gradle" / "caches" / "fabric-loom"
+    jars = sorted(glob.glob(str(cache / "*" / "minecraft-client.jar")))
+    # Prefer the jar for THIS mod's MC version (its parent dir is the version).
+    target = os.sep + MC_VERSION + os.sep
+    jars.sort(key=lambda p: (target not in p, p))
+    for jp in jars:
+        try:
+            with zipfile.ZipFile(jp) as z:
+                names = set(z.namelist())
+            models = {n[len("assets/minecraft/models/"):-len(".json")]
+                      for n in names
+                      if n.startswith("assets/minecraft/models/") and n.endswith(".json")}
+            textures = {n[len("assets/minecraft/textures/"):-len(".png")]
+                        for n in names
+                        if n.startswith("assets/minecraft/textures/") and n.endswith(".png")}
+            if models:
+                return jp, models, textures
+        except (OSError, zipfile.BadZipFile):
+            continue
+    return None, None, None
+
+
+_VANILLA_JAR, _VANILLA_MODELS, _VANILLA_TEXTURES = _load_vanilla_assets()
 
 # Valid recipe-category enums (from net.minecraft.recipe.book.*, verified via javap).
 CRAFTING_CATEGORIES = {"building", "redstone", "equipment", "misc"}
@@ -137,7 +198,10 @@ def model_file_exists(fqid: str) -> bool:
     """`oceanstarter:block/foo` -> assets/oceanstarter/models/block/foo.json"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
-        return True  # vanilla model: trusted
+        # Vanilla model: check the client jar if we have it (catches refs to a
+        # vanilla model removed across a version jump, e.g. template_spawn_egg);
+        # otherwise trust it (jar not in cache).
+        return _VANILLA_MODELS is None or path in _VANILLA_MODELS
     return (ASSETS / "models" / (path + ".json")).is_file()
 
 
@@ -145,7 +209,7 @@ def texture_file_exists(fqid: str) -> bool:
     """`oceanstarter:block/foo` -> assets/oceanstarter/textures/block/foo.png"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
-        return True  # vanilla texture: trusted
+        return _VANILLA_TEXTURES is None or path in _VANILLA_TEXTURES
     return (ASSETS / "textures" / (path + ".png")).is_file()
 
 
