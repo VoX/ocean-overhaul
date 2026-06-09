@@ -126,18 +126,15 @@ def paint_body():
     for i in range(uw):
         spike = 3 if i % 2 == 0 else 2
         rect(ux + i, uy + uh - spike, 1, spike, TEETH)
-    # BIG pale eye high on the head front (north) face, with a dark pupil.
-    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
-    ex, ey = nx + 2, ny + 1
-    rect(ex, ey, 4, 4, EYE)
-    rect(ex + 1, ey + 1, 2, 2, PUPIL)
-    rect(nx + nw - 6, ey, 4, 4, EYE)
-    rect(nx + nw - 5, ey + 1, 2, 2, PUPIL)
-    # also a big eye on each side (east/west) of the head, near the top-front.
+    # ONE big pale eye per side (east/west) of the head, near the top-front, with a
+    # dark pupil. No eyes on the front (north) face — a front pair plus the side
+    # pair read as four eyes (VoX). Side faces unwrap with OPPOSITE u-senses
+    # (east: high-u = snout, west: low-u = snout), so the anchor mirrors per face.
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        rect(sx0 + 1, sy0 + 1, 4, 4, EYE)
-        rect(sx0 + 2, sy0 + 2, 2, 2, PUPIL)
+        ex0 = sx0 + 1 if side == 'west' else sx0 + sw - 5
+        rect(ex0, sy0 + 1, 4, 4, EYE)
+        rect(ex0 + 1, sy0 + 2, 2, 2, PUPIL)
 
     # ---- LOWER_JAW ----
     fillbox(F['lower_jaw'], BODY_SIDE, BODY_SIDE, BODY_BELLY)
@@ -204,14 +201,12 @@ def paint_emissive():
         rect(x, y, w, min(3, h), GLOW)
 
     # EYES — glow them too (anglerfish eyes catch the lure light). Mirror the body
-    # script's eye placements EXACTLY so registration matches.
-    nx, ny, nw, nh = [int(v) for v in F['head']['north']]
-    ey = ny + 1
-    rect(nx + 2, ey, 4, 4, GLOW)
-    rect(nx + nw - 6, ey, 4, 4, GLOW)
+    # script's eye placements EXACTLY so registration matches: side faces only,
+    # per-face anchor (east: high-u = snout, west: low-u = snout).
     for side in ('east', 'west'):
         sx0, sy0, sw, sh = [int(v) for v in F['head'][side]]
-        rect(sx0 + 1, sy0 + 1, 4, 4, GLOW)
+        ex0 = sx0 + 1 if side == 'west' else sx0 + sw - 5
+        rect(ex0, sy0 + 1, 4, 4, GLOW)
 
     out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanstarter/textures/entity/abyssal_lurker_emissive.png"
     img.save(out)
