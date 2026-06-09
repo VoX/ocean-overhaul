@@ -275,27 +275,30 @@ Every crafting-table recipe the mod adds, rendered as the grid + result (blocks 
 <td align="center"><img src="docs/recipes/sea_glass_stairs.png" width="300"><br><sub>Sea Glass Stairs ×4</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="docs/recipes/salt_block_from_block.png" width="300"><br><sub>Sea Salt ×9</sub></td>
 <td align="center"><img src="docs/recipes/sea_urchin.png" width="300"><br><sub>Sea Urchin</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/seafood_stew.png" width="300"><br><sub>Seafood Stew</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_axe.png" width="300"><br><sub>Tidal Axe</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_boots.png" width="300"><br><sub>Tidal Boots</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_chestplate.png" width="300"><br><sub>Tidal Chestplate</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_helmet.png" width="300"><br><sub>Tidal Helmet</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_hoe.png" width="300"><br><sub>Tidal Hoe</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_leggings.png" width="300"><br><sub>Tidal Leggings</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_pickaxe.png" width="300"><br><sub>Tidal Pickaxe</sub></td>
-<td align="center"><img src="docs/recipes/tidal_shovel.png" width="300"><br><sub>Tidal Shovel</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="docs/recipes/tidal_shovel.png" width="300"><br><sub>Tidal Shovel</sub></td>
 <td align="center"><img src="docs/recipes/tidal_sword.png" width="300"><br><sub>Tidal Sword</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tide_pearl_from_pearl_block.png" width="300"><br><sub>Tide Pearl ×9</sub></td>
 </tr>
 </table>
