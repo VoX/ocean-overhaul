@@ -76,13 +76,14 @@ There are two layers here: per-subject wrappers (one entity at a time) and the
 comprehensive contact-sheet harness (EVERYTHING at once). Both render REAL
 in-game screenshots **headless** — Xvfb + Mesa llvmpipe software GL, no GPU
 needed (the LWJGL aarch64 natives are already in the gradle cache, so a 1.21.1
-dev client boots fine on this ARM box). Each shot stands up an ephemeral loopback
-server with the subject pre-staged in a lit tank/arena, joins a headless dev
-client (the **dev-only `renderprobe` source set** — a separate fabric mod that
-NEVER ships in the release jar; `jar`/`remapJar` only bundle `sourceSets.main`),
-settles ~200 frames under slow software GL, then writes the PNG. Full how-to + the
-4 render gotchas (accessibility screen / world-vs-title / peaceful-despawns-boss /
-stale framebuffer): `notes/headless-client-findings.md`.
+dev client boots fine on this ARM box). A session stands up an ephemeral loopback
+server with a lit tank/arena, joins a headless dev client (the **dev-only
+`renderprobe` source set** — a separate fabric mod that NEVER ships in the release
+jar; `jar`/`remapJar` only bundle `sourceSets.main`), then either renders ONE
+pre-staged subject (single-shot) OR loops a whole MANIFEST of scenes in that one
+session (multi-shot — see below), settling under slow software GL before each PNG.
+Full how-to + the 4 render gotchas (accessibility screen / world-vs-title /
+peaceful-despawns-boss / stale framebuffer): `notes/headless-client-findings.md`.
 
 **Per-subject wrappers** (quick, one subject):
 ```
@@ -90,7 +91,34 @@ bash scripts/render-megalodon.sh        # → /tmp/megalodon-render.png (854x480
 bash scripts/render-jellyfish.sh        # one jellyfish
 bash scripts/render-entity.sh <id> <out.png>   # generic entity (the engine the others + render-all wrap)
 bash scripts/render-blocks.sh / render-armor.sh
-# lowest level: ./gradlew runClientProbe -Poo.probe.out=/abs/path.png -Poo.probe.target="x y z"
+# SKIP_BUILD=1 — skip render-entity.sh's per-invocation `./gradlew build` (asserts the
+#   jar already exists). render-all.sh primes ONE build up front then sets this.
+# lowest level (single-shot): ./gradlew runClientProbe -Poo.probe.out=/abs/path.png -Poo.probe.target="x y z"
+```
+
+**Multi-shot via a MANIFEST (the speedup that makes the contact sheets cheap).**
+A render's dominant cost is cold-booting a server+client, so rendering N subjects
+used to mean N boots. `render-entity.sh` now also accepts `OO_MANIFEST=/abs/x.json`
+— a list of SCENES rendered in ONE server+client session (the probe loops them
+without disconnecting). The harness builds the shared lit arena + ops/spectators
+the joining player; the probe then, per scene: runs the scene's `setup` console
+commands AS THE PLAYER (`networkHandler.sendChatCommand`, hence the OP), tp's the
+camera to the scene's `camera` pose + aims, settles, screenshots to the scene's
+`out`, advances. Manifest schema (commands have NO leading `/`; coords are
+doubles; `camera` is `[x,y,z,yaw,pitch]`):
+```json
+{ "reset":  ["fill 10 99 6 10 101 8 minecraft:air", "kill @e[type=minecraft:item_display]"],
+  "scenes": [ { "name":"s0", "setup":["setblock 10 101 7 oceanstarter:pearl_block"],
+               "camera":[6,100,7,270,0], "settleTicks":100,
+               "aimType":"oceanstarter:megalodon", "out":"/abs/s0.png" } ] }
+```
+`reset` runs before EVERY scene's setup (clear the prior scene); `aimType` (optional)
+re-aims at that entity each frame (drifting mobs stay framed) — omit it to hold the
+camera's fixed yaw/pitch. With NO manifest the probe falls back to the legacy
+single-shot (`-Poo.probe.{out,target,targetType,settleTicks}`, server owns the
+camera), so the per-subject wrappers above are unchanged.
+```
+./gradlew runClientProbe -Poo.probe.manifest=/abs/x.json   # the multi-shot path
 ```
 
 **Comprehensive contact-sheet harness — `scripts/render-all.sh`** (the
@@ -103,19 +131,22 @@ It produces three labeled CONTACT SHEETS so a human can eyeball EVERY block,
 EVERY item, and EVERY mob (incl. all 5 jellyfish color variants) for visual
 errors in one glance:
 - `docs/renders/all-blocks.png` — every block as a `setblock` wall (AIR arena), 3×3 per shot, position legend.
-- `docs/renders/all-items.png` — every item in an item_frame on a backing wall, 5×5 per shot (flat icon view — exactly the view that exposes a missing-model purple/black cube).
+- `docs/renders/all-items.png` — every item as a floating `minecraft:item_display` (NBT `item_display:"gui"`, `billboard:"center"`) in a 4×4 grid (the flat inventory-icon view — exactly the view that exposes a missing-model purple/black cube). NOTE: this used to use `item_frame`s, which rendered EMPTY in practice; `item_display` is the robust path.
 - `docs/renders/all-mobs.png` — the 4 mobs each in a water tank + all 5 jellyfish variants, tiled + labeled.
 
 Content is enumerated **dynamically** from the resource dirs (blocks = blockstate
 JSON basenames, items = `models/item/*.json` basenames, mobs = the 4 entity ids +
 jellyfish Variant 0..4), so new content is auto-included with no edit to the
-script. It's a pure orchestrator: it primes one mod build, then fans each subject
-through `scripts/render-entity.sh` and montages the captured PNGs via
-`scripts/montage-renders.py` (PIL). **Heavy + slow + niced + STRICTLY SEQUENTIAL**
-— it runs exactly one MC server+client at a time (two software-GL clients would
-OOM this 4-core box), every sub-render is `nice -n 19 ionice -c3`, loopback-only,
-and self-tearing. Because each shot is a full dev-client boot under software GL,
-the whole run is long — the OPERATOR runs this, NOT CI, NOT the build/verify pass.
+script. It is a **MULTI-SHOT** orchestrator: it primes ONE mod build (then runs
+sub-renders with `SKIP_BUILD=1`), and renders each whole category — all blocks, OR
+all items, OR all mobs — in a SINGLE `render-entity.sh` session via a generated
+`OO_MANIFEST` (so the run is ~3 boots total, one per category, NOT one per
+subject), then montages the captured PNGs via `scripts/montage-renders.py` (PIL).
+The per-shot res/settle default to 854x480 / ~100 frames (grid thumbnails).
+**Heavy + slow + niced + STRICTLY SEQUENTIAL** — at most one MC server+client at a
+time (two software-GL clients would OOM this 4-core box), everything is
+`nice -n 19 ionice -c3`, loopback-only, and self-tearing. The OPERATOR runs this,
+NOT CI, NOT the build/verify pass.
 
 **POLICY — render and eyeball after ANY significant visual change.** This is the
 session's hard lesson: **`./gradlew build`, `runGametest`, AND

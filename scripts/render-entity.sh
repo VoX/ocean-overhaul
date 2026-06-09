@@ -54,10 +54,17 @@ set -u
 # ---------------------------------------------------------------------------
 ENTITY_ID="${1:-}"
 OUT_ARG="${2:-}"
-if [ -z "$ENTITY_ID" ] || [ -z "$OUT_ARG" ]; then
-    echo "RESULT: FAIL (usage: render-entity.sh <entity_id> <out.png>)" >&2
-    exit 64
+# In MULTI-SHOT mode (OO_MANIFEST set) the per-scene out paths live in the
+# manifest, so the positional <out.png> is optional (a label only); ENTITY_ID is
+# likewise just a label. In single-shot mode both are required.
+if [ -z "${OO_MANIFEST:-}" ]; then
+    if [ -z "$ENTITY_ID" ] || [ -z "$OUT_ARG" ]; then
+        echo "RESULT: FAIL (usage: render-entity.sh <entity_id> <out.png>  | or set OO_MANIFEST=...)" >&2
+        exit 64
+    fi
 fi
+ENTITY_ID="${ENTITY_ID:-multi}"
+OUT_ARG="${OUT_ARG:-/tmp/oo-render-multi-placeholder.png}"
 # Short name (after the ':') for log lines + grep on the summon-confirmation.
 ENTITY_SHORT="${ENTITY_ID##*:}"
 
@@ -89,6 +96,30 @@ case "$OUT_ARG" in
     /*) OUT="$OUT_ARG" ;;
     *)  OUT="$(pwd)/$OUT_ARG" ;;
 esac
+
+# ----------------------------------------------------------------------------
+# Render mode: MULTI-SHOT vs single-shot.
+#   OO_MANIFEST=/abs/manifest.json  → MULTI-SHOT: the probe runs every scene in
+#       that manifest in ONE server+client session (used by render-all.sh to
+#       collapse a whole category to a single boot). The manifest's per-scene
+#       `setup` commands place/summon each subject and `camera` poses the shot,
+#       so render-entity.sh only builds the shared lit arena + ops/spectators the
+#       player; it does NOT run SUMMON_CMD/STAGE_CMDS/POST_CMDS itself and the
+#       wrangler does NOT drive the camera (the client owns it per scene).
+#   (unset)                         → SINGLE-SHOT (legacy): unchanged behaviour —
+#       server-side arena + SUMMON_CMD/STAGE_CMDS/POST_CMDS + a wrangler that
+#       holds the player in spectator at VANTAGE and re-/tp's it; the probe runs
+#       in its no-manifest fallback (aim-only, server owns position).
+# ----------------------------------------------------------------------------
+OO_MANIFEST="${OO_MANIFEST:-}"
+MULTI_SHOT=0
+if [ -n "$OO_MANIFEST" ]; then
+    [ -f "$OO_MANIFEST" ] || die "OO_MANIFEST set but file missing: $OO_MANIFEST"
+    MULTI_SHOT=1
+fi
+# Settle frames for the SINGLE-SHOT fallback probe (multi-shot carries per-scene
+# settleTicks in the manifest). Lower it for fast contact-sheet thumbnails.
+SETTLE_TICKS="${SETTLE_TICKS:-200}"
 
 # Where the mob is summoned, and the camera pose. SUMMON_AT feeds both the
 # `summon`/`tp` commands (space-separated coords) and the probe's aim target
@@ -203,12 +234,21 @@ note "entity=$ENTITY_ID out=$OUT summon_at=($SUMMON_AT) vantage=($VANTAGE)"
 
 # ----------------------------------------------------------------------------
 # 1. build the mod jar (server stages it; client uses dev classpath)
+#    SKIP_BUILD=1 skips the gradle build entirely and just asserts the jar
+#    already exists — render-all.sh sets this after priming ONE build up front so
+#    its ~3 sub-renders don't each re-run gradle (the gradle build is otherwise
+#    re-run unconditionally per invocation, which dominates a multi-shot run).
 # ----------------------------------------------------------------------------
 MOD_JAR="$REPO/build/libs/ocean-overhaul-${MOD_VERSION}.jar"
-note "building mod (v$MOD_VERSION)"
-( cd "$REPO" && ./gradlew build --no-daemon ) >/tmp/oo-render-build.log 2>&1 \
-    || { tail -25 /tmp/oo-render-build.log; die "gradle build failed"; }
-[ -f "$MOD_JAR" ] || die "built mod jar missing: $MOD_JAR"
+if [ "${SKIP_BUILD:-0}" = "1" ]; then
+    note "SKIP_BUILD=1 — not rebuilding; checking jar exists"
+    [ -f "$MOD_JAR" ] || die "SKIP_BUILD set but mod jar missing: $MOD_JAR (build first)"
+else
+    note "building mod (v$MOD_VERSION)"
+    ( cd "$REPO" && ./gradlew build --no-daemon ) >/tmp/oo-render-build.log 2>&1 \
+        || { tail -25 /tmp/oo-render-build.log; die "gradle build failed"; }
+    [ -f "$MOD_JAR" ] || die "built mod jar missing: $MOD_JAR"
+fi
 
 FABRIC_API_JAR=$(ls "$GRADLE_CACHE"/net.fabricmc.fabric-api/fabric-api/${FABRIC_API_VERSION}/*/fabric-api-${FABRIC_API_VERSION}.jar 2>/dev/null | head -1)
 [ -n "$FABRIC_API_JAR" ] && [ -f "$FABRIC_API_JAR" ] || die "fabric-api ${FABRIC_API_VERSION} not in gradle cache"
@@ -284,12 +324,17 @@ done
 note "server up"
 
 # ----------------------------------------------------------------------------
-# 5. build the arena + pre-summon the entity in a lit, clear water box at spawn
+# 5. build the SHARED lit arena (a big glass-walled tank/air box near spawn).
+#    This is built ONCE and reused by every scene. In MULTI-SHOT mode the
+#    per-scene `setup` commands (in the manifest, run client-side by the probe)
+#    place/summon each subject inside this arena; in single-shot mode the
+#    STAGE_CMDS/SUMMON_CMD/POST_CMDS below stage the one subject server-side.
 # ----------------------------------------------------------------------------
 send "gamerule doMobSpawning false"
 send "gamerule doDaylightCycle false"
 send "gamerule doWeatherCycle false"
 send "gamerule randomTickSpeed 0"
+send "gamerule sendCommandFeedback false"
 send "time set day"
 send "weather clear 1000000"
 send "forceload add -2 -2 16 16"
@@ -302,37 +347,44 @@ send "fill -2 91 -2 18 104 18 ${ARENA_MEDIUM}"       # arena volume y91..104 (wa
 send "fill -2 105 -2 18 105 18 minecraft:glowstone"
 send "fill -4 100 5 -3 100 9 minecraft:glowstone"    # side light bank toward camera
 sleep 1
-# Optional staging hook: extra console commands run after the arena is built but
-# before the summon — e.g. a `;`-separated list of setblock commands to build a
-# block showcase (see render-blocks.sh). Each segment is sent as its own command.
-if [ -n "${STAGE_CMDS:-}" ]; then
-  IFS=';' read -ra _stage <<< "$STAGE_CMDS"
-  for _c in "${_stage[@]}"; do [ -n "$_c" ] && send "$_c"; done
-  sleep 1
-fi
-send "$SUMMON_CMD"
-sleep 4
-# The vanilla summon-confirmation line is "Summoned new <DisplayName>"; the
-# display name is the entity's lang key value, which for our mobs is the
-# capitalized short id (Megalodon / Reef Fish / Jellyfish). Just sanity-grep on
-# the short id case-insensitively (informational only; not fatal).
-if grep -qi "Summoned new" "$LOG" 2>/dev/null; then note "entity summoned"; else note "WARN: summon confirmation not seen"; fi
 
-# keep the entity pinned at the framing point (NoAI, but belt+braces)
-send "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}"
-# Optional post-summon hook: `;`-separated commands run after the carrier is
-# summoned + positioned — e.g. `/item replace entity` to equip an armor stand
-# (version-stable, avoids the 1.21.x equipment-NBT schema churn). See render-armor.sh.
-if [ -n "${POST_CMDS:-}" ]; then
-  IFS=';' read -ra _post <<< "$POST_CMDS"
-  for _c in "${_post[@]}"; do [ -n "$_c" ] && send "$_c"; done
-  sleep 1
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    note "multi-shot: arena built; per-scene setup is driven by the probe manifest"
+    # Spawn the joining client where the FIRST scene's camera will be (the probe
+    # re-tp's per scene, but this loads the right chunks immediately on join).
+    send "setworldspawn ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW}"
+    sleep 1
+else
+    # Optional staging hook: extra console commands run after the arena is built but
+    # before the summon — e.g. a `;`-separated list of setblock commands to build a
+    # block showcase (see render-blocks.sh). Each segment is sent as its own command.
+    if [ -n "${STAGE_CMDS:-}" ]; then
+      IFS=';' read -ra _stage <<< "$STAGE_CMDS"
+      for _c in "${_stage[@]}"; do [ -n "$_c" ] && send "$_c"; done
+      sleep 1
+    fi
+    send "$SUMMON_CMD"
+    sleep 4
+    # The vanilla summon-confirmation line is "Summoned new <DisplayName>" (gated off
+    # by sendCommandFeedback=false above, so this grep is now best-effort only).
+    if grep -qi "Summoned new" "$LOG" 2>/dev/null; then note "entity summoned"; else note "WARN: summon confirmation not seen (feedback off)"; fi
+
+    # keep the entity pinned at the framing point (NoAI, but belt+braces)
+    send "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}"
+    # Optional post-summon hook: `;`-separated commands run after the carrier is
+    # summoned + positioned — e.g. `/item replace entity` to equip an armor stand
+    # (version-stable, avoids the 1.21.x equipment-NBT schema churn). See render-armor.sh.
+    if [ -n "${POST_CMDS:-}" ]; then
+      IFS=';' read -ra _post <<< "$POST_CMDS"
+      for _c in "${_post[@]}"; do [ -n "$_c" ] && send "$_c"; done
+      sleep 1
+    fi
+    # Set the world spawn to the camera VANTAGE so the joining client spawns right
+    # inside the lit tank, broadside of the mob, with the arena chunks already
+    # loaded — that fixes the "mob never synced to the client" failure mode.
+    send "setworldspawn ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW}"
+    sleep 1
 fi
-# Set the world spawn to the camera VANTAGE so the joining client spawns right
-# inside the lit tank, broadside of the mob, with the arena chunks already
-# loaded — that fixes the "mob never synced to the client" failure mode.
-send "setworldspawn ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW}"
-sleep 1
 
 # ----------------------------------------------------------------------------
 # 6. launch the dev CLIENT headless under Xvfb + llvmpipe; it auto-connects,
@@ -345,8 +397,23 @@ XVFB_PID=$!
 sleep 2
 kill -0 "$XVFB_PID" 2>/dev/null || die "Xvfb failed to start"
 
-note "launching dev client (runClientProbe) -> screenshot $OUT"
-rm -f "$OUT"
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    note "launching dev client (runClientProbe) -> MULTI-SHOT manifest $OO_MANIFEST"
+else
+    note "launching dev client (runClientProbe) -> screenshot $OUT"
+    rm -f "$OUT"
+fi
+
+# Watchdog ticks for the probe. Single-shot: the historical 2400 (~2min). Multi-
+# shot: scale with scene count (each scene ≈ settle + setup + sync), so a big
+# manifest never trips the watchdog mid-run. PROBE_TIMEOUT_TICKS overrides.
+PROBE_TIMEOUT_TICKS="${PROBE_TIMEOUT_TICKS:-2400}"
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    _nscenes=$(grep -c '"out"' "$OO_MANIFEST" 2>/dev/null || echo 1)
+    [ "$_nscenes" -lt 1 ] && _nscenes=1
+    PROBE_TIMEOUT_TICKS="${PROBE_TIMEOUT_TICKS_OVERRIDE:-$(( 1200 + _nscenes * 600 ))}"
+    note "multi-shot: $_nscenes scenes, probe watchdog=${PROBE_TIMEOUT_TICKS} ticks"
+fi
 
 # Pre-seed options.txt in the client run dir so the client lands on the TITLE
 # screen, not the first-launch accessibility-onboarding screen (which never auto-
@@ -368,6 +435,23 @@ gamma:1.0
 guiScale:2
 fovEffectScale:0.0
 OPTS
+# Assemble the -Poo.probe.* args. Multi-shot passes the manifest (the probe reads
+# every scene from it); single-shot passes the legacy out/target/settle props.
+PROBE_ARGS=(
+    -Poo.probe.host=127.0.0.1
+    -Poo.probe.port="$MC_PORT"
+    -Poo.probe.timeoutTicks="$PROBE_TIMEOUT_TICKS"
+)
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    PROBE_ARGS+=( -Poo.probe.manifest="$OO_MANIFEST" )
+else
+    PROBE_ARGS+=(
+        -Poo.probe.out="$OUT"
+        -Poo.probe.target="$TARGET"
+        -Poo.probe.targetType="$TARGET_TYPE"
+        -Poo.probe.settleTicks="$SETTLE_TICKS"
+    )
+fi
 (
   cd "$REPO"
   export DISPLAY=":$DISPLAY_NUM"
@@ -376,49 +460,79 @@ OPTS
   export MESA_GL_VERSION_OVERRIDE=3.3
   export MESA_GLSL_VERSION_OVERRIDE=330
   export __GLX_VENDOR_LIBRARY_NAME=mesa
-  ./gradlew runClientProbe --no-daemon \
-      -Poo.probe.out="$OUT" \
-      -Poo.probe.host=127.0.0.1 \
-      -Poo.probe.port="$MC_PORT" \
-      -Poo.probe.target="$TARGET" \
-      -Poo.probe.targetType="$TARGET_TYPE" \
-      -Poo.probe.timeoutTicks=2400
+  ./gradlew runClientProbe --no-daemon "${PROBE_ARGS[@]}"
 ) >"$CLIENTLOG" 2>&1 &
 GRADLE_PID=$!
 note "client gradle pid=$GRADLE_PID"
 
-# Player wrangler: once the dev client joins, hold the player in SPECTATOR at the
-# vantage and re-/tp it every second. Spectator = noclip + no fall + can't be
-# pushed/drowned, and keeping it parked next to the mob guarantees the arena
-# chunks (and thus the entity) are synced + rendered to the client.
+# Player wrangler. The joining dev client gets a RANDOM `Player###` name each run,
+# so we parse it from the server's join line and `op` it — that's what lets the
+# probe run setblock/summon/tp as the player (permission level 4) in multi-shot
+# mode (and is harmless in single-shot). We also park it in SPECTATOR (noclip /
+# no fall / can't be pushed or drowned).
+#
+#  * MULTI-SHOT: op + spectator ONCE, then idle. The PROBE owns the camera per
+#    scene (it tp's @s to each scene's pose) — a wrangler tp here would fight it.
+#  * SINGLE-SHOT: op + spectator, then the legacy loop holds the player at VANTAGE
+#    and re-summons the subject every second (server owns the camera; the probe's
+#    no-manifest fallback only aims).
 # Runs in the background off the same console FIFO; killed in cleanup via WRANGLER_PID.
 (
-    # wait (max 90s) for ANY player to join, then wrangle until the client exits
+    # wait (max 90s) for ANY player to join, capture its name
+    pname=""
     for _ in $(seq 1 90); do
-        grep -q 'joined the game' "$LOG" 2>/dev/null && break
+        # join line: "<name>[/ip] logged in" then "<name> joined the game"
+        pname=$(grep -a 'joined the game' "$LOG" 2>/dev/null | tail -1 \
+                  | sed -n 's/.*: \([A-Za-z0-9_]\{1,16\}\) joined the game.*/\1/p')
+        [ -n "$pname" ] && break
         sleep 1
     done
-    while kill -0 "$GRADLE_PID" 2>/dev/null; do
-        printf '%s\r\n' "gamemode spectator @a" >&3 2>/dev/null || break
-        printf '%s\r\n' "tp @a ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW} 0" >&3 2>/dev/null || break
-        # Re-summon the entity if it's gone for any reason (despawn/death), then keep
-        # it pinned at the framing point. execute-if-missing avoids a duplicate.
-        printf '%s\r\n' "execute unless entity @e[${TARGET_SELECTOR}] run ${SUMMON_CMD}" >&3 2>/dev/null || break
-        printf '%s\r\n' "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}" >&3 2>/dev/null || break
-        sleep 1
-    done
+    if [ -n "$pname" ]; then
+        printf '%s\r\n' "op $pname" >&3 2>/dev/null || true
+        printf '%s\r\n' "gamemode spectator $pname" >&3 2>/dev/null || true
+    else
+        # Fallback: selector-based (op needs a name, but gamemode takes @a).
+        printf '%s\r\n' "gamemode spectator @a" >&3 2>/dev/null || true
+    fi
+    sleep 1
+    if [ "$MULTI_SHOT" -eq 1 ]; then
+        # Idle: just keep this subshell alive (holding nothing) until the client
+        # exits, so cleanup can reap it. The probe drives everything from here on.
+        while kill -0 "$GRADLE_PID" 2>/dev/null; do sleep 2; done
+    else
+        while kill -0 "$GRADLE_PID" 2>/dev/null; do
+            printf '%s\r\n' "gamemode spectator @a" >&3 2>/dev/null || break
+            printf '%s\r\n' "tp @a ${VANTAGE_X} ${VANTAGE_Y} ${VANTAGE_Z} ${VANTAGE_YAW} 0" >&3 2>/dev/null || break
+            # Re-summon the entity if it's gone (despawn/death), then keep it pinned.
+            printf '%s\r\n' "execute unless entity @e[${TARGET_SELECTOR}] run ${SUMMON_CMD}" >&3 2>/dev/null || break
+            printf '%s\r\n' "tp @e[${TARGET_SELECTOR},limit=1] ${SX} ${SY} ${SZ}" >&3 2>/dev/null || break
+            sleep 1
+        done
+    fi
 ) &
 WRANGLER_PID=$!
 note "player wrangler pid=$WRANGLER_PID"
 
-# Poll up to ~5 min for either the screenshot file or the gradle process exiting.
-got=0
-for _ in $(seq 1 300); do
-    if [ -f "$OUT" ] && [ -s "$OUT" ]; then got=1; note "screenshot file appeared"; fi
-    if ! kill -0 "$GRADLE_PID" 2>/dev/null; then note "client gradle exited"; break; fi
-    [ "$got" -eq 1 ] && { sleep 3; break; }   # give it a moment to also self-quit
-    sleep 1
-done
+# Poll for completion. MULTI-SHOT: the probe writes all PNGs then self-quits, so
+# wait for gradle to exit (capped generously — scales with scene count). SINGLE:
+# wait for either the one screenshot or gradle exit, as before.
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    # ~ (timeoutTicks / 20 ticks-per-sec) + slack, capped at 30 min.
+    maxsec=$(( PROBE_TIMEOUT_TICKS / 20 + 120 )); [ "$maxsec" -gt 1800 ] && maxsec=1800
+    note "multi-shot: waiting up to ${maxsec}s for the probe to finish all scenes"
+    for _ in $(seq 1 "$maxsec"); do
+        if ! kill -0 "$GRADLE_PID" 2>/dev/null; then note "client gradle exited"; break; fi
+        sleep 1
+    done
+else
+    got=0
+    for _ in $(seq 1 300); do
+        if [ -f "$OUT" ] && [ -s "$OUT" ]; then got=1; note "screenshot file appeared"; fi
+        if ! kill -0 "$GRADLE_PID" 2>/dev/null; then note "client gradle exited"; break; fi
+        [ "$got" -eq 1 ] && { sleep 3; break; }   # give it a moment to also self-quit
+        sleep 1
+    done
+fi
 
 # Give the client a chance to self-stop; the trap will force-kill any remnant.
 for _ in $(seq 1 20); do kill -0 "$GRADLE_PID" 2>/dev/null || break; sleep 1; done
@@ -426,12 +540,25 @@ for _ in $(seq 1 20); do kill -0 "$GRADLE_PID" 2>/dev/null || break; sleep 1; do
 note "=== last 40 client log lines ==="
 tail -40 "$CLIENTLOG" 2>/dev/null
 note "=== render-probe lines ==="
-grep -a 'render-probe' "$CLIENTLOG" 2>/dev/null | tail -30
+grep -a 'render-probe' "$CLIENTLOG" 2>/dev/null | tail -40
 
-if [ -f "$OUT" ] && [ -s "$OUT" ]; then
-    note "RESULT: screenshot at $OUT ($(stat -c%s "$OUT") bytes)"
-    exit 0
+if [ "$MULTI_SHOT" -eq 1 ]; then
+    # Count how many of the manifest's declared out paths actually got written.
+    want=$(grep -ao '"out"[[:space:]]*:[[:space:]]*"[^"]*"' "$OO_MANIFEST" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+    nwant=0; ngot=0
+    while IFS= read -r p; do
+        [ -z "$p" ] && continue
+        nwant=$((nwant+1))
+        if [ -s "$p" ]; then ngot=$((ngot+1)); else note "MISSING scene output: $p"; fi
+    done <<< "$want"
+    note "RESULT: multi-shot wrote ${ngot}/${nwant} scene PNGs"
+    [ "$ngot" -gt 0 ] && exit 0 || exit 2
 else
-    note "RESULT: no screenshot produced"
-    exit 2
+    if [ -f "$OUT" ] && [ -s "$OUT" ]; then
+        note "RESULT: screenshot at $OUT ($(stat -c%s "$OUT") bytes)"
+        exit 0
+    else
+        note "RESULT: no screenshot produced"
+        exit 2
+    fi
 fi
