@@ -8,4 +8,7 @@ Commit attribution: author=PindyJ48, co-author=tinyclaw (see CLAUDE.local.md).
 
 ## Progress
 
-- [setup] branch created, proposals + log committed, monitor (20min) + on-startup scheduled. STARTING feature 1: Megalodon Tooth.
+- [setup] branch created, proposals + log committed, monitor (20min) + on-startup scheduled.
+- [feat 1 DONE @ ~05:05 UTC] Megalodon Tooth (guaranteed 1-2 boss drop) + Abyssal Fang apex sword (tier above Tidal: 9 dmg / 2200 dura / repaired w/ teeth) + shaped recipe (2 teeth + 2 pearls + stick). Commit `b66e165`, pushed to branch. Gates green (build, 30/30 gametest, validate 288 files). render-all eyeballed — both icons render correctly. Posted card to channel. OPEN: balance flag for pindyj (fang cheap from 1 boss kill).
+- [feat 2 DONE @ ~06:06 UTC] Abyssal Trench — 3 bioluminescent blocks (glowing_plankton_block L11, abyssal_vent L7, giant_clam L5 → guaranteed abyssal_pearl) + 3 `minecraft:disk` worldgen features placed into deep-ocean biomes via existing BiomeModifications hook + concentrated boss spawns (lurker 8→16, megalodon 1→3). NO new biome / TerraBlender / structures (NBT jigsaw deferred — validate-data can't scan it, fails silently). Commit pending. Gates green (build, 33/33 gametest incl. a REAL disk-placement test, validate 306 files). render-all eyeballed — all 3 blocks render correctly. KNOWN GAP: in-world biome-driven placement NOT auto-tested (gametests use EMPTY_STRUCTURE + direct generate(), bypassing biome attachment) → needs a morning in-world smoke test. OPEN: clam = free guaranteed pearl on any break (balance, for pindyj, alongside feat-1 fang flag).
+- [feat 3 STARTING @ ~06:07 UTC] Harpoon + diving kit.

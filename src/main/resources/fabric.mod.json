@@ -28,7 +28,8 @@
 			"me.tinyclaw.oceanstarter.gametest.BlockGameTest",
 			"me.tinyclaw.oceanstarter.gametest.RecipeGameTest",
 			"me.tinyclaw.oceanstarter.gametest.ItemGameTest",
-			"me.tinyclaw.oceanstarter.gametest.MobGameTest"
+			"me.tinyclaw.oceanstarter.gametest.MobGameTest",
+			"me.tinyclaw.oceanstarter.gametest.WorldgenGameTest"
 		]
 	},
 	"depends": {

@@ -268,6 +268,41 @@ public class OceanStarter implements ModInitializer {
 	public static final BlockItem PRISMARINE_CRYSTAL_BLOCK_ITEM = new BlockItem(
 			PRISMARINE_CRYSTAL_BLOCK, new Item.Settings());
 
+	// =====================================================================
+	// The Abyssal Trench — bioluminescent deep-ocean floor content
+	// =====================================================================
+	// Three trench blocks placed procedurally onto the vanilla deep-ocean floor
+	// (see OceanStarterWorldgen) so "finding deep ocean = finding the trench".
+	// All mirror the pearl_lantern Block.Settings shape (copy a vanilla block,
+	// then .luminance(...)) — but dimmer than the full-bright (15) lantern so they
+	// read as a *living/smoldering* glow, not a lamp:
+	//   * Glowing Plankton Block — SEA_LANTERN base, luminance 11 (bright bio-glow,
+	//     still under the lantern so it's clearly "alive" not "lit").
+	//   * Abyssal Vent — PRISMARINE base (stays opaque + pickaxe-mineable, unlike
+	//     sea lantern), luminance 7 (a smoldering ember in the dark).
+	//   * Giant Clam — PRISMARINE base, luminance 5 (faint pearl glow); this is the
+	//     trench DESTINATION: its loot table drops a guaranteed ABYSSAL_PEARL (the
+	//     existing item, NOT re-registered), so diving the deep is worth it.
+
+	// --- Block: Glowing Plankton Block (bioluminescent, luminance 11) -----
+	public static final Block GLOWING_PLANKTON_BLOCK = new Block(
+			AbstractBlock.Settings.copy(Blocks.SEA_LANTERN).luminance(state -> 11));
+	public static final BlockItem GLOWING_PLANKTON_BLOCK_ITEM = new BlockItem(
+			GLOWING_PLANKTON_BLOCK, new Item.Settings());
+
+	// --- Block: Abyssal Vent (opaque basalt, luminance 7) -----------------
+	public static final Block ABYSSAL_VENT = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 7));
+	public static final BlockItem ABYSSAL_VENT_ITEM = new BlockItem(
+			ABYSSAL_VENT, new Item.Settings());
+
+	// --- Block: Giant Clam (trench destination, luminance 5) --------------
+	// Loot drops a GUARANTEED ABYSSAL_PEARL (the existing item), not itself.
+	public static final Block GIANT_CLAM = new Block(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 5));
+	public static final BlockItem GIANT_CLAM_ITEM = new BlockItem(
+			GIANT_CLAM, new Item.Settings());
+
 	// --- Block: Chiseled Prismarine Tiles ---------------------------------
 	public static final Block CHISELED_PRISMARINE_TILES = new Block(
 			AbstractBlock.Settings.copy(Blocks.PRISMARINE_BRICKS));
@@ -560,6 +595,9 @@ public class OceanStarter implements ModInitializer {
 				entries.add(ABYSSAL_PEARL_BLOCK);
 				entries.add(CRUSHED_CORAL_BLOCK);
 				entries.add(PRISMARINE_CRYSTAL_BLOCK);
+				entries.add(GLOWING_PLANKTON_BLOCK);
+				entries.add(ABYSSAL_VENT);
+				entries.add(GIANT_CLAM);
 				entries.add(CHISELED_PRISMARINE_TILES);
 				entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
 				entries.add(CHISELED_PRISMARINE_TILES_SLAB);
@@ -666,6 +704,14 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK);
 		Registry.register(Registries.ITEM, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK_ITEM);
 
+		// The Abyssal Trench blocks (giant_clam's loot drops the existing abyssal_pearl).
+		Registry.register(Registries.BLOCK, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK);
+		Registry.register(Registries.ITEM, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK_ITEM);
+		Registry.register(Registries.BLOCK, id("abyssal_vent"), ABYSSAL_VENT);
+		Registry.register(Registries.ITEM, id("abyssal_vent"), ABYSSAL_VENT_ITEM);
+		Registry.register(Registries.BLOCK, id("giant_clam"), GIANT_CLAM);
+		Registry.register(Registries.ITEM, id("giant_clam"), GIANT_CLAM_ITEM);
+
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES);
 		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES_ITEM);
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_stairs"), CHISELED_PRISMARINE_TILES_STAIRS);
@@ -753,6 +799,9 @@ public class OceanStarter implements ModInitializer {
 			entries.add(BARNACLE_BLOCK);
 			entries.add(CRUSHED_CORAL_BLOCK);
 			entries.add(PRISMARINE_CRYSTAL_BLOCK);
+			entries.add(GLOWING_PLANKTON_BLOCK);
+			entries.add(ABYSSAL_VENT);
+			entries.add(GIANT_CLAM);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS).register(entries -> {
 			entries.add(SEA_GLASS);
@@ -852,7 +901,7 @@ public class OceanStarter implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 41 blocks, 23 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 8 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 44 blocks, 23 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**

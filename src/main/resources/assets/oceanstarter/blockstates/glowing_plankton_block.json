@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "oceanstarter:block/glowing_plankton_block"
+    }
+  }
+}

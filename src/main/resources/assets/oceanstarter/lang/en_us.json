@@ -61,5 +61,8 @@
 	"item.oceanstarter.abyssal_lurker_spawn_egg": "Abyssal Lurker Spawn Egg",
 	"item.oceanstarter.megalodon_tooth": "Megalodon Tooth",
 	"item.oceanstarter.abyssal_fang": "Abyssal Fang",
+	"block.oceanstarter.glowing_plankton_block": "Glowing Plankton Block",
+	"block.oceanstarter.abyssal_vent": "Abyssal Vent",
+	"block.oceanstarter.giant_clam": "Giant Clam",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }
