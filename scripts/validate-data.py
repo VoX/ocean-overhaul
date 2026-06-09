@@ -176,20 +176,32 @@ def check_registry_id(errs: Errors, f: Path, fqid: str, regset: set, what: str) 
         errs.add(f, f"{what} id not in registry: {fqid}")
 
 
-def check_tag_or_item(errs: Errors, f: Path, ref: dict, reg: dict, what: str) -> None:
-    """Ingredient-style ref: either {"item": id}, {"tag": id}, or a bare string."""
+def _check_tag_ref(errs: Errors, f: Path, tag: str, what: str) -> None:
+    """A tag id (already namespaced, no leading '#'): a tag file must exist (mod ns)."""
+    if not tag_file_exists(tag, "item") and not tag_file_exists(tag, "block"):
+        errs.add(f, f"{what} tag not found (no tag file, mod ns): #{tag}")
+
+
+def check_tag_or_item(errs: Errors, f: Path, ref, reg: dict, what: str) -> None:
+    """Ingredient-style ref. 1.21.2+ form: a bare string item id ("ns:path"), a
+    tag string ("#ns:path"), or a JSON array of those. The legacy 1.21.1 object
+    forms ({"item": id} / {"tag": id}) are still accepted so an un-migrated recipe
+    is reported correctly rather than skipped."""
     if isinstance(ref, str):
-        check_registry_id(errs, f, norm_id(ref), reg["item"], what)
+        # 1.21.2+ ingredient: "#tag" routes to a tag, otherwise a plain item id.
+        if ref.startswith("#"):
+            _check_tag_ref(errs, f, norm_id(ref[1:]), what)
+        else:
+            check_registry_id(errs, f, norm_id(ref), reg["item"], what)
+        return
+    if isinstance(ref, list):
+        for sub in ref:
+            check_tag_or_item(errs, f, sub, reg, what)
         return
     if "item" in ref:
         check_registry_id(errs, f, norm_id(ref["item"]), reg["item"], what)
     elif "tag" in ref:
-        tag = norm_id(ref["tag"])
-        if not tag_file_exists(tag, "item") and not tag_file_exists(tag, "block"):
-            errs.add(f, f"{what} tag not found (no tag file, mod ns): #{tag}")
-    elif isinstance(ref, list):
-        for sub in ref:
-            check_tag_or_item(errs, f, sub, reg, what)
+        _check_tag_ref(errs, f, norm_id(ref["tag"]), what)
     # else: empty/odd ingredient object — leave to load-time, not our concern.
 
 
