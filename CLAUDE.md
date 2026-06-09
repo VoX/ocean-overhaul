@@ -56,11 +56,15 @@ PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recip
 bug class) — none of which `./gradlew build` sees. Pure Python, no JDK. Regen
 procedure + provenance: `scripts/validation/README.md` + `build-registries.py`.
 NOTE (1.21.11 port): the dump file is still named `registries-1.21.1.json` and
-holds the 1.21.1 vanilla id set — it was NOT regenerated for 1.21.11 because the
-mod references no vanilla id added/removed across the jump, so all 286 files still
-resolve cleanly. If a future change references a NEW 1.21.x vanilla id, regen per
-the README and rename the file (and update the `--reports` invocation, which is a
-1.21.1-specific data-generator override).
+holds the 1.21.1 vanilla *registry id* set — not regenerated for 1.21.11 because
+the mod references no vanilla registry id that was added/removed across the jump,
+so all id refs still resolve. CAVEAT: that is about REGISTRY IDS only — vanilla
+*resource* refs (model/texture parents) CAN change across a jump and DID
+(`minecraft:item/template_spawn_egg` was deleted in 1.21.4, which broke all 4
+spawn eggs — caught late). The validator now also indexes the cached client jar
+and checks vanilla model/texture parents + the 1.21.4 `assets/.../items/` defs
+against it, so that resource class is covered now. If a future change references a
+NEW 1.21.x vanilla registry id, regen per the README and rename the file.
 
 ### 4. Headless visual render (dev tool — SEE the model, don't ship blind)
 ```

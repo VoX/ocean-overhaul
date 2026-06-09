@@ -92,7 +92,7 @@ public class MegalodonGameTest {
 	 * drowns at home. Flood the area, drop the boss in, run ~120 ticks (6 s — well past
 	 * the ~vanilla air-then-drown-damage window), and assert it kept full health.
 	 */
-	// tickLimit raised past our 120-tick assertion: the @GameTest default is 100, and
+	// tickLimit raised past our 120-tick assertion: the @GameTest default is only 20 (was 100 pre-1.21.x; set maxTicks), and
 	// fabric-gametest fails the test if it neither succeeds nor fails within that window
 	// ("Didn't succeed or fail within 100 ticks"). 140 leaves margin past the assertion.
 	@GameTest(maxTicks = 140)

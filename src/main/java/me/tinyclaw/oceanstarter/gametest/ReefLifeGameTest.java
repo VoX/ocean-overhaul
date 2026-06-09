@@ -116,7 +116,7 @@ public class ReefLifeGameTest {
 	 * No-drown: both mobs are aquatic and must breathe underwater indefinitely. Flood the
 	 * area, drop one of each in, run ~120 ticks (6 s — well past the vanilla air-then-drown
 	 * window), and assert both kept full health. (tickLimit raised past the 120-tick
-	 * assertion; the @GameTest default is 100.)
+	 * assertion; the @GameTest default is only 20 (was 100 pre-1.21.x; set maxTicks).)
 	 */
 	@GameTest(maxTicks = 140)
 	public void reefLifeMobsDoNotDrown(TestContext context) {

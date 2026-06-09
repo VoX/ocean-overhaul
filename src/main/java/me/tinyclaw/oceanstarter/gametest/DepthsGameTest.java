@@ -58,8 +58,8 @@ public class DepthsGameTest {
 	 * No-drown: the lurker is a land-mob HostileEntity ({@code canBreatheInWater} is final),
 	 * so without the {@code getNextAirUnderwater} air-pin it would suffocate underwater.
 	 * Flood the area, run ~120 ticks (6 s — well past the vanilla air-then-drown window),
-	 * and assert it kept full health. ({@code tickLimit} raised past the assertion; the
-	 * {@code @GameTest} default is 100.)
+	 * and assert it kept full health. ({@code maxTicks} raised past the assertion; the
+	 * {@code @GameTest} default maxTicks is only 20 in fabric-gametest 3.x.)
 	 */
 	@GameTest(maxTicks = 140)
 	public void abyssalLurkerDoesNotDrown(TestContext context) {

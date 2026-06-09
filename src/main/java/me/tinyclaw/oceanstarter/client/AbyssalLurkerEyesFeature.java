@@ -19,11 +19,13 @@ import net.minecraft.client.render.entity.state.LivingEntityRenderState;
  * provided {@code render()} re-renders the SAME {@link AbyssalLurkerModel} into the
  * emissive layer at the full-bright sky-light constant. We only supply the layer.</p>
  *
- * <p>{@link RenderLayer#getEyes} uses additive transparency, so the mask's black pixels
- * add nothing (invisible) and only the bright lure/eye pixels add their colour over
- * whatever the world already drew. The mask is
+ * <p>{@link RenderLayers#eyes} composites with the mask's ALPHA in 1.21.5+ (it is NOT
+ * the pure-additive blend the old {@code RenderLayer.getEyes} was), so the mask must be
+ * TRANSPARENT everywhere except the glowing lure/eye pixels — an opaque-black background
+ * would paint the whole body black (that bug shipped once on the port). Vanilla
+ * {@code spider_eyes.png} convention. The mask is
  * {@code textures/entity/abyssal_lurker_emissive.png} (a 128x128 PNG that shares the body
- * texture's UV layout; everything black except the bulb + eye).</p>
+ * texture's UV layout; transparent except the bulb + eye).</p>
  *
  * <p>1.21.5+ render pipeline: parameterised on
  * {@code <LivingEntityRenderState, AbyssalLurkerModel>} (the eyes feature is generic over

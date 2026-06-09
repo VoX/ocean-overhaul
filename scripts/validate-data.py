@@ -54,9 +54,11 @@ texture / bad category. Designed to run in CI on push + PR.
 
 from __future__ import annotations
 
+import glob
 import json
 import os
 import sys
+import zipfile
 from pathlib import Path
 
 MOD_ID = "oceanstarter"
@@ -67,6 +69,38 @@ RES = REPO / "src" / "main" / "resources"
 DATA = RES / "data" / MOD_ID
 ASSETS = RES / "assets" / MOD_ID
 REGISTRIES = REPO / "scripts" / "validation" / "registries-1.21.1.json"
+
+# --------------------------------------------------------------------------- #
+# Vanilla client-jar asset index (best-effort). Lets us validate VANILLA model/
+# texture *resource* refs (not registry ids) against what the shipped jar
+# actually contains — the gap that let `minecraft:item/template_spawn_egg`
+# (deleted in 1.21.4) ship green twice. If the jar isn't in the loom cache
+# (e.g. a CI validate job that runs before any gradle build), we degrade to
+# trusting vanilla refs so the validator never hard-fails on its absence.
+# --------------------------------------------------------------------------- #
+def _load_vanilla_assets():
+    cache = Path.home() / ".gradle" / "caches" / "fabric-loom"
+    jars = sorted(glob.glob(str(cache / "*" / "minecraft-client.jar")))
+    # prefer a 1.21.11 jar if several MC versions are cached
+    jars.sort(key=lambda p: ("1.21.11" not in p, p))
+    for jp in jars:
+        try:
+            with zipfile.ZipFile(jp) as z:
+                names = set(z.namelist())
+            models = {n[len("assets/minecraft/models/"):-len(".json")]
+                      for n in names
+                      if n.startswith("assets/minecraft/models/") and n.endswith(".json")}
+            textures = {n[len("assets/minecraft/textures/"):-len(".png")]
+                        for n in names
+                        if n.startswith("assets/minecraft/textures/") and n.endswith(".png")}
+            if models:
+                return jp, models, textures
+        except (OSError, zipfile.BadZipFile):
+            continue
+    return None, None, None
+
+
+_VANILLA_JAR, _VANILLA_MODELS, _VANILLA_TEXTURES = _load_vanilla_assets()
 
 # Valid recipe-category enums (from net.minecraft.recipe.book.*, verified via javap).
 CRAFTING_CATEGORIES = {"building", "redstone", "equipment", "misc"}
@@ -137,7 +171,10 @@ def model_file_exists(fqid: str) -> bool:
     """`oceanstarter:block/foo` -> assets/oceanstarter/models/block/foo.json"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
-        return True  # vanilla model: trusted
+        # Vanilla model: check the client jar if we have it (catches refs to a
+        # vanilla model removed across a version jump, e.g. template_spawn_egg);
+        # otherwise trust it (jar not in cache).
+        return _VANILLA_MODELS is None or path in _VANILLA_MODELS
     return (ASSETS / "models" / (path + ".json")).is_file()
 
 
@@ -145,7 +182,7 @@ def texture_file_exists(fqid: str) -> bool:
     """`oceanstarter:block/foo` -> assets/oceanstarter/textures/block/foo.png"""
     ns, path = fqid.split(":", 1)
     if ns != MOD_ID:
-        return True  # vanilla texture: trusted
+        return _VANILLA_TEXTURES is None or path in _VANILLA_TEXTURES
     return (ASSETS / "textures" / (path + ".png")).is_file()
 
 
@@ -390,6 +427,25 @@ def validate_model(errs: Errors, f: Path, d: dict, reg: dict) -> None:
             errs.add(f, f"model texture '{key}' -> missing PNG: {fqid}")
 
 
+def validate_item_def(errs: Errors, f: Path, d: dict, reg: dict) -> None:
+    """Validate a 1.21.4+ item model definition (assets/<ns>/items/<id>.json).
+    Walks the (possibly nested) model tree and asserts every referenced model
+    resolves — the layer that, when absent, renders an item as the missing-model
+    cube while still passing build/gametest."""
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") in (None, "minecraft:model", "model") and isinstance(node.get("model"), str):
+                fqid = norm_id(node["model"])
+                if not model_file_exists(fqid):
+                    errs.add(f, f"item-model ref not found: {fqid}")
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+    walk(d.get("model", d))
+
+
 # --------------------------------------------------------------------------- #
 # TAGS
 # --------------------------------------------------------------------------- #
@@ -495,10 +551,28 @@ def main() -> int:
             validate_model(errs, f, d, reg)
             bump("models")
 
+    # assets/oceanstarter/items/**  (1.21.4+ item model definitions)
+    item_defs = set()
+    for f in iter_json(ASSETS / "items"):
+        d = load_json(errs, f)
+        if d is not None:
+            validate_item_def(errs, f, d, reg)
+            item_defs.add(f.stem)
+            bump("items")
+
+    # Completeness: every item with a models/item/<id>.json must ALSO have an
+    # items/<id>.json definition, or it renders as the missing-model cube in
+    # 1.21.4+ (the break that shipped green once). Derived from the models/item
+    # dir so it doesn't depend on the registry-dump id format.
+    item_models = {p.stem for p in (ASSETS / "models" / "item").glob("*.json")} \
+        if (ASSETS / "models" / "item").is_dir() else set()
+    for iid in sorted(item_models - item_defs):
+        errs.add(ASSETS / "items", f"item '{iid}' has models/item/{iid}.json but no items/{iid}.json model definition (1.21.4+ requires one)")
+
     # ---- report ----
     total_files = sum(counts.values())
     print("=" * 64)
-    print(f"Ocean Overhaul data validator — MC 1.21.1 (mod id: {MOD_ID})")
+    print(f"Ocean Overhaul data validator — MC 1.21.11 (mod id: {MOD_ID})")
     print(f"registry dump: {REGISTRIES.relative_to(REPO)}")
     print(
         "  ids known: "

@@ -115,7 +115,7 @@ public class Jellyfish extends WaterCreatureEntity {
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty,
 			SpawnReason spawnReason, EntityData entityData) {
 		// Roll a random color on natural/spawn-egg/structure spawns. The NBT load path
-		// (readCustomDataFromNbt) restores the saved variant instead, so persistence and
+		// (readCustomData/ReadView) restores the saved variant instead, so persistence and
 		// the spawn-roll don't fight. super.initialize runs inherited spawn setup first.
 		EntityData data = super.initialize(world, difficulty, spawnReason, entityData);
 		setVariant(this.getRandom().nextInt(VARIANT_COUNT));
