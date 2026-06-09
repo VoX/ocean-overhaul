@@ -77,113 +77,32 @@ def load_tex(idv):
     _tex_cache[idv] = img
     return img
 
-def tag_tex(tag):
-    name = tag.split(":")[-1]
-    rep = "tube_coral_block" if "block" in name else "tube_coral"
-    img = _from_jar("block" if "block" in name else "item", rep) or Image.new("RGBA", (16, 16), (220, 90, 160, 255))
-    return img.resize((16, 16), Image.NEAREST) if img.size != (16, 16) else img
+# (The old hand-rolled isometric cube/stair renderer lived here; it was retired
+# when scripts/dump-item-icons.sh started providing REAL in-game GUI renders for
+# every item — see load_icon/cell_display below. git history has the geometry.)
 
-_BLOCK_NAMES = {
-    "abyssal_coral_block", "abyssal_pearl_block", "barnacle_block", "crushed_coral_block",
-    "pearl_block", "pearl_lantern", "prismarine_crystal_block", "salt_block", "sea_glass",
-    "chiseled_prismarine_tiles", "polished_prismarine_bricks", "driftwood_plank",
-    "driftwood_trapdoor", "glass", "oak_planks", "prismarine", "prismarine_bricks",
-}
-def is_block(idv):
-    if idv.endswith(":coral_blocks"): return True
-    if idv.endswith(":corals"): return False
-    n = idv.split(":")[-1]
-    if n.endswith("_door"): return False
-    if n.startswith("driftwood"): return True
-    if n.endswith("_slab") or n.endswith("_stairs") or n.endswith("_wall"): return True
-    return n in _BLOCK_NAMES
+ICONS_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "icons-src")
+_icon_cache = {}
 
-# ---- isometric cube renderer (wiki-style) -----------------------------------
-def _bright(im, f):
-    r, g, b, a = im.split()
-    rgb = ImageEnhance.Brightness(Image.merge("RGB", (r, g, b))).enhance(f)
-    return Image.merge("RGBA", (*rgb.split(), a))
-
-def _face(tex, size, O, e1, e2, br):
-    # nu/nv separate so a non-square texture (e.g. a slab's bottom-half side strip)
-    # maps with correct aspect instead of being squished to fill the face.
-    nu, nv = tex.size; W, H = size
-    m00, m01, m10, m11 = e1[0]/nu, e2[0]/nv, e1[1]/nu, e2[1]/nv
-    det = m00*m11 - m01*m10
-    if abs(det) < 1e-6: return None
-    i00, i01, i10, i11 = m11/det, -m01/det, -m10/det, m00/det
-    coeffs = (i00, i01, -(i00*O[0]+i01*O[1]), i10, i11, -(i10*O[0]+i11*O[1]))
-    warped = tex.transform((W, H), Image.AFFINE, coeffs, resample=Image.NEAREST)
-    mask = Image.new("L", (W, H), 0)
-    poly = [O, (O[0]+e1[0], O[1]+e1[1]), (O[0]+e1[0]+e2[0], O[1]+e1[1]+e2[1]), (O[0]+e2[0], O[1]+e2[1])]
-    ImageDraw.Draw(mask).polygon(poly, fill=255)
-    warped.putalpha(Image.composite(warped.split()[3], Image.new("L", (W, H), 0), mask))
-    return _bright(warped, br)
-
-def iso_cube(tex, W=30, Vh=None, frac=1.0):
-    tex = tex.convert("RGBA")
-    if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
-    # True isometric: top-face half-height is W*tan(30deg) and the vertical edge
-    # equals the projected cube edge (2*T), so a full cube renders ~15% taller
-    # than wide instead of squished into a square bounding box.
-    T = max(1, round(W * 3 ** -0.5))
-    if Vh is None: Vh = 2 * T
-    # For a partial-height block (slab, frac<1) the side faces only show the BOTTOM
-    # frac of the block, so crop the texture to that strip instead of squishing the
-    # full texture into the shortened face. Top face always uses the full texture.
-    side = tex if frac >= 1.0 else tex.crop((0, 16 - max(1, int(round(16*frac))), 16, 16))
-    toff = int(Vh*(1-frac)); vh = int(Vh*frac); cx = W
-    A=(cx,toff); B=(2*W,toff+T); C=(cx,toff+2*T); D=(0,toff+T)
-    E=(2*W,toff+T+vh); G=(0,toff+T+vh)
-    cw, ch = 2*W+1, toff+2*T+vh+1
-    cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-    for O, e1, e2, br, ft in [
-        (D, (A[0]-D[0],A[1]-D[1]), (C[0]-D[0],C[1]-D[1]), 1.00, tex),    # top
-        (D, (C[0]-D[0],C[1]-D[1]), (G[0]-D[0],G[1]-D[1]), 0.80, side),   # left
-        (B, (C[0]-B[0],C[1]-B[1]), (E[0]-B[0],E[1]-B[1]), 0.62, side)]:  # right
-        f = _face(ft, (cw, ch), O, e1, e2, br)
-        if f: cv.alpha_composite(f)
-    return cv
-
-def iso_stair(tex, W=30, Vh=None):
-    """True iso stair: an upper step occupying the BACK half-depth (full height)
-    plus a lower step on the FRONT half (half height), so the front tread + riser
-    are visible. Steps along the j axis; same projection/brightness as iso_cube.
-    Visible faces only (top + i=0 left + j=1 front), drawn back-to-front."""
-    tex = tex.convert("RGBA")
-    if tex.size != (16, 16): tex = tex.resize((16, 16), Image.NEAREST)
-    T = max(1, round(W * 3 ** -0.5))
-    if Vh is None: Vh = 2 * T
-    def S(i, j, y):
-        return (int(i*W + j*W), int(T - i*T + j*T + y*Vh))
-    cw, ch = 2*W+1, 2*T+Vh+1
-    cv = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-    def quad(O, U, V, src, br):
-        sub = tex.crop(src)
-        f = _face(sub, (cw, ch), O, (U[0]-O[0], U[1]-O[1]), (V[0]-O[0], V[1]-O[1]), br)
-        if f: cv.alpha_composite(f)
-    # upper step (back: j 0..0.5, full height) — drawn first
-    quad(S(0,0,0),     S(1,0,0),     S(0,0.5,0),   (0,0,16,8),  1.00)  # upper top
-    quad(S(0,0,0),     S(0,0.5,0),   S(0,0,1),     (0,0,8,16),  0.80)  # upper left (i=0)
-    quad(S(0,0.5,0),   S(1,0.5,0),   S(0,0.5,0.5), (0,0,16,8),  0.62)  # riser (j=0.5, y 0..0.5)
-    # lower step (front: j 0.5..1, y 0.5..1) — drawn over the upper step
-    quad(S(0,0.5,0.5), S(1,0.5,0.5), S(0,1,0.5),   (0,8,16,16), 1.00)  # lower tread
-    quad(S(0,0.5,0.5), S(0,1,0.5),   S(0,0.5,1),   (8,8,16,16), 0.80)  # lower left (i=0)
-    quad(S(0,1,0.5),   S(1,1,0.5),   S(0,1,1),     (0,8,16,16), 0.62)  # lower front (j=1)
-    return cv
+def load_icon(idv):
+    """The REAL in-game GUI render for an item id, dumped as a transparent 128px
+    PNG by scripts/dump-item-icons.sh. None if no dump exists for the id."""
+    if idv in _icon_cache: return _icon_cache[idv]
+    ns, name = idv.split(":") if ":" in idv else ("minecraft", idv)
+    p = os.path.join(ICONS_SRC, "%s__%s.png" % (ns, name))
+    img = Image.open(p).convert("RGBA") if os.path.exists(p) else None
+    if img is None: print("  !! no dumped icon for", idv, "- using flat texture")
+    _icon_cache[idv] = img
+    return img
 
 def cell_display(tex, idv, size):
-    """Rendered icon ready to paste in a slot of `size`px: iso cube for blocks
-    (slabs half-height, trapdoors 3/16, stairs two-tier), flat for items."""
-    if idv and is_block(idv):
-        n = idv.split(":")[-1]
-        if n.endswith("_stairs"):
-            cube = iso_stair(tex)
-        else:
-            frac = 0.5 if n.endswith("_slab") else 0.1875 if n.endswith("_trapdoor") else 1.0
-            cube = iso_cube(tex, frac=frac)
-        sc = min((size - 6) / cube.width, (size - 2) / cube.height)
-        return cube.resize((max(1, int(cube.width*sc)), max(1, int(cube.height*sc))), Image.NEAREST)
+    """Slot-ready icon: the real GUI render (exactly what the inventory shows —
+    fences, gates, buttons, doors all correct) when a dump exists, else the flat
+    16x16 texture as a fallback."""
+    icon = load_icon(idv) if idv else None
+    if icon is not None:
+        s = size - 4
+        return icon.resize((s, s), Image.LANCZOS)
     s = size - 12
     return tex.resize((s, s), Image.NEAREST)
 
@@ -193,8 +112,9 @@ def ing_display(ing, size):
     if isinstance(ing, dict):
         if "item" in ing: return cell_display(load_tex(ing["item"]), ing["item"], size)
         if "tag" in ing:
-            tg = ing["tag"]
-            return cell_display(tag_tex(tg), tg if is_block(tg) else None, size)
+            # show a representative member for tag ingredients
+            rep = "minecraft:tube_coral_block" if "block" in ing["tag"] else "minecraft:tube_coral"
+            return cell_display(load_tex(rep), rep, size)
     return Image.new("RGBA", (size-12, size-12), (255, 0, 255, 255))
 
 # ---- drawing ----------------------------------------------------------------

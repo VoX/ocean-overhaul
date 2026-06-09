@@ -58,7 +58,8 @@ loom {
 			// -Doo.probe.* system props (out path, host/port, target, timeout).
 			// Lets scripts/render-megalodon.sh parameterise a run without editing
 			// this file. Read at configuration time (safe; values are Strings).
-			["manifest", "out", "host", "port", "target", "targetType", "settleTicks", "timeoutTicks"].each { k ->
+			["manifest", "out", "host", "port", "target", "targetType", "settleTicks", "timeoutTicks",
+			 "iconDump", "iconItems", "iconSize"].each { k ->
 				def pk = "oo.probe.${k}"
 				if (project.hasProperty(pk)) {
 					vmArg "-D${pk}=${project.property(pk)}"

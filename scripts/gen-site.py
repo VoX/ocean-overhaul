@@ -36,57 +36,24 @@ def tc(n):
     return s.replace(" Of ", " of ").replace(" From ", " from ")
 
 
+# All gallery icons come straight from the game now: scripts/dump-item-icons.sh
+# dumps every item's REAL inventory render (fences, gates, buttons, doors,
+# tinted spawn eggs — all exactly as the crafting screen shows them) into
+# docs/icons-src/, and these just downscale per gallery entry.
+def _dumped_icon(name):
+    p = os.path.join(DOCS, "icons-src", "oceanstarter__%s.png" % name)
+    return Image.open(p).convert("RGBA")
+
+
 def render_block_icon(name):
     rel = "icons/b_%s.png" % name
-    tex = gri.load_tex("oceanstarter:" + name)
-    if name.endswith("_door"):
-        # vanilla doors show their flat item sprite in inventories, never a cube
-        tex.resize((96, 96), Image.NEAREST).save(os.path.join(DOCS, rel))
-        return rel
-    if name.endswith("_stairs"):
-        img = gri.iso_stair(tex)
-    elif name.endswith("_slab"):
-        img = gri.iso_cube(tex, frac=0.5)
-    elif name.endswith("_trapdoor"):
-        img = gri.iso_cube(tex, frac=0.1875)
-    else:
-        img = gri.iso_cube(tex, frac=1.0)
-    img = img.resize((img.width * 2, img.height * 2), Image.NEAREST)
-    img.save(os.path.join(DOCS, rel))
+    _dumped_icon(name).resize((96, 96), Image.LANCZOS).save(os.path.join(DOCS, rel))
     return rel
-
-
-# Spawn eggs use the vanilla tinted template (no own texture) — tint colors are
-# the two ints passed to SpawnEggItem in OceanStarter.java.
-SPAWN_EGG_COLORS = {
-    "megalodon_spawn_egg": (0x556677, 0xDDDDCC),
-    "reef_fish_spawn_egg": (0xF2C200, 0x2B2B2B),
-    "jellyfish_spawn_egg": (0xB070D0, 0xE8C0F0),
-    "abyssal_lurker_spawn_egg": (0x0E1828, 0x4FE0C0),
-}
-
-
-def _tint(img, c):
-    r, g, b = (c >> 16) & 255, (c >> 8) & 255, c & 255
-    img = img.convert("RGBA"); px = img.load()
-    for y in range(img.height):
-        for x in range(img.width):
-            pr, pg, pb, pa = px[x, y]
-            px[x, y] = (pr * r // 255, pg * g // 255, pb * b // 255, pa)
-    return img
 
 
 def render_item_icon(name):
     rel = "icons/i_%s.png" % name
-    if name in SPAWN_EGG_COLORS:
-        base, ov = gri._from_jar("item", "spawn_egg"), gri._from_jar("item", "spawn_egg_overlay")
-        if base and ov:
-            bc, oc = SPAWN_EGG_COLORS[name]
-            img = _tint(base, bc); img.alpha_composite(_tint(ov, oc))
-        else:
-            img = gri.load_tex("oceanstarter:" + name)
-        img.resize((96, 96), Image.NEAREST).save(os.path.join(DOCS, rel)); return rel
-    gri.load_tex("oceanstarter:" + name).resize((96, 96), Image.NEAREST).save(os.path.join(DOCS, rel))
+    _dumped_icon(name).resize((96, 96), Image.LANCZOS).save(os.path.join(DOCS, rel))
     return rel
 
 

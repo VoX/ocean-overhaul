@@ -11,10 +11,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
+
+import org.joml.Matrix4f;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ServerAddress;
@@ -23,6 +30,10 @@ import net.minecraft.client.option.Perspective;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -104,6 +115,11 @@ public class RenderProbeClient implements ClientModInitializer {
 	private final String host = System.getProperty("oo.probe.host", "127.0.0.1");
 	private final int port = Integer.getInteger("oo.probe.port", 43219);
 	private final int timeoutTicks = Integer.getInteger("oo.probe.timeoutTicks", 2400);
+	// Icon-dump mode: when set, never connect to a server — render every mod item's
+	// GUI icon (the real inventory/crafting look) into transparent PNGs under this
+	// dir at the title screen, then quit. Item models are baked during the initial
+	// resource load, so no world is needed.
+	private final String iconDumpDir = System.getProperty("oo.probe.iconDump", "").trim();
 
 	private List<String> resetCmds = new ArrayList<>();
 	private List<Scene> scenes = new ArrayList<>();
@@ -213,6 +229,15 @@ public class RenderProbeClient implements ClientModInitializer {
 
 		switch (phase) {
 			case BOOT -> {
+				if (!iconDumpDir.isEmpty()) {
+					// Icon-dump mode: wait for the splash overlay to clear (resources +
+					// item models fully baked) and a menu to be up, then dump and quit.
+					if (client.getOverlay() == null && client.currentScreen != null && phaseTicks > 80) {
+						dumpIcons(client);
+						quit(client);
+					}
+					return;
+				}
 				// As soon as the client sits on ANY menu screen with no world loaded
 				// (title / accessibility-onboarding / etc.), kick off the connect.
 				if (client.world == null && client.currentScreen != null && phaseTicks > 40) {
@@ -447,6 +472,76 @@ public class RenderProbeClient implements ClientModInitializer {
 		} catch (Throwable t) {
 			log("SCREENSHOT ERROR: " + t);
 		}
+	}
+
+	/**
+	 * Render every oceanstarter item (plus any extra ids from {@code oo.probe.iconItems},
+	 * comma-separated) exactly as the inventory/crafting GUI draws it, into SIZExSIZE
+	 * transparent PNGs named {@code <namespace>__<path>.png}. Mirrors the vanilla GUI
+	 * render env: the standard ortho projection + the -11000 modelview push, scaled so
+	 * the 16-GUI-unit item quad fills the offscreen framebuffer. Writes a DONE marker
+	 * file last so the driving script knows the batch completed.
+	 */
+	private void dumpIcons(MinecraftClient client) {
+		int size = Integer.getInteger("oo.probe.iconSize", 128);
+		File dir = new File(iconDumpDir);
+		List<ItemStack> stacks = new ArrayList<>();
+		for (Item item : Registries.ITEM) {
+			if (Registries.ITEM.getId(item).getNamespace().equals("oceanstarter")) {
+				stacks.add(new ItemStack(item));
+			}
+		}
+		for (String extra : System.getProperty("oo.probe.iconItems", "").split(",")) {
+			String idStr = extra.trim();
+			if (idStr.isEmpty()) continue;
+			Identifier id = Identifier.tryParse(idStr);
+			if (id != null && Registries.ITEM.containsId(id)) {
+				stacks.add(new ItemStack(Registries.ITEM.get(id)));
+			} else {
+				log("icon-dump: unknown item id '" + idStr + "' — skipped");
+			}
+		}
+		log("icon-dump: rendering " + stacks.size() + " items at " + size + "px -> " + dir);
+		SimpleFramebuffer fb = new SimpleFramebuffer(size, size, true, MinecraftClient.IS_SYSTEM_MAC);
+		fb.setClearColor(0f, 0f, 0f, 0f);
+		RenderSystem.backupProjectionMatrix();
+		Matrix4f proj = new Matrix4f().setOrtho(0f, 16f, 16f, 0f, 1000f, 21000f);
+		var mv = RenderSystem.getModelViewStack();
+		int written = 0;
+		try {
+			Files.createDirectories(dir.toPath());
+			for (ItemStack stack : stacks) {
+				fb.clear(MinecraftClient.IS_SYSTEM_MAC);
+				fb.beginWrite(true);
+				RenderSystem.setProjectionMatrix(proj, VertexSorter.BY_Z);
+				mv.pushMatrix();
+				mv.identity();
+				mv.translate(0f, 0f, -11000f);
+				RenderSystem.applyModelViewMatrix();
+				DrawContext dc = new DrawContext(client, client.getBufferBuilders().getEntityVertexConsumers());
+				dc.drawItem(stack, 0, 0);
+				dc.draw();
+				mv.popMatrix();
+				RenderSystem.applyModelViewMatrix();
+				fb.endWrite();
+				Identifier id = Registries.ITEM.getId(stack.getItem());
+				NativeImage img = new NativeImage(size, size, false);
+				RenderSystem.bindTexture(fb.getColorAttachment());
+				img.loadFromTextureImage(0, false);
+				img.mirrorVertically();
+				img.writeTo(new File(dir, id.getNamespace() + "__" + id.getPath() + ".png"));
+				img.close();
+				written++;
+			}
+			Files.writeString(new File(dir, "DONE").toPath(), written + " icons");
+		} catch (Throwable t) {
+			log("icon-dump FAILED: " + t);
+		} finally {
+			fb.delete();
+			RenderSystem.restoreProjectionMatrix();
+			client.getFramebuffer().beginWrite(true);
+		}
+		log("icon-dump: wrote " + written + " PNGs");
 	}
 
 	private void quit(MinecraftClient client) {
