@@ -30,10 +30,10 @@ set -u
 JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-21-amazon-corretto.aarch64}"
 export JAVA_HOME
 JAVA="$JAVA_HOME/bin/java"
-MC_VERSION="1.21.1"
-FABRIC_LOADER="0.16.10"
+MC_VERSION="1.21.11"
+FABRIC_LOADER="0.19.3"
 FABRIC_INSTALLER="1.1.1"            # latest fabric-installer (verified URL below)
-FABRIC_API_VERSION="0.116.5+1.21.1"
+FABRIC_API_VERSION="0.141.4+1.21.11"
 MOD_VERSION="0.7.1"
 MC_PORT="${MC_PORT:-43219}"          # high, non-default, loopback-bound
 MC_XMX="${MC_XMX:-2G}"
