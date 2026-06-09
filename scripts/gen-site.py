@@ -105,9 +105,9 @@ FEATURES = [
 ]
 
 MOBS = [
-    ("Megalodon", "renders/megalodon.png", "A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth."),
-    ("Abyssal Lurker", "renders/abyssal_lurker.png", "A bioluminescent anglerfish of the depths, its lure glowing in the dark."),
-    ("Reef Fish", "renders/reef_fish.png", "Schooling tropical reef fish that bring color to shallow waters."),
+    ("Megalodon", "renders/megalodon-site.png", "A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth."),
+    ("Abyssal Lurker", "renders/abyssal_lurker-site.png", "A bioluminescent anglerfish of the depths, its lure glowing in the dark."),
+    ("Reef Fish", "renders/reef_fish-site.png", "Schooling tropical reef fish that bring color to shallow waters."),
     ("Jellyfish", "renders/jellyfish-site.png", "Drifting jellyfish in five distinct color variants."),
 ]
 
@@ -127,8 +127,9 @@ body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-ser
 background:var(--bg);color:var(--ink);line-height:1.6}
 a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
-header.hero{background:linear-gradient(160deg,#04181c 0%,#0a2e34 55%,#0e3d45 100%);
-border-bottom:1px solid var(--line);padding:64px 0 56px;text-align:center;position:relative;overflow:hidden}
+header.hero{background:linear-gradient(rgba(4,22,26,.72),rgba(6,32,37,.86)),url('renders/biome-hero.png');
+background-size:cover;background-position:center;
+border-bottom:1px solid var(--line);padding:84px 0 76px;text-align:center;position:relative;overflow:hidden}
 .hero h1{font-size:3.2rem;margin:.1em 0;letter-spacing:.5px;
 background:linear-gradient(90deg,#2bd1d8,#a6cbcc);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p.tag{font-size:1.25rem;color:var(--mut);margin:.2em auto 1.4em;max-width:640px}
