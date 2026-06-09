@@ -2,16 +2,16 @@
 
 Context for anyone (human or subagent) working on this repo. Read this before touching code — it captures the build/test/release flow and the load-bearing design decisions + gotchas that are NOT obvious from the source.
 
-/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
+/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.11** (ported from 1.21.1 on branch `port/1.21.11`; a 10-version jump that crossed the 1.21.2 item/component + 1.21.5 entity-render-state rewrites — see "1.21.11 API notes" below). Mod id `oceanstarter`, package `me.tinyclaw.oceanstarter`, maven group `me.tinyclaw.oceanstarter`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
 
 ## Toolchain (pin exactly — mismatches fail the build)
 
 - **JDK 21** — `export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.aarch64` before ANY gradle command. (1.21.x needs JDK21; JDK17 only works for 1.20.1.)
-- Version set (in `gradle.properties`): MC `1.21.1`, yarn `1.21.1+build.3`, fabric-loader `0.16.10`, fabric-api `0.116.5+1.21.1`, fabric-loom `1.16.3`. Gradle wrapper **9.4.1** (loom 1.16 needs gradle ≥9.4).
+- Version set (in `gradle.properties`): MC `1.21.11`, yarn `1.21.11+build.6`, fabric-loader `0.19.3`, fabric-api `0.141.4+1.21.11`, fabric-loom `1.16.3`. Gradle wrapper **9.4.1** (loom 1.16 needs gradle ≥9.4).
 - Yarn mappings (NOT Mojang mappings) — the standard `net.minecraft.*` API names apply.
 - **NO MIXINS.** This mod is deliberately mixin-free. Solve problems with the public API / Fabric API hooks, or don't solve them. (See the multipart-hitbox section for how a "needs a mixin" problem was worked around.)
-- Inspect mapped API signatures with javap before guessing:
-  `$JAVA_HOME/bin/javap -p -cp /home/ec2-user/.gradle/caches/fabric-loom/1.21.1/net.fabricmc.yarn.1_21_1.1.21.1+build.3-v2/merged-unpicked.jar <fully.qualified.Class>`
+- Inspect mapped API signatures with javap before guessing (the 1.21.11 merged jar):
+  `$JAVA_HOME/bin/javap -p -cp /home/ec2-user/.gradle/caches/fabric-loom/1.21.11/net.fabricmc.yarn.1_21_11.1.21.11+build.6-v2/merged-unpicked.jar <fully.qualified.Class>`
 
 ## Build
 
@@ -55,6 +55,12 @@ Catches dangling recipe/loot/worldgen/blockstate/model/tag refs, missing texture
 PNGs, and **bad recipe-`category` enums** (the silent `food`-on-a-crafting-recipe
 bug class) — none of which `./gradlew build` sees. Pure Python, no JDK. Regen
 procedure + provenance: `scripts/validation/README.md` + `build-registries.py`.
+NOTE (1.21.11 port): the dump file is still named `registries-1.21.1.json` and
+holds the 1.21.1 vanilla id set — it was NOT regenerated for 1.21.11 because the
+mod references no vanilla id added/removed across the jump, so all 286 files still
+resolve cleanly. If a future change references a NEW 1.21.x vanilla id, regen per
+the README and rename the file (and update the `--reports` invocation, which is a
+1.21.1-specific data-generator override).
 
 ### 4. Headless visual render (dev tool — SEE the model, don't ship blind)
 ```
@@ -141,7 +147,7 @@ Vanilla multipart (`EnderDragonPart`) is **unusable** for a custom mob: `World`/
 
 ### Armor/tool sprites — recolor vanilla, don't draw from scratch (the approach VoX blessed)
 The Tidal armor + tool **inventory sprites** are made by recoloring the **vanilla diamond** sprites with the palette of the **worn-armor texture** — this keeps the instantly-readable vanilla shape/shading while matching the mod's colors, and it's far more reliable than hand-drawing or Pixellab for gear.
-1. Extract the vanilla diamond icons from the cached client jar: `~/.gradle/caches/fabric-loom/1.21.1/minecraft-client.jar` → `assets/minecraft/textures/item/diamond_{helmet,chestplate,leggings,boots,pickaxe,axe,shovel,hoe,sword}.png` (use `zipfile` in Python; do NOT commit the vanilla art, only the recolored output).
+1. Extract the vanilla diamond icons from the cached client jar: `~/.gradle/caches/fabric-loom/1.21.11/minecraft-client.jar` → `assets/minecraft/textures/item/diamond_{helmet,chestplate,leggings,boots,pickaxe,axe,shovel,hoe,sword}.png` (use `zipfile` in Python; do NOT commit the vanilla art, only the recolored output).
 2. Build the target palette from the **worn-armor layer textures** `assets/.../textures/models/armor/tidal_layer_1.png` + `_2.png` (these are the source of truth — pindyj hand-painted them; the icons must MATCH them, not vice-versa).
 3. **Quantile-match**: for each icon, sort its opaque pixels by luminance and map each to the worn texture's color at the same luminance percentile. This recolors the diamond shape into the exact worn palette, shadows→shadows / highlights→highlights. (Perimeter pixels naturally land on the darkest = border color.)
 4. The **sprite main** sits one notch darker than the worn texture's main (VoX's tweak) so the inventory icon reads like the lit in-game armor. The worn layer textures themselves are left exactly as the artist made them.
@@ -159,5 +165,13 @@ The Tidal armor + tool **inventory sprites** are made by recoloring the **vanill
 - **`git add -A` before committing** — `git commit -am` silently skips NEW untracked files (blockstates/models/textures/recipes), shipping a half-broken jar. Always `git add -A` + verify the working tree is clean.
 - **`release.yml` needs exactly one jar** in `build/libs` — keep `withSourcesJar()` off and use `files: build/libs/*.jar` (no `!`-negation globs; they fail under `fail_on_unmatched_files`).
 - **Recipe/data categories are validated at datapack load**, not build — a bad enum (e.g. `category:"food"` on a `crafting_shapeless`, which is a *cooking* category) makes the recipe silently fail to load. The headless server smoke test / a server boot surfaces these in the log; `./gradlew build` does NOT. `scripts/validate-data.py` now catches this (and all dangling id/texture refs) statically — run it / rely on the `validate-data` CI job.
-- **1.21.1 API specifics:** `Identifier.of(ns, path)` (not `new Identifier`); loot folder is `loot_table/` **singular**; `Entity.damage(DamageSource, float)` is the 2-arg form (became 3-arg with ServerWorld in 1.21.2+).
+- **1.21.11 API notes (post-1.21.1 jump — the big ones, all verified via javap):**
+  - `Identifier.of(ns, path)` (not `new Identifier`); loot folder is `loot_table/` **singular** (unchanged).
+  - **Registration (1.21.2+):** every block/item carries its `RegistryKey` inside `Settings` before construction — `AbstractBlock.Settings.registryKey(key)` / `Item.Settings.registryKey(key)`. `EntityType.Builder.build(RegistryKey)` needs the key too. See the `registerBlock`/`registerItem`/`registerEntity` helpers in OceanStarter.java.
+  - **Tools/armor (1.21.2 / 1.21.4):** `SwordItem`/`ArmorItem`/etc. are GONE — tools are plain `Item` via `Item.Settings.sword(ToolMaterial, dmg, speed)` / `.pickaxe(...)` / `.armor(ArmorMaterial, EquipmentType)`. `ToolMaterial` is a record; `ArmorMaterial` (now `net.minecraft.item.equipment.*`) carries an `EquipmentAsset` RegistryKey → `assets/<ns>/equipment/<id>.json` → `textures/entity/equipment/{humanoid,humanoid_leggings}/<id>.png` (the old `models/armor/*_layer_*.png` are dead). Repair via `TagKey<Item>`, not Ingredient.
+  - **Food/consume:** `FoodComponent.Builder` lost `snack()`/`statusEffect()`/`usingConvertsTo()`. On-eat effects → `ConsumableComponent` + `ApplyEffectsConsumeEffect`; bowl/remainder → `Item.Settings.useRemainder(item)`.
+  - **Recipes (1.21.2):** ingredients are bare strings — `"ns:id"` for an item, `"#ns:id"` for a tag (NOT the old `{"item":...}`/`{"tag":...}` objects). Results stay `{"id":..,"count":..}`. `validate-data.py` understands both forms.
+  - **Entity:** `Entity.damage(ServerWorld, DamageSource, float)` (3-arg); `getWorld()` → `getEntityWorld()`; `mobTick(ServerWorld)`; `MobEntity.getAttackBox(double)`; `isCollidable(Entity)`; `tryAttack(ServerWorld, Entity)`; NBT is `readCustomData(ReadView)`/`writeCustomData(WriteView)` (no more `NbtCompound`); `EntityAttributes.X` (the `GENERIC_` prefix is gone); `SpawnEggItem(Settings)` 1-arg + `Settings.spawnEgg(type)` (no color args).
+  - **Client render (1.21.5 EntityRenderState):** models extend `EntityModel<S extends EntityRenderState>` with `setAngles(S)` (animation reads `state.age` / `state.limbSwingAmplitude`); `SinglePartEntityModel` is gone (pass root to `super(root[, layerFactory])`). Renderers are `MobEntityRenderer<T, S, M>` (3 generics) with `createRenderState()` / `updateRenderState(entity, state, dt)` / `getTexture(S)` / `scale(S, MatrixStack)`. Render-layer factories moved `RenderLayer.getX` → `RenderLayers.x` (e.g. `RenderLayers.entityTranslucent`, `RenderLayers.eyes`). `ModelTransform.pivot` → `.origin`; `ModelPart.pivotY` → `.originY`. A renderer needing extra per-frame data subclasses the state (see `JellyfishRenderState` for the color variant).
+  - **Gametests (fabric-gametest-api-v1 3.x):** the annotation is now `net.fabricmc.fabric.api.gametest.v1.GameTest` (NOT vanilla `net.minecraft.test.GameTest`, and there's no `FabricGameTest` marker interface to implement). Fields: `structure()` (default `"fabric-gametest-api-v1:empty"`, replaces `EMPTY_STRUCTURE`) and **`maxTicks()` (default only 20 — replaces `tickLimit`, so any test asserting past tick 20 MUST set it)**. `TestContext.createMockCreativeServerPlayerInWorld()` is `[removal]`-deprecated but still works.
 - CI Actions currently warn about Node 20 deprecation (forced to Node 24 on 2026-06-16) — bump `actions/checkout` + `setup-java` + `upload-artifact` + `action-gh-release` versions before then. Non-breaking until then.
