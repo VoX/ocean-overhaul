@@ -6,10 +6,11 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.FishEntity;
 import net.minecraft.entity.passive.SchoolingFishEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
+
+import me.tinyclaw.oceanstarter.OceanStarter;
 
 /**
  * Reef Fish — a small, brightly-coloured tropical schooling fish.
@@ -49,13 +50,27 @@ public class ReefFish extends SchoolingFishEntity {
 	}
 
 	/**
-	 * Bucketing a reef fish just yields a plain water bucket — we intentionally do
-	 * not invent a custom fish-bucket item (and its fluid/entity NBT round-trip) for
-	 * the "Reef Life" scope. The catch interaction still works; you just get water.
+	 * Bucketing a reef fish yields a dedicated Bucket of Reef Fish (Feature 4) — a vanilla
+	 * {@link net.minecraft.item.EntityBucketItem} that re-spawns a reef fish when emptied,
+	 * exactly like vanilla tropical-fish/cod buckets. Reef fish have no variant (single
+	 * texture), so the bucket carries only the generic {@code Bucketable} flags; all the
+	 * round-trip plumbing ({@code interactMob} -> {@code Bucketable.tryBucket},
+	 * {@code copyDataToStack}/{@code copyDataFromNbt}, {@code isFromBucket}/{@code setFromBucket})
+	 * is inherited unchanged from {@link FishEntity}.
 	 */
 	@Override
 	public ItemStack getBucketItem() {
-		return new ItemStack(Items.WATER_BUCKET);
+		return new ItemStack(OceanStarter.REEF_FISH_BUCKET);
+	}
+
+	/**
+	 * Use the vanilla fish-bucket fill sound. {@code Bucketable.getBucketFillSound()} is
+	 * {@code public}, so this override must be {@code public} too (not the {@code protected}
+	 * the other sound hooks on FishEntity use).
+	 */
+	@Override
+	public SoundEvent getBucketFillSound() {
+		return SoundEvents.ITEM_BUCKET_FILL_FISH;
 	}
 
 	@Override

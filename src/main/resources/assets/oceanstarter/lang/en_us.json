@@ -68,5 +68,8 @@
 	"item.oceanstarter.flippers": "Flippers",
 	"item.oceanstarter.oxygen_tank": "Oxygen Tank",
 	"item.oceanstarter.deep_sea_helmet": "Deep-Sea Helmet",
+	"block.oceanstarter.aquarium": "Aquarium",
+	"item.oceanstarter.reef_fish_bucket": "Bucket of Reef Fish",
+	"item.oceanstarter.jellyfish_bucket": "Bucket of Jellyfish",
 	"itemGroup.oceanstarter.ocean_overhaul": "Ocean Overhaul"
 }

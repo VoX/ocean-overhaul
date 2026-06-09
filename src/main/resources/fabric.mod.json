@@ -31,7 +31,8 @@
 			"me.tinyclaw.oceanstarter.gametest.MobGameTest",
 			"me.tinyclaw.oceanstarter.gametest.WorldgenGameTest",
 			"me.tinyclaw.oceanstarter.gametest.HarpoonGameTest",
-			"me.tinyclaw.oceanstarter.gametest.DivingKitGameTest"
+			"me.tinyclaw.oceanstarter.gametest.DivingKitGameTest",
+			"me.tinyclaw.oceanstarter.gametest.AquariumGameTest"
 		]
 	},
 	"depends": {

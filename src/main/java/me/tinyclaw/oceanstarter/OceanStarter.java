@@ -1,5 +1,7 @@
 package me.tinyclaw.oceanstarter;
 
+import me.tinyclaw.oceanstarter.block.AquariumBlock;
+import me.tinyclaw.oceanstarter.block.AquariumBlockEntity;
 import me.tinyclaw.oceanstarter.entity.AbyssalLurker;
 import me.tinyclaw.oceanstarter.entity.HarpoonEntity;
 import me.tinyclaw.oceanstarter.entity.Jellyfish;
@@ -31,6 +33,7 @@ import net.minecraft.block.WoodType;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -41,10 +44,12 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.WaterCreatureEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.EntityBucketItem;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -326,6 +331,17 @@ public class OceanStarter implements ModInitializer {
 			AbstractBlock.Settings.copy(CHISELED_PRISMARINE_TILES));
 	public static final BlockItem CHISELED_PRISMARINE_TILES_WALL_ITEM = new BlockItem(
 			CHISELED_PRISMARINE_TILES_WALL, new Item.Settings());
+
+	// =====================================================================
+	// Feature 4 — Aquarium (a glass tank BlockEntity that displays one captured creature)
+	// =====================================================================
+	// The mod's FIRST BlockEntity, so the BLOCK_ENTITY_TYPE wiring below is brand new.
+	// Glass-like settings (copy GLASS + nonOpaque). The BLOCK_ENTITY_TYPE is built from a
+	// BlockEntityType.Builder over AQUARIUM and lives AFTER the block field so it's set.
+	public static final Block AQUARIUM = new AquariumBlock(
+			AbstractBlock.Settings.copy(Blocks.GLASS).nonOpaque());
+	public static final BlockItem AQUARIUM_ITEM = new BlockItem(
+			AQUARIUM, new Item.Settings());
 
 	// --- Item: Tide Pearl -------------------------------------------------
 	public static final Item TIDE_PEARL = new Item(new Item.Settings());
@@ -636,6 +652,25 @@ public class OceanStarter implements ModInitializer {
 	public static final SpawnEggItem ABYSSAL_LURKER_SPAWN_EGG =
 			new SpawnEggItem(ABYSSAL_LURKER, 0x0E1828, 0x4FE0C0, new Item.Settings());
 
+	// =====================================================================
+	// Feature 4 — Mob buckets + the Aquarium BlockEntityType
+	// =====================================================================
+	// Vanilla EntityBucketItem (concrete — no subclass needed), one per bucketable mob, mirroring
+	// the vanilla tropical-fish/cod buckets: maxCount(1) + recipeRemainder(BUCKET) so crafting with
+	// one leaves an empty bucket. Declared AFTER the REEF_FISH/JELLYFISH EntityType fields so those
+	// are fully built. EntityBucketItem(EntityType, Fluid, emptyingSound, Settings).
+	public static final Item REEF_FISH_BUCKET = new EntityBucketItem(
+			REEF_FISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
+			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
+	public static final Item JELLYFISH_BUCKET = new EntityBucketItem(
+			JELLYFISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
+			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
+
+	// The Aquarium's BlockEntityType — the mod's first. Builder.create(factory, AQUARIUM).build(null);
+	// the null datafixer Type is the standard modded idiom. Declared AFTER the AQUARIUM block field.
+	public static final BlockEntityType<AquariumBlockEntity> AQUARIUM_BLOCK_ENTITY =
+			BlockEntityType.Builder.create(AquariumBlockEntity::new, AQUARIUM).build(null);
+
 	// --- Creative tab / ItemGroup: Ocean Overhaul -------------------------
 	public static final RegistryKey<ItemGroup> OCEAN_GROUP_KEY =
 			RegistryKey.of(Registries.ITEM_GROUP.getKey(), id("ocean_overhaul"));
@@ -678,6 +713,7 @@ public class OceanStarter implements ModInitializer {
 				entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
 				entries.add(CHISELED_PRISMARINE_TILES_SLAB);
 				entries.add(CHISELED_PRISMARINE_TILES_WALL);
+				entries.add(AQUARIUM);
 				entries.add(TIDE_PEARL);
 				entries.add(CORAL_SHARD);
 				entries.add(SEA_SALT);
@@ -710,6 +746,9 @@ public class OceanStarter implements ModInitializer {
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
 				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+				// Feature 4: mob buckets (after the spawn eggs).
+				entries.add(REEF_FISH_BUCKET);
+				entries.add(JELLYFISH_BUCKET);
 			})
 			.build();
 
@@ -802,6 +841,12 @@ public class OceanStarter implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL);
 		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles_wall"), CHISELED_PRISMARINE_TILES_WALL_ITEM);
 
+		// Feature 4: the Aquarium block + its item (paired, same id) and its BlockEntityType
+		// (Registries.BLOCK_ENTITY_TYPE, same 'aquarium' id — legal across different registries).
+		Registry.register(Registries.BLOCK, id("aquarium"), AQUARIUM);
+		Registry.register(Registries.ITEM, id("aquarium"), AQUARIUM_ITEM);
+		Registry.register(Registries.BLOCK_ENTITY_TYPE, id("aquarium"), AQUARIUM_BLOCK_ENTITY);
+
 		// Register the standalone items.
 		Registry.register(Registries.ITEM, id("tide_pearl"), TIDE_PEARL);
 		Registry.register(Registries.ITEM, id("coral_shard"), CORAL_SHARD);
@@ -870,6 +915,10 @@ public class OceanStarter implements ModInitializer {
 		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
 
+		// Feature 4: mob buckets for the two bucketable mobs (reef fish + jellyfish).
+		Registry.register(Registries.ITEM, id("reef_fish_bucket"), REEF_FISH_BUCKET);
+		Registry.register(Registries.ITEM, id("jellyfish_bucket"), JELLYFISH_BUCKET);
+
 		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
 		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
 		// so WaterCreatureEntity.canSpawn can't be reused (type-bound mismatch) — the
@@ -921,6 +970,7 @@ public class OceanStarter implements ModInitializer {
 			entries.add(CHISELED_PRISMARINE_TILES_STAIRS);
 			entries.add(CHISELED_PRISMARINE_TILES_SLAB);
 			entries.add(CHISELED_PRISMARINE_TILES_WALL);
+			entries.add(AQUARIUM);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
 			entries.add(TIDE_PEARL);
@@ -943,6 +993,9 @@ public class OceanStarter implements ModInitializer {
 			entries.add(TIDAL_AXE);
 			entries.add(TIDAL_SHOVEL);
 			entries.add(TIDAL_HOE);
+			// Feature 4: mob buckets (vanilla puts fish buckets in the Tools tab).
+			entries.add(REEF_FISH_BUCKET);
+			entries.add(JELLYFISH_BUCKET);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
 			entries.add(TIDAL_SWORD);
@@ -1010,7 +1063,7 @@ public class OceanStarter implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 44 blocks, 27 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 45 blocks (incl. the Aquarium tank), 30 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods + Reef Fish/Jellyfish mob buckets), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**
