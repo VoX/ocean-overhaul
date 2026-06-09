@@ -274,14 +274,20 @@ public class RenderProbeClient implements ClientModInitializer {
 	private void capture(MinecraftClient client) {
 		try {
 			var fb = client.getFramebuffer();
-			NativeImage img = ScreenshotRecorder.takeScreenshot(fb);
 			Files.createDirectories(outFile.getParentFile().toPath());
-			img.writeTo(outFile);
-			img.close();
-			log("SCREENSHOT WRITTEN: " + outFile.getAbsolutePath()
-					+ " (" + fb.textureWidth + "x" + fb.textureHeight + ")");
-		} catch (IOException e) {
-			log("SCREENSHOT FAILED: " + e);
+			// 1.21.x: takeScreenshot is now void + hands the NativeImage to a
+			// consumer that owns it (must close it, like vanilla saveScreenshot).
+			ScreenshotRecorder.takeScreenshot(fb, img -> {
+				try {
+					img.writeTo(outFile);
+					log("SCREENSHOT WRITTEN: " + outFile.getAbsolutePath()
+							+ " (" + fb.textureWidth + "x" + fb.textureHeight + ")");
+				} catch (IOException e) {
+					log("SCREENSHOT FAILED: " + e);
+				} finally {
+					img.close();
+				}
+			});
 		} catch (Throwable t) {
 			log("SCREENSHOT ERROR: " + t);
 		}
@@ -291,7 +297,7 @@ public class RenderProbeClient implements ClientModInitializer {
 		setPhase(Phase.DONE);
 		try {
 			if (client.world != null) {
-				client.disconnect();
+				client.disconnect(net.minecraft.text.Text.literal("renderprobe done"));
 			}
 		} catch (Throwable ignored) {
 		}
