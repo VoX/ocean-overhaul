@@ -66,7 +66,10 @@ def load_tex(idv):
             fb = _mod_fallback(name)
             if fb and os.path.exists(fb): img = Image.open(fb).convert("RGBA")
     else:
-        img = _from_jar("item", name) or _from_jar("block", name)
+        # Some vanilla items have no flat icon under their own id — alias to the texture
+        # that actually exists in the jar (e.g. panes render from the base glass texture).
+        jarname = {"glass_pane": "glass"}.get(name, name)
+        img = _from_jar("item", jarname) or _from_jar("block", jarname)
     if img is None:
         img = Image.new("RGBA", (16, 16), (255, 0, 255, 255)); print("  !! unresolved:", idv)
     if img.size != (16, 16):

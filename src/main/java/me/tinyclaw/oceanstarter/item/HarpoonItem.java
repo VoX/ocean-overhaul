@@ -44,7 +44,14 @@ public class HarpoonItem extends Item {
 			return TypedActionResult.success(stack);
 		}
 
-		HarpoonEntity harpoon = new HarpoonEntity(world, player, stack);
+		// Build the worn copy FIRST and hand THAT to the entity. HarpoonEntity's thrown ctor captures
+		// the passed stack (copyWithCount(1)) as the rendered/returned projectile, so the wear has to
+		// be applied before construction — damaging the held stack here would be lost when the held
+		// stack is decremented away below, and the returned harpoon would never accrue durability.
+		// (Mirrors a thrown trident taking wear; survival-safe.)
+		ItemStack thrown = stack.copyWithCount(1);
+		thrown.damage(1, player, EquipmentSlot.MAINHAND);
+		HarpoonEntity harpoon = new HarpoonEntity(world, player, thrown);
 		// ProjectileEntity.setVelocity(shooter, pitch, yaw, roll, speed, divergence): throw along the
 		// player's look direction (speed 2.5, divergence 1.0 — same shape as a thrown trident).
 		harpoon.setVelocity(player, player.getPitch(), player.getYaw(), 0.0F, 2.5F, 1.0F);
@@ -52,9 +59,6 @@ public class HarpoonItem extends Item {
 
 		world.playSound(null, player.getX(), player.getY(), player.getZ(),
 				SoundEvents.ITEM_TRIDENT_THROW, player.getSoundCategory(), 1.0F, 1.0F);
-
-		// Survival-safe durability tick on the thrown harpoon (mirrors a thrown trident taking wear).
-		stack.damage(1, player, EquipmentSlot.MAINHAND);
 
 		// In survival the held harpoon becomes the entity (and returns via the loyalty loop); in
 		// creative the abilities flag means we leave the stack untouched.

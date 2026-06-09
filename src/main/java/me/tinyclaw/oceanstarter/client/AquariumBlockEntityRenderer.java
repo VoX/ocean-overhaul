@@ -63,7 +63,13 @@ public class AquariumBlockEntityRenderer implements BlockEntityRenderer<Aquarium
 			return; // empty tank: only the glass block model shows
 		}
 
-		float age = (be.getWorld() != null ? be.getWorld().getTime() : 0L) + tickDelta;
+		// Bound the clock before the float math: World.getTime() is an unbounded long, and long+float
+		// loses integer precision once it exceeds the ~24-bit float mantissa (~16.7M ticks ≈ 9.7 days),
+		// which would quantize the bob (age*0.1F) and spin ((age*2.0F)%360.0F) into coarse jittery
+		// steps in long-lived worlds. Wrap on one MC day (24000 ticks) — a clean period that divides
+		// both 0.1F and 2.0F cycles cleanly enough — and add tickDelta AFTER the modulo so the
+		// sub-tick interpolation still smooths the motion.
+		float age = (be.getWorld() != null ? be.getWorld().getTime() % 24000L : 0L) + tickDelta;
 
 		boolean isJelly = be.storedType() == OceanStarter.JELLYFISH;
 		SinglePartEntityModel<?> model = isJelly ? jellyfishModel : reefFishModel;
