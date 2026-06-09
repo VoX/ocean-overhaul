@@ -21,7 +21,7 @@
 #   A5  kill + cleanup: after the boss dies its segments self-clean to 0
 #   A6  no Exception / "Failed to" / crash lines anywhere in the console log
 #
-# Usage:  bash /tmp/ocean-overhaul/scripts/playtest-server.sh
+# Usage:  bash scripts/playtest-server.sh   (from the repo checkout)
 # Env overrides (optional): MC_PORT, MC_XMX, SCRATCH, REPO
 # ============================================================================
 set -u
@@ -39,7 +39,8 @@ MC_PORT="${MC_PORT:-43219}"          # high, non-default, loopback-bound
 MC_XMX="${MC_XMX:-2G}"
 
 # --- paths ------------------------------------------------------------------
-REPO="${REPO:-/tmp/ocean-overhaul}"
+_SELF_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="${REPO:-$_SELF_REPO}"
 SCRATCH="${SCRATCH:-/tmp/oo-mctest}"      # fresh ephemeral server lives here
 GRADLE_CACHE="$HOME/.gradle/caches/modules-2/files-2.1"
 INSTALLER_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FABRIC_INSTALLER}/fabric-installer-${FABRIC_INSTALLER}.jar"

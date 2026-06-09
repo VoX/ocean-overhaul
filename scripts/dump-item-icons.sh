@@ -16,13 +16,14 @@
 #   Env:    ICON_SIZE (px, default 128)
 #           ICON_ITEMS (extra comma-sep ids; default auto-collected from the
 #                       mod's recipe jsons + the tag representatives)
-#           DISPLAY_NUM (default 98), REPO (default /tmp/ocean-overhaul)
+#           DISPLAY_NUM (default 98), REPO (default: the repo this script lives in)
 #
 # SAFETY: same rules as render-entity.sh — loopback-free (no server at all),
 # traps kill the gradle/java client + Xvfb on exit, nothing system-level.
 # ============================================================================
 set -u
-REPO="${REPO:-/tmp/ocean-overhaul}"
+_SELF_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="${REPO:-$_SELF_REPO}"
 OUTDIR="${1:-$REPO/docs/icons-src}"
 DISPLAY_NUM="${DISPLAY_NUM:-98}"
 ICON_SIZE="${ICON_SIZE:-128}"

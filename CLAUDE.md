@@ -17,7 +17,7 @@ Context for anyone (human or subagent) working on this repo. Read this before to
 
 ```
 export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.aarch64
-cd /tmp/ocean-overhaul          # (or wherever the repo is checked out)
+cd ~/projects/ocean-overhaul    # (or wherever the repo is checked out)
 ./gradlew build --no-daemon
 ```
 Output jar: `build/libs/ocean-overhaul-<version>.jar` — the one **without** `-sources`. The sources jar is intentionally disabled (`withSourcesJar()` is OFF) so `build/libs` holds exactly one jar (see Release gotcha). Gradle doesn't purge old jars — `rm -f build/libs/ocean-overhaul-*.jar` before a version-bump rebuild if you want a clean dir.

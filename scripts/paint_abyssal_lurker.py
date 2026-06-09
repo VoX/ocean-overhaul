@@ -21,6 +21,8 @@ up=render-bottom mapping is the v0.6.2 inside-out-mouth FIX — do NOT swap it.
 
 The TexturedModelData UV size MUST equal these PNG dims (128x128).
 """
+import os as _os
+_REPO = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 from PIL import Image
 
 W = H = 128
@@ -164,7 +166,7 @@ def paint_body():
         for k in ('down', 'up', 'north', 'south', 'east', 'west'):
             rect(*F[fin][k], FIN)
 
-    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker.png"
+    out = _REPO + "/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker.png"
     img.save(out)
     chk = Image.open(out)
     assert chk.size == (128, 128), "PNG is %s, expected (128, 128)" % (chk.size,)
@@ -209,7 +211,7 @@ def paint_emissive():
         ex0 = sx0 + sw - 5 if side == 'west' else sx0 + 1
         rect(ex0, sy0 + 1, 4, 4, GLOW)
 
-    out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker_emissive.png"
+    out = _REPO + "/src/main/resources/assets/oceanoverhaul/textures/entity/abyssal_lurker_emissive.png"
     img.save(out)
     chk = Image.open(out)
     assert chk.size == (128, 128), "emissive PNG is %s, expected (128, 128)" % (chk.size,)

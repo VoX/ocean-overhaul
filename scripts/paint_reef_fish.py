@@ -14,6 +14,8 @@ Model convention: -Y is UP, -Z is FORWARD.
 Palette: a bright tropical fish — yellow body with dark vertical stripes, a darker
 back, an orange tail fin, and a small dark eye on each flank.
 """
+import os as _os
+_REPO = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 from PIL import Image
 
 W = H = 32
@@ -96,7 +98,7 @@ rect(*t['south'], TAIL)
 vgrad(*t['east'], TAIL, TAIL_D)
 vgrad(*t['west'], TAIL, TAIL_D)
 
-out = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity/reef_fish.png"
+out = _REPO + "/src/main/resources/assets/oceanoverhaul/textures/entity/reef_fish.png"
 img.save(out)
 print("saved", out, img.size)
 

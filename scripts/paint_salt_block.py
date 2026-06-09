@@ -6,11 +6,13 @@ sand-tan base with scattered bright-white salt flecks (ore-block aesthetic — l
 salt crystals embedded in packed sand). 16x16, fully opaque, deterministic
 (seeded) so rebuilds are reproducible.
 """
+import os as _os
+_REPO = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 import random
 from PIL import Image
 
 W = H = 16
-OUT = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/block/salt_block.png"
+OUT = _REPO + "/src/main/resources/assets/oceanoverhaul/textures/block/salt_block.png"
 
 # Sand-tan base palette (a few tones for subtle grainy variation).
 SAND = [

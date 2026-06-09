@@ -17,6 +17,8 @@ RenderLayer::getEntityTranslucent for real alpha blending (the EntityModel cutou
 default is alpha-TESTED and would draw the bell as a solid blob). Palette: soft
 purple/pink bell, paler tentacles.
 """
+import os as _os
+_REPO = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 from PIL import Image
 
 W = H = 32
@@ -82,7 +84,7 @@ for u in (0, 4, 8, 12):
 
 import colorsys
 
-OUT_DIR = "/tmp/ocean-overhaul/src/main/resources/assets/oceanoverhaul/textures/entity"
+OUT_DIR = _REPO + "/src/main/resources/assets/oceanoverhaul/textures/entity"
 
 # Keep the base purple/pink texture (variant source / legacy name).
 base_out = OUT_DIR + "/jellyfish.png"

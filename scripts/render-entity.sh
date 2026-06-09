@@ -31,7 +31,7 @@
 # Env overrides:
 #   MOD_VERSION  (default: parsed from gradle.properties)
 #   MC_PORT      (default 43227)        DISPLAY_NUM (default 99)
-#   RES          (default 1280x720)     REPO        (default /tmp/ocean-overhaul)
+#   RES          (default 1280x720)     REPO        (default: the repo this script lives in)
 #   SCRATCH      (default /tmp/oo-render)
 #   SUMMON_AT    "x y z"     (default "7 100 7") — where the mob is summoned
 #   VANTAGE      "x y z yaw" (default "-1 101 7 270") — camera spawn/look pose
@@ -77,7 +77,8 @@ FABRIC_LOADER="0.16.10"
 FABRIC_INSTALLER="1.1.1"
 FABRIC_API_VERSION="0.116.5+1.21.1"
 
-REPO="${REPO:-/tmp/ocean-overhaul}"
+_SELF_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="${REPO:-$_SELF_REPO}"
 # Derive MOD_VERSION from gradle.properties so this never goes stale on a bump.
 MOD_VERSION="${MOD_VERSION:-$(sed -n 's/^[[:space:]]*mod_version[[:space:]]*=[[:space:]]*//p' "$REPO/gradle.properties" | tr -d '[:space:]')}"
 MOD_VERSION="${MOD_VERSION:-0.7.2}"
