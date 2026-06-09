@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": {
-      "item": "oceanstarter:chiseled_prismarine_tiles"
-    }
+    "#": "oceanstarter:chiseled_prismarine_tiles"
   },
   "pattern": [
     "###",

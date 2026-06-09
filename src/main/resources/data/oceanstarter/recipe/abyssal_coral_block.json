@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "P": {
-      "item": "minecraft:prismarine"
-    },
-    "C": {
-      "tag": "oceanstarter:coral_blocks"
-    }
+    "P": "minecraft:prismarine",
+    "C": "#oceanstarter:coral_blocks"
   },
   "pattern": [
     "PCP",

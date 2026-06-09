@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:kelp"
-    },
-    {
-      "item": "minecraft:cod"
-    },
-    {
-      "item": "minecraft:dried_kelp"
-    }
+    "minecraft:kelp",
+    "minecraft:cod",
+    "minecraft:dried_kelp"
   ],
   "result": {
     "count": 1,

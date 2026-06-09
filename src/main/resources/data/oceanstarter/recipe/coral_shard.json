@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "tag": "oceanstarter:corals"
-    }
+    "#oceanstarter:corals"
   ],
   "result": {
     "count": 1,

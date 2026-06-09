@@ -1,8 +1,6 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "oceanstarter:polished_prismarine_bricks"
-  },
+  "ingredient": "oceanstarter:polished_prismarine_bricks",
   "result": {
     "count": 1,
     "id": "oceanstarter:polished_prismarine_bricks_stairs"

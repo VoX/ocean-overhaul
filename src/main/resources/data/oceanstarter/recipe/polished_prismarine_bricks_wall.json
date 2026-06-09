@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": {
-      "item": "oceanstarter:polished_prismarine_bricks"
-    }
+    "#": "oceanstarter:polished_prismarine_bricks"
   },
   "pattern": [
     "###",

@@ -1,8 +1,6 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "oceanstarter:chiseled_prismarine_tiles"
-  },
+  "ingredient": "oceanstarter:chiseled_prismarine_tiles",
   "result": {
     "count": 2,
     "id": "oceanstarter:chiseled_prismarine_tiles_slab"

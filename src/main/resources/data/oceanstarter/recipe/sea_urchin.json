@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "oceanstarter:crushed_coral"
-    },
-    {
-      "item": "oceanstarter:coral_shard"
-    }
+    "oceanstarter:crushed_coral",
+    "oceanstarter:coral_shard"
   ],
   "result": {
     "count": 1,

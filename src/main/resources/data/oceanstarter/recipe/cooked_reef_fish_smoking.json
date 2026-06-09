@@ -1,9 +1,7 @@
 {
   "type": "minecraft:smoking",
   "category": "food",
-  "ingredient": {
-    "item": "oceanstarter:raw_reef_fish"
-  },
+  "ingredient": "oceanstarter:raw_reef_fish",
   "result": {
     "id": "oceanstarter:cooked_reef_fish"
   },

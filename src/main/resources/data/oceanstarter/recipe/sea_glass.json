@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "minecraft:glass"
-    },
-    {
-      "item": "minecraft:prismarine_shard"
-    }
+    "minecraft:glass",
+    "minecraft:prismarine_shard"
   ],
   "result": {
     "count": 1,

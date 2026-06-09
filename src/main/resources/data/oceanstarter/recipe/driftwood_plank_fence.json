@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "W": {
-      "item": "oceanstarter:driftwood_plank"
-    },
-    "#": {
-      "item": "minecraft:stick"
-    }
+    "W": "oceanstarter:driftwood_plank",
+    "#": "minecraft:stick"
   },
   "pattern": [
     "W#W",

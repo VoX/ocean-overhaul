@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "P": {
-      "item": "oceanstarter:tide_pearl"
-    },
-    "S": {
-      "item": "oceanstarter:sea_salt"
-    }
+    "P": "oceanstarter:tide_pearl",
+    "S": "oceanstarter:sea_salt"
   },
   "pattern": [
     "SPS",

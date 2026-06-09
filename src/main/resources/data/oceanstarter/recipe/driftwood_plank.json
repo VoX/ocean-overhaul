@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "minecraft:oak_planks"
-    },
-    {
-      "item": "oceanstarter:sea_salt"
-    }
+    "minecraft:oak_planks",
+    "oceanstarter:sea_salt"
   ],
   "result": {
     "count": 1,

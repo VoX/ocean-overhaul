@@ -1,9 +1,7 @@
 {
   "type": "minecraft:smelting",
   "category": "misc",
-  "ingredient": {
-    "item": "minecraft:kelp"
-  },
+  "ingredient": "minecraft:kelp",
   "result": {
     "id": "oceanstarter:sea_salt"
   },

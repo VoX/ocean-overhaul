@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": {
-      "item": "oceanstarter:abyssal_pearl"
-    }
+    "#": "oceanstarter:abyssal_pearl"
   },
   "pattern": [
     "###",

@@ -1,8 +1,6 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "oceanstarter:sea_glass"
-  },
+  "ingredient": "oceanstarter:sea_glass",
   "result": {
     "count": 1,
     "id": "oceanstarter:sea_glass_stairs"

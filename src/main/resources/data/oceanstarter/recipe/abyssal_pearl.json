@@ -1,9 +1,7 @@
 {
   "type": "minecraft:smelting",
   "category": "misc",
-  "ingredient": {
-    "item": "oceanstarter:abyssal_coral_block"
-  },
+  "ingredient": "oceanstarter:abyssal_coral_block",
   "result": {
     "id": "oceanstarter:abyssal_pearl"
   },

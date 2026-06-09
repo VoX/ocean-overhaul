@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "oceanstarter:crushed_coral"
-    },
-    {
-      "item": "oceanstarter:crushed_coral"
-    },
-    {
-      "item": "oceanstarter:sea_salt"
-    },
-    {
-      "item": "oceanstarter:sea_salt"
-    }
+    "oceanstarter:crushed_coral",
+    "oceanstarter:crushed_coral",
+    "oceanstarter:sea_salt",
+    "oceanstarter:sea_salt"
   ],
   "result": {
     "count": 1,

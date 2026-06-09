@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    {
-      "item": "oceanstarter:driftwood_plank"
-    }
+    "oceanstarter:driftwood_plank"
   ],
   "result": {
     "count": 1,
