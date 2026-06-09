@@ -2,7 +2,7 @@
 """Hand-paint the Jellyfish entity texture (32x32) to match JellyfishModel.java.
 
 Every part's (u,v,sx,sy,sz) below is copied from the model's .uv()/.cuboid() calls.
-MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz), matching paint_megalodon.py:
+MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz) — the standard MC convention:
     up    = (u+sz+sx,    v,      sx, sz)   # geometric +Y face
     down  = (u+sz,       v,      sx, sz)   # geometric -Y face
     east  = (u,          v+sz,   sz, sy)
@@ -12,8 +12,9 @@ MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz), matching paint_megalod
 Model convention: -Y is UP.
 
 Translucent look: alpha is baked into the PNG (semi-transparent pixels) — the bell
-is partly see-through, the tentacles more so — and the default MobEntityRenderer
-cutout/translucent path carries it (no custom RenderLayer this round). Palette: soft
+is partly see-through, the tentacles more so — and JellyfishModel constructs on
+RenderLayer::getEntityTranslucent for real alpha blending (the EntityModel cutout
+default is alpha-TESTED and would draw the bell as a solid blob). Palette: soft
 purple/pink bell, paler tentacles.
 """
 from PIL import Image

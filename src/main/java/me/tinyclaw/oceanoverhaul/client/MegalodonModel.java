@@ -20,9 +20,11 @@ import net.minecraft.util.math.MathHelper;
  * <p>Hierarchy: a {@code body} mass holds a {@code head} (upper jaw / snout), a
  * hinged {@code lower_jaw} dropped open to make the gape, a tapering {@code tail}
  * carrying a vertical {@code caudal_fin}, a {@code dorsal_fin}, and two pectoral
- * fins. Every cuboid's {@code .uv(u, v)} origin below is mirrored by the texture
- * painter (paint_megalodon.py) so the pink mouth, teeth, eye and gill slits land
- * on the right faces. The whole thing unwraps onto a 128x128 atlas.</p>
+ * fins. Every cuboid's {@code .uv(u, v)} origin below maps onto the committed
+ * {@code textures/entity/megalodon.png} via the standard MC box-UV unwrap (the
+ * painter script that produced it predates the repo and was never committed), so
+ * the pink mouth, teeth, eye and gill slits land on the right faces. The whole
+ * thing unwraps onto a 128x128 atlas.</p>
  *
  * <p>Model-space convention (matches the rest of this mod): more-negative Y is
  * UP, more-negative Z is FORWARD (toward the snout).</p>

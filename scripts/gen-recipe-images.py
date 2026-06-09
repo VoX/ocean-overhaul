@@ -6,10 +6,11 @@ mod (shaped + shapeless) and inline them into README.md under a marker-delimited
 
 Each image shows the 3x3 grid with ingredient icons placed (per the shaped
 pattern, or filled in order for shapeless), an arrow, and the resulting item with
-its count badge. BLOCKS render as wiki-style isometric 3D cubes (slabs as
-half-cubes); flat items (tools, ingredients, food, doors) stay flat.
+its count badge. Cell icons are the REAL in-game GUI renders dumped into
+docs/icons-src/ by scripts/dump-item-icons.sh (load_icon/cell_display below) —
+re-run that dump first for NEW items, or they render from the flat fallback.
 
-Icons resolve from:
+Flat-texture FALLBACK (load_tex — only used when an id has no dump) resolves from:
   - mod item/block textures under assets/oceanoverhaul/textures/{item,block}/
   - block-items without a flat icon (stairs/slabs/walls/fences/...) fall back to
     the base block's texture
@@ -19,7 +20,7 @@ Icons resolve from:
 Run:  python3 scripts/gen-recipe-images.py [--no-readme]
 """
 import json, os, glob, sys, zipfile
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES  = os.path.join(ROOT, "src/main/resources")
@@ -184,7 +185,7 @@ def main():
     if "--no-readme" in sys.argv: return
     lines = [START, "## Crafting recipes (visual)", "",
              "Every crafting-table recipe the mod adds, rendered as the grid + result "
-             "(blocks shown as 3D, slabs as half-blocks). See **Recipes** above for smelting & stonecutter.", "",
+             "(icons are real in-game GUI renders). See **Recipes** above for smelting & stonecutter.", "",
              "<table>"]
     for i in range(0, len(rows), 2):
         lines.append("<tr>")

@@ -3,17 +3,16 @@
 
 A single self-contained page (embedded CSS) showcasing the mod: features,
 install steps, and galleries of EVERY mob, block, item and crafting recipe.
-Per-block/item icons are rendered by reusing the helpers in gen-recipe-images.py
-(iso cubes for blocks, flat icons for items) into docs/icons/. Mob shots + recipe
-tiles are the existing PNGs under docs/renders and docs/recipes.
+Per-block/item icons are the REAL in-game GUI renders dumped into docs/icons-src/
+by scripts/dump-item-icons.sh, downscaled per gallery entry into docs/icons/. Mob
+shots + recipe tiles are the existing PNGs under docs/renders and docs/recipes.
 
 Run:  python3 scripts/gen-site.py
 """
-import os, glob, importlib.util
+import os, glob
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPTS = os.path.join(ROOT, "scripts")
 RES = os.path.join(ROOT, "src/main/resources")
 BS = os.path.join(RES, "assets/oceanoverhaul/blockstates")
 IM = os.path.join(RES, "assets/oceanoverhaul/models/item")
@@ -21,11 +20,6 @@ DOCS = os.path.join(ROOT, "docs")
 ICONS = os.path.join(DOCS, "icons")
 RECIPES = os.path.join(DOCS, "recipes")
 os.makedirs(ICONS, exist_ok=True)
-
-# Reuse the icon renderer from gen-recipe-images.py (hyphenated filename -> importlib).
-_spec = importlib.util.spec_from_file_location("gri", os.path.join(SCRIPTS, "gen-recipe-images.py"))
-gri = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(gri)
-
 
 def basenames(d):
     return sorted(os.path.splitext(os.path.basename(p))[0] for p in glob.glob(os.path.join(d, "*.json")))

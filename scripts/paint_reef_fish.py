@@ -2,7 +2,7 @@
 """Hand-paint the Reef Fish entity texture (32x32) to match ReefFishModel.java.
 
 Every part's (u,v,sx,sy,sz) below is copied from the model's .uv()/.cuboid() calls.
-MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz), matching paint_megalodon.py:
+MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz) — the standard MC convention:
     up    = (u+sz+sx,    v,      sx, sz)   # geometric +Y face (render-bottom)
     down  = (u+sz,       v,      sx, sz)   # geometric -Y face (render-top)
     east  = (u,          v+sz,   sz, sy)

@@ -82,13 +82,16 @@ import org.slf4j.LoggerFactory;
 /**
  * Ocean Overhaul.
  *
- * <p>A revamped-ocean content mod for Minecraft 1.21.1 (Fabric). Registers a set of
- * sea-themed decorative blocks (Abyssal Coral Block, Sea Glass, Polished Prismarine
- * Bricks, Chiseled Prismarine Tiles, Driftwood Plank, Pearl Block, Kelp Brick,
- * Cracked Kelp Bricks), driftwood functional blocks (Driftwood Fence, Button,
- * Pressure Plate), a set of ocean items (Tide Pearl, Coral Shard, Sea Salt), and a
- * dedicated "Ocean Overhaul" creative tab that holds them all — wired up with the
- * Minecraft 1.21.1 Fabric registry API.</p>
+ * <p>A revamped-ocean content mod for Minecraft 1.21.1 (Fabric). The mod's single
+ * registration hub: the block set (sea-themed decoratives, the driftwood functional
+ * set, the Abyssal Trench blocks, the Aquarium tank + its block entity), the items
+ * (ocean ingredients + foods, the Tidal tool/armor sets, the Abyssal Fang apex
+ * sword, the Harpoon, the three-piece Diving Kit, mob buckets, spawn eggs), the
+ * four mobs (Megalodon boss, Reef Fish, Jellyfish, Abyssal Lurker — plus the boss's
+ * hitbox-segment and the Harpoon-projectile entity types) with their attributes and
+ * spawn rules, the worldgen {@code BiomeModifications} hooks, the worn-gear effect
+ * tick handlers, and a dedicated "Ocean Overhaul" creative tab that holds it all —
+ * wired up with the Minecraft 1.21.1 Fabric registry API.</p>
  */
 public class OceanOverhaul implements ModInitializer {
 	public static final String MOD_ID = "oceanoverhaul";

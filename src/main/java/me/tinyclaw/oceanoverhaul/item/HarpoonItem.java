@@ -1,6 +1,5 @@
 package me.tinyclaw.oceanoverhaul.item;
 
-import me.tinyclaw.oceanoverhaul.OceanOverhaul;
 import me.tinyclaw.oceanoverhaul.entity.HarpoonEntity;
 
 import net.minecraft.entity.EquipmentSlot;

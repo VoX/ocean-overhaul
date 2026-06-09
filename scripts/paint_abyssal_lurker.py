@@ -9,7 +9,7 @@ share the exact same UV layout (so the glow lands on the right faces):
      black adds nothing (invisible) and the bright pixels add over the world -> glow.
 
 Every part's (u,v,sx,sy,sz) below is copied from the model's .uv()/.cuboid() calls.
-MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz), matching paint_megalodon.py:
+MC box-UV unwrap per cuboid (offset u,v; sizes sx,sy,sz) — the standard MC convention:
     up    = (u+sz+sx,    v,      sx, sz)   # geometric +Y face (render-BOTTOM)
     down  = (u+sz,       v,      sx, sz)   # geometric -Y face (render-TOP)
     east  = (u,          v+sz,   sz, sy)

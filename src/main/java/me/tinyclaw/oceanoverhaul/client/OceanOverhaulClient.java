@@ -11,8 +11,11 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 
 /**
- * Client entrypoint for Ocean Overhaul. Registers the Megalodon's model layer and
- * its renderer (client-only — these classes are never touched on a dedicated server).
+ * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
+ * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
+ * Lurker, the Harpoon's flying-item renderer, the Aquarium's block-entity renderer,
+ * and the Aquarium block's translucent render layer (client-only — these classes
+ * are never touched on a dedicated server).
  */
 public class OceanOverhaulClient implements ClientModInitializer {
 

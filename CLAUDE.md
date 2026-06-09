@@ -2,7 +2,7 @@
 
 Context for anyone (human or subagent) working on this repo. Read this before touching code — it captures the build/test/release flow and the load-bearing design decisions + gotchas that are NOT obvious from the source.
 
-/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanoverhaul`, package `me.tinyclaw.oceanoverhaul`, maven group `me.tinyclaw.oceanoverhaul`, archives base name `ocean-overhaul`. Current content: ~41 blocks, ~8 items, ~70 recipes, tags, 8 worldgen deposits, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, and the Tidal diving armor set (full-set worn bonus: Water Breathing).
+/ Public repo: **github.com/VoX/ocean-overhaul** · A Minecraft **Fabric** mod for **MC 1.21.1**. Mod id `oceanoverhaul`, package `me.tinyclaw.oceanoverhaul`, maven group `me.tinyclaw.oceanoverhaul`, archives base name `ocean-overhaul`. Current content: **36 blocks, 68 items, 74 recipes** (+ tags), **11 worldgen deposits**, the Megalodon boss, two passive ocean mobs (Reef Fish — a `SchoolingFishEntity`; Jellyfish — a passive `WaterCreatureEntity`), the Abyssal Lurker (a hostile deep-sea anglerfish — `HostileEntity`, ~2-block/elder-guardian-sized box, glowing esca lure), all natural-spawning with spawn eggs + loot, the Tidal diving armor set (full-set worn bonus: Water Breathing), plus the v0.11 round: Megalodon Tooth + the Abyssal Fang apex sword, the Abyssal Trench block set (glowing plankton / abyssal vent / giant clam), the loyalty-returning Harpoon, the 3-piece Diving Kit, and the creature-keeping Aquarium. (Counts drift with every round — re-derive from `blockstates/`, `models/item/`, `recipe/`, `worldgen/configured_feature/` or the startup load log before trusting them.)
 
 ## Toolchain (pin exactly — mismatches fail the build)
 
@@ -32,21 +32,12 @@ There is no GUI client on the build box, so **all testing is headless + server-s
 ```
 Boots a real headless dedicated server, runs ALL **twelve** gametest classes registered on the `fabric-gametest` entrypoint (**52 tests total** — count is the load-bearing number; re-derive it from the `runGametest` output / `build/gametest/report.xml` after adding tests, don't trust this line blindly), writes JUnit to `build/gametest/report.xml`, exits non-zero on failure.
 
-**Entity suites (the original four):**
-- `MegalodonGameTest` (4 — the boss):
-  - `megalodonSpawnsAliveAtFullHealth` — spawn in water, tick 40, assert alive + HP ≥199 (catches crash-on-spawn).
-  - `megalodonSpawnsFiveHitboxSegments` — assert exactly 5 segments owned by *this* boss (filtered via `isPartOf`, not radius — avoids cross-test pollution in the shared gametest world).
-  - `megalodonDoesNotDrownInWater` — flood area, tick 120, assert HP ≥199 (`tickLimit=140` on this one; the default `@GameTest tickLimit` is 100).
-  - `megalodonBiteDealsDamage` — anchor an AI-disabled target adjacent, drive `boss.tryAttack(prey)` directly, assert damage. (Direct tryAttack, NOT AI-timed — an AI-timed bite is flaky in a gametest world. The boss only auto-targets players, of which there are none headless.)
-- `ReefLifeGameTest` (4) — Reef Fish + Jellyfish spawn-liveness / no-drown, plus jellyfish-variant NBT round-trip-and-clamp.
-- `DepthsGameTest` (3) — the Abyssal Lurker: spawn liveness, the no-drown air-pin, and the melee bite dealing damage (same direct-tryAttack pattern as the boss).
-- `GearGameTest` (3) — the Tidal diving set's worn full-set Water Breathing bonus (a real mock server player wearing all four pieces gets the effect), with partial-set + non-Tidal-head negative controls.
-
-**Content suites (newly added — cover the non-entity content that `build` + `validate-data.py` can't behaviorally check):**
-- `BlockGameTest` (3) — mod blocks place + round-trip their state, salt block places as itself, and blocks drop themselves when mined.
-- `ItemGameTest` (4) — food items carry FoodComponents (+ a non-food negative control), and the Tidal tools / armor use the Tidal material in the correct slots.
-- `RecipeGameTest` (3) — key recipes are actually loaded with the right results, the Tidal-helmet shaped recipe matches its grid, and the kelp-roll shapeless recipe matches its ingredients. (This is the live, server-side counterpart to the static `category`-enum check in `validate-data.py` — it catches a recipe that fails to LOAD, not just a malformed JSON.)
-- `MobGameTest` (4) — jellyfish-variant NBT round-trips + the absent-key default stays in range, reef fish report a large school size, and the Abyssal Lurker's spawn predicate gates on water + depth.
+**Per-suite breakdown:** see the `.../gametest/` entry in §Repo layout below — that list (all 12 suites with per-suite counts + coverage) is the one kept current; it is NOT duplicated here. Methodology the suites rely on (the non-obvious bits):
+- **Bite/attack tests drive `tryAttack` directly** on an anchored, AI-disabled target — an AI-timed bite is flaky in a gametest world, and the hostiles only auto-target players, of which there are none headless.
+- **Segment assertions filter via `isPartOf`, not radius** — avoids cross-test pollution in the shared gametest world.
+- **Long-running tests (e.g. no-drown) override `tickLimit`** (e.g. 140) — the default `@GameTest` tickLimit is 100.
+- **Negative controls ride along** (non-food item, partial armor set, non-Tidal helmet) so a green suite proves the gate, not just the happy path.
+- `RecipeGameTest` is the live, server-side counterpart to the static `category`-enum check in `validate-data.py` — it catches a recipe that fails to LOAD, not just a malformed JSON.
 
 **Shared helper:** `GameTestSupport` (a `final`, static-only, non-`@GameTest` class — so it is intentionally NOT on the `fabric-gametest` entrypoint) holds the canonical `SPAWN` `BlockPos` + `fillWaterPocket(TestContext)` that every aquatic suite used to inline-duplicate. Change the flooded-pocket dimensions once, every suite follows.
 
@@ -176,6 +167,7 @@ blind.)
 - `.github/workflows/build.yml` — `./gradlew build` on push/PR.
 - `.github/workflows/validate.yml` — runs `python3 scripts/validate-data.py` on push/PR (data/id validator). Fast, pure-Python.
 - `.github/workflows/release.yml` — on a `v*` tag → build → `softprops/action-gh-release@v2` with `files: build/libs/*.jar`.
+- `.github/workflows/pages.yml` — deploys `docs/` to GitHub Pages on pushes that touch `docs/**` (the site `scripts/gen-site.py` generates, plus the recipe/render images).
 
 ### SAFETY when running a local test server on this box
 The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `systemctl`/kill them. Run test servers ephemerally in `/tmp`, `server.properties` with `online-mode=false` + `server-ip=127.0.0.1` (loopback only) on a high port, and ALWAYS kill the java pid + `rm -rf` the scratch when done. A stray MC server can OOM the box. `playtest-server.sh` already does all this (its stray-kill only targets pids whose `/proc/<pid>/cmdline` contains the scratch path).
@@ -184,7 +176,7 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 
 1. Bump `mod_version` in `gradle.properties`.
 2. `./gradlew build --no-daemon` green; `./gradlew runGametest` green.
-3. **`git add -A`** then commit (see gotcha). Commit identity: `git -c user.name=tinyclaw -c user.email=tinyclaw@claw.bitvox.me commit`. Trailer: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+3. **`git add -A`** then commit (see gotcha). **Commit identity/attribution:** follow `CLAUDE.local.md` (untracked; lives on the build box and OVERRIDES anything here). Since 2026-06-09 the convention is author **PindyJ48** + a `Co-authored-by: tinyclaw` trailer — the entire history was rewritten to it. The old tinyclaw-as-author + `Claude Opus 4.8` trailer identity is retired; do not use it.
 4. `git push origin main`; `git tag vX.Y.Z`; `git push origin vX.Y.Z` → fires `release.yml`.
 5. **Release-run race:** after pushing a tag the run takes a few seconds to register — find it by branch, NOT `--limit 1`:
    `gh run list -R VoX/ocean-overhaul --json databaseId,headBranch -q '[.[]|select(.headBranch=="vX.Y.Z")][0].databaseId'`. `gh run watch` piped to `tail` masks the exit code — confirm via `gh run view <id> --json conclusion`.
@@ -205,8 +197,9 @@ The box ALSO runs a live Discord bot, a cowgame server, and caddy. NEVER `system
 - `.../gametest/` — the **twelve** gametest suites + a helper (52 tests total — see §1 / `runGametest` output): `MegalodonGameTest` (6 — boss spawn/segments/bite/no-drown + segment damage-forwarding-with-environmental-guard + canSpawn water/depth/rarity predicate), `ReefLifeGameTest` (4 fish+jelly spawn/no-drown/variant), `DepthsGameTest` (3 Abyssal Lurker), `GearGameTest` (3 Tidal gear), `BlockGameTest` (3 block place/round-trip/drops — round-trip + self-drop now also cover the Aquarium), `ItemGameTest` (6 — food + Tidal tool/armor material + Abyssal Fang apex weapon), `RecipeGameTest` (3 recipe-load + shaped/shapeless — load test now also asserts tidal axe/shovel/hoe, harpoon, the 3 diving pieces + aquarium), `MobGameTest` (4 jellyfish-NBT/variant + reef school + lurker spawn predicate), `WorldgenGameTest` (3 — trench feature registry-resolve + real `disk` placement via `generate()` + new-block place/break/drop incl. clam→pearl), `HarpoonGameTest` (7 — entity registered + `use()` spawns projectile + on-hit yank-toward-thrower tether + loyalty return + throw-wears-1-durability/consumes-held + owner-gone stays-retrievable/stops-homing + DealtDamage NBT round-trip), `DivingKitGameTest` (2 — per-piece worn effects gated + material values/slots), `AquariumGameTest` (8 — bucket variant store/restore + aquarium BlockEntity NBT round-trip + store-via-bucket/retrieve-via-empty + place/break lifecycle + stocked-tank break scatters the creature's filled bucket), and `GameTestSupport` (static-only shared `SPAWN` + `fillWaterPocket`, NOT a suite).
 - `scripts/render-all.sh` — the comprehensive contact-sheet visual-QA harness (see §4): renders `docs/renders/all-{blocks,items,mobs}.png`. Wraps `render-entity.sh` + montages via `montage-renders.py`.
 - `src/main/resources/` — `fabric.mod.json` (entrypoints: main, client, fabric-gametest [**12 classes**]), `assets/oceanoverhaul/**` (blockstates/models/textures [incl. `textures/entity/{reef_fish,jellyfish}.png`]/lang), `data/oceanoverhaul/**` (recipe/, **loot_table/** [singular; entity drops under `loot_table/entities/`], tags, worldgen/).
-- `paint_reef_fish.py` / `paint_jellyfish.py` (repo root + /tmp) — the entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look).
-- `scripts/playtest-server.sh` — the smoke test. `paint_megalodon.py` (in repo root or /tmp) — the entity texture painter.
+- `scripts/paint_reef_fish.py` / `scripts/paint_jellyfish.py` / `scripts/paint_abyssal_lurker.py` — the canonical entity texture painters (mirror each model's `.uv()` origins via the MC box-UV unwrap; jellyfish bakes low alpha for the translucent look + the 5 hue-shift variants). `scripts/paint_salt_block.py` — the seeded salt-block repaint. Beware stale `/tmp/paint_*.py` twins — the repo copies are the current ones.
+- `scripts/playtest-server.sh` — the smoke test.
+- **The Megalodon painter is UNVERSIONED:** `paint_megalodon.py` was never committed (`git log --all` confirms). The only known copy, `/tmp/paint_megalodon.py`, PREDATES the Jun 9 megalodon-texture regen (7541a1c) and the `oceanstarter`→`oceanoverhaul` rename — treat it as STALE, do not rescue it blindly. Until the operator regenerates/commits a current painter, the committed `textures/entity/megalodon.png` is the source of truth.
 
 ## Architecture & load-bearing design decisions
 
@@ -231,7 +224,7 @@ Vanilla multipart (`EnderDragonPart`) is **unusable** for a custom mob: `World`/
 ## Textures
 
 - **Blocks & item icons:** pixel art via Pixellab (`mcp__pixellab__generate_image_pixflux`, width/height **32 min** — 16 is rejected; downscale to 16 with PIL if needns; `show_image:false`). Verify PNGs via PIL, not by Read-ing the raw output.
-- **Entity textures are UV-mapped → CANNOT be Pixellab'd.** Hand-paint to the model's UV layout. `paint_megalodon.py` mirrors `MegalodonModel`'s exact `.uv()` origins using the MC box-UV unwrap. **Get up/down right or the texture is inside-out** (this bug shipped once): for a cuboid at `(u,v)` size `(sx,sy,sz)` — `down=(u+sz, v, sx, sz)` (geometric −Y), `up=(u+sz+sx, v, sx, sz)` (geometric +Y), `east=(u, v+sz, sz, sy)`, `north=(u+sz, v+sz, sx, sy)` (front, −Z), `west=(u+sz+sx, v+sz, sz, sy)`, `south=(u+sz+sx+sz, v+sz, sx, sy)`. Model convention: **−Y is UP, −Z is FORWARD**, so a part's geometric +Y face (the `up` rect) is its render-BOTTOM (a snout's +Y = the mouth roof). The `TexturedModelData` UV size MUST equal the PNG dimensions (128×128 here). Eyeball an 8× nearest-neighbour upscale before shipping.
+- **Entity textures are UV-mapped → CANNOT be Pixellab'd.** Hand-paint to the model's UV layout. `scripts/paint_abyssal_lurker.py` is the in-repo canon: it mirrors `AbyssalLurkerModel`'s exact `.uv()` origins using the MC box-UV unwrap and documents the inside-out fix below. (The megalodon painter is unversioned — see §Repo layout — so the committed `megalodon.png` is its source of truth.) **Get up/down right or the texture is inside-out** (this bug shipped once): for a cuboid at `(u,v)` size `(sx,sy,sz)` — `down=(u+sz, v, sx, sz)` (geometric −Y), `up=(u+sz+sx, v, sx, sz)` (geometric +Y), `east=(u, v+sz, sz, sy)`, `north=(u+sz, v+sz, sx, sy)` (front, −Z), `west=(u+sz+sx, v+sz, sz, sy)`, `south=(u+sz+sx+sz, v+sz, sx, sy)`. Model convention: **−Y is UP, −Z is FORWARD**, so a part's geometric +Y face (the `up` rect) is its render-BOTTOM (a snout's +Y = the mouth roof). The `TexturedModelData` UV size MUST equal the PNG dimensions (128×128 here). Eyeball an 8× nearest-neighbour upscale before shipping.
 
 ### Armor/tool sprites — recolor vanilla, don't draw from scratch (the approach VoX blessed)
 The Tidal armor + tool **inventory sprites** are made by recoloring the **vanilla diamond** sprites with the palette of the **worn-armor texture** — this keeps the instantly-readable vanilla shape/shading while matching the mod's colors, and it's far more reliable than hand-drawing or Pixellab for gear.
@@ -241,8 +234,8 @@ The Tidal armor + tool **inventory sprites** are made by recoloring the **vanill
 4. The **sprite main** sits one notch darker than the worn texture's main (VoX's tweak) so the inventory icon reads like the lit in-game armor. The worn layer textures themselves are left exactly as the artist made them.
 - Canonical Tidal palette (border→hi): `#03191e / #073338 / #093d42 / #1e696e / #a6cbcc`. The worn textures contain a richer ~10-shade gradient; quantile-matching uses ALL of it, not just these.
 
-### Recipe images (README)
-`scripts/gen-recipe-images.py` renders a Minecraft-crafting-table image for every crafting recipe (3×3 grid + arrow + result w/ count badge) and inlines them in README.md under `RECIPE-IMAGES` markers. It resolves icons from mod item/block textures, the vanilla client jar (items + blocks), block-item→base-block fallbacks (stairs/slabs/walls show the base block texture), and the coral ingredient tags. Blocks render as **isometric 3D cubes** (wiki-style: top face full-bright, left ~80%, right ~62%; slabs as half-cubes); flat items stay flat. Re-run after any recipe/texture change.
+### Recipe images + docs site (README / GitHub Pages)
+`scripts/gen-recipe-images.py` renders a Minecraft-crafting-table image for every crafting recipe (3×3 grid + arrow + result w/ count badge) and inlines them in README.md under `RECIPE-IMAGES` markers. Cell icons are the **REAL in-game GUI renders** in `docs/icons-src/`, dumped by `scripts/dump-item-icons.sh` (the old hand-rolled isometric-cube renderer is retired — see the retirement comment in gen-recipe-images.py; git history has the geometry); ids with no dump fall back to flat textures (mod item/block textures → block-item→base-block fallbacks → the vanilla client jar → coral-tag representatives). After any recipe/texture change: **re-run `dump-item-icons.sh` first for NEW items**, then regen — otherwise new items render from the flat fallback. (`scripts/gen-recipe-docs.py --write` regenerates the separate README recipe TABLE under `RECIPES` markers — both generators are live and serve different sections.) `scripts/gen-site.py` builds the GitHub Pages site → `docs/index.html`, downscaling the same `docs/icons-src/` dumps for its galleries; `pages.yml` (see §5) deploys `docs/`.
 
 ## Worldgen
 

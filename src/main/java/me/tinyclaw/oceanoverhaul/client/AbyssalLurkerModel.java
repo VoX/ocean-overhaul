@@ -24,7 +24,7 @@ import net.minecraft.util.math.MathHelper;
  * open for the gape, the {@code lure_stalk} + glowing {@code lure_bulb} arcing off
  * the head top, a tapering {@code tail} with a vertical {@code caudal_fin}, a
  * {@code dorsal_fin}, and two pectoral fins. Every cuboid's {@code .uv(u, v)}
- * origin below is mirrored by the texture painter (paint_abyssal_lurker.py) so the
+ * origin below is mirrored by the texture painter (scripts/paint_abyssal_lurker.py) so the
  * orange/brown skin, pink mouth, white teeth, big eye and pale lure land on the
  * right faces. The whole thing unwraps onto a 128x128 atlas.</p>
  *
