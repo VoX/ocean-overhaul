@@ -19,7 +19,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 
 **Driftwood functional set**
 
-- **Driftwood Plank** — base + stairs + slab + wall
+- **Driftwood Planks** — base + stairs + slab + wall
 - **Driftwood Fence** + **Fence Gate**
 - **Driftwood Door** + **Trapdoor**
 - **Driftwood Button** + **Pressure Plate**

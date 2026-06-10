@@ -377,6 +377,12 @@ public class HarpoonGameTest implements FabricGameTest {
 	 *
 	 * <p>SURVIVAL thrower (mirrors {@link #harpoonThrowWearsOneDurabilityAndConsumesHeldStack}) so
 	 * the copy-damage + held-decrement both run; creative would skip the wear entirely.</p>
+	 *
+	 * <p>Geometry margin: at the harpoon's 2.5 b/t throw speed (now under trident 0.99 water drag),
+	 * the {@code runAtTick(2)} sample reads the entity ~7.5 blocks downrange — still inside the
+	 * 8-block EMPTY structure, but with only ~0.4 blocks to spare. (Callbacks fire before that
+	 * tick's entity phase, so at most two flight ticks elapse; the bound is deterministic.) Raising
+	 * the throw speed or the sampling tick needs a larger template.</p>
 	 */
 	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
 	public void harpoonSecondToLastDurabilityThrowCarriesRealStack(TestContext context) {

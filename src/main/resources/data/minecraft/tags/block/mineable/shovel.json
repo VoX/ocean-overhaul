@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanoverhaul:salt_block"
+    "oceanoverhaul:salt_block",
+    "oceanoverhaul:crushed_coral_block"
   ]
 }
