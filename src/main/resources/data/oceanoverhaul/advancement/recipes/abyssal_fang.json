@@ -1,0 +1,54 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_abyssal_pearl": {
+      "conditions": {
+        "items": [
+          {
+            "items": "oceanoverhaul:abyssal_pearl"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_megalodon_tooth": {
+      "conditions": {
+        "items": [
+          {
+            "items": "oceanoverhaul:megalodon_tooth"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_stick": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:stick"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "oceanoverhaul:abyssal_fang"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_abyssal_pearl",
+      "has_megalodon_tooth",
+      "has_stick"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "oceanoverhaul:abyssal_fang"
+    ]
+  }
+}

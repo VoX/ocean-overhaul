@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_crushed_coral": {
+      "conditions": {
+        "items": [
+          {
+            "items": "oceanoverhaul:crushed_coral"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "oceanoverhaul:crushed_coral_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_crushed_coral"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "oceanoverhaul:crushed_coral_block"
+    ]
+  }
+}

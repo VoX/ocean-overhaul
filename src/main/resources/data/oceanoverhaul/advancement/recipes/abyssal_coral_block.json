@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_coral_blocks": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#oceanoverhaul:coral_blocks"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_prismarine": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:prismarine"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "oceanoverhaul:abyssal_coral_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_coral_blocks",
+      "has_prismarine"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "oceanoverhaul:abyssal_coral_block"
+    ]
+  }
+}

@@ -31,6 +31,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - Sea Urchin, Salted Cod (foods)
 - **Megalodon Tooth** — guaranteed Megalodon boss drop and the apex-weapon ingredient
 - **Abyssal Fang** — apex sword, one tier above Tidal (crafted from Megalodon Teeth + pearls; repaired with teeth)
+- **Tidal gear** — Abyssal Pearl tools and armor; wearing all four Tidal armor pieces grants constant **Water Breathing** (the four-piece set bonus, noted on each piece's tooltip)
 - **Harpoon** — a throwable projectile that yanks the hit mob toward you (tether) and loyalty-returns to your hand (never lost)
 - **Diving Kit** — Flippers (Dolphin's Grace in water), Oxygen Tank (water breathing), and Deep Sea Helmet (night vision when submerged): three armor pieces with worn effects
 - **Reef Fish Bucket**, **Jellyfish Bucket** — mob buckets that scoop a creature (the jellyfish bucket preserves its color variant)
