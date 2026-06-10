@@ -37,6 +37,15 @@ public class HarpoonItem extends Item {
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getStackInHand(hand);
 
+		// Last-durability guard, mirroring vanilla TridentItem.isAboutToBreak (javap-verified):
+		// a harpoon on its final point refuses to throw. Without this, the pre-throw damage(1)
+		// below breaks the thrown copy to EMPTY before the entity ctor captures it — an invisible
+		// projectile that renders and returns nothing. Checked before the isClient return so both
+		// sides agree (no ghost swing animation).
+		if (stack.getDamage() >= stack.getMaxDamage() - 1) {
+			return TypedActionResult.fail(stack);
+		}
+
 		// Client side: report success so the swing/animation plays; the entity is spawned on the
 		// server (where world.spawnEntity actually adds it).
 		if (world.isClient) {

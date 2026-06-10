@@ -15,6 +15,7 @@ import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.ai.pathing.SwimNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -234,5 +235,19 @@ public class Jellyfish extends WaterCreatureEntity implements Bucketable {
 	@Override
 	protected EntityNavigation createNavigation(World world) {
 		return new SwimNavigation(this, world);
+	}
+
+	// Hurt/death voice: the squid pair — vanilla's other soft-bodied drifter — instead
+	// of the inherited human "oof" (ENTITY_GENERIC_HURT/DEATH). No ambient call on
+	// purpose: a jelly drifts silently.
+
+	@Override
+	protected SoundEvent getHurtSound(DamageSource source) {
+		return SoundEvents.ENTITY_SQUID_HURT;
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return SoundEvents.ENTITY_SQUID_DEATH;
 	}
 }

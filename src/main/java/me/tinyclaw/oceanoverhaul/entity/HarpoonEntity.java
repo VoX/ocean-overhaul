@@ -10,6 +10,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Vec3d;
@@ -26,10 +28,12 @@ import net.minecraft.world.World;
  *   <li><b>Genuinely-new mechanic — the TETHER.</b> On hitting a living entity it not only
  *       deals impact damage but YANKS that entity toward the thrower (see
  *       {@link #applyTether}). This is the feature's headline behavior.</li>
- *   <li><b>Loyalty-style return.</b> Once it has dealt damage (or stuck in a block) it homes
- *       back to its owner (see {@link #tick()}), so the player never loses the harpoon. If the
- *       owner is gone it falls to the ground as a normal pick-up-able projectile rather than
- *       despawning (pickupType stays {@code ALLOWED}).</li>
+ *   <li><b>Loyalty-style return.</b> Once it has dealt damage (or stuck in a block for &gt;4
+ *       ticks) it homes back to its owner (see {@link #tick()}), so the player never loses the
+ *       harpoon. Owner dead/spectator: it drops as a real item stack and discards (the
+ *       {@code TridentEntity} owner-dead branch). Owner gone entirely (despawned/logged off):
+ *       it drops noclip and falls as a normal pick-up-able projectile (pickupType stays
+ *       {@code ALLOWED}, and {@link #age()} never despawns an ALLOWED harpoon).</li>
  *   <li><b>Billboard render.</b> Implements {@link FlyingItemEntity} so the stock
  *       {@code FlyingItemEntityRenderer} draws the harpoon item model — zero custom client
  *       model/texture/render code (the lowest-risk v1; an oriented spear render is deferred).</li>
@@ -69,6 +73,14 @@ public class HarpoonEntity extends PersistentProjectileEntity implements FlyingI
 	 * TridentEntity-private), so it is declared + NBT-persisted locally.
 	 */
 	private boolean dealtDamage = false;
+
+	/**
+	 * Ticks spent in the loyalty-return state — the trident's rate limiter for the return sound
+	 * ({@code ITEM_TRIDENT_RETURN} plays only on the tick this hits 0, not every homing tick).
+	 * Transient like the trident's (not NBT-persisted): worst case a reloaded mid-return harpoon
+	 * replays the chime once.
+	 */
+	private int returnTimer;
 
 	/**
 	 * Registry / client-deserialize ctor. Used by the {@code EntityType} factory and by the client
@@ -137,9 +149,19 @@ public class HarpoonEntity extends PersistentProjectileEntity implements FlyingI
 	 * is deterministically toward-thrower — this is what the gametest asserts via a dot-product.
 	 * {@code velocityModified = true} is MANDATORY: without it a server-side velocity change to a
 	 * player/mob is never synced to clients and the yank is a silent no-op.
+	 *
+	 * <p><b>Mass scaling:</b> a flat pull reads salmon-grade on huge bodies (the 1.6-wide boss
+	 * head took the same 1.2 shove as a fish). Targets wider than 2 blocks don't budge at all;
+	 * 1–2-block-wide ones (the boss head, the ~2.0 lurker) are pulled inversely to width. Normal
+	 * mobs (width ≤ 1) keep the exact full-strength pull the tether gametest locks in.</p>
 	 */
 	private static void applyTether(LivingEntity target, Entity owner) {
-		Vec3d toThrower = owner.getPos().subtract(target.getPos()).normalize().multiply(PULL_STRENGTH);
+		float width = target.getWidth();
+		if (width > 2.0F) {
+			return; // too massive to drag — impact damage + vanilla knockback still apply
+		}
+		double pull = PULL_STRENGTH * Math.min(1.0, 1.0 / width);
+		Vec3d toThrower = owner.getPos().subtract(target.getPos()).normalize().multiply(pull);
 		target.setVelocity(toThrower.x, toThrower.y * 0.5 + 0.25, toThrower.z);
 		target.velocityModified = true;
 	}
@@ -164,25 +186,89 @@ public class HarpoonEntity extends PersistentProjectileEntity implements FlyingI
 	}
 
 	/**
-	 * Loyalty-style return: once the harpoon's hit is spent (or it stuck in a block) and the owner
-	 * is still around, noclip home toward the owner's eyes. Copies the {@code TridentEntity.tick}
-	 * return branch shape (all APIs javap-verified). If the owner is gone, drop noclip so it falls
-	 * to the ground as a normal pick-up-able projectile (a retrievable fallback, NOT a despawn).
+	 * Loyalty-style return, mirroring the {@code TridentEntity.tick} bytecode shape exactly
+	 * (javap-verified against 1.21.1 build.3), with the harpoon's intrinsic loyalty standing in
+	 * for the enchantment level:
+	 *
+	 * <ul>
+	 *   <li>{@code inGroundTime > 4} arms {@code dealtDamage} — a MISSED throw that sticks in a
+	 *       block enters the return (and the {@link #age()} exemption) instead of keeping a live
+	 *       not-yet-hit state forever.</li>
+	 *   <li>Owner dead/spectator ({@link #isOwnerAlive}): drop a real item stack and discard —
+	 *       NOT a noclip gravity-fall through terrain at a corpse.</li>
+	 *   <li>Owner alive: noclip home toward the owner's eyes, chiming {@code ITEM_TRIDENT_RETURN}
+	 *       once when the return starts ({@code returnTimer == 0} — the trident's rate limit) and
+	 *       pinning {@code lastRenderY} clientside like the trident does.</li>
+	 *   <li>Owner GONE entirely (despawned/logged off, so {@code getOwner()}'s UUID lookup
+	 *       returns null — a case the trident's owner-dead branch can never see): drop noclip so
+	 *       it falls as a normal pick-up-able projectile (a retrievable fallback, NOT a despawn).</li>
+	 * </ul>
 	 */
 	@Override
 	public void tick() {
-		super.tick();
+		if (this.inGroundTime > 4) {
+			this.dealtDamage = true;
+		}
 		Entity owner = this.getOwner();
-		if ((this.dealtDamage || this.inGround) && owner != null && owner.isAlive() && !owner.isSpectator()) {
-			this.setNoClip(true);
-			Vec3d toOwner = owner.getEyePos().subtract(this.getPos());
-			this.setPos(this.getX(), this.getY() + toOwner.y * 0.015, this.getZ());
-			double accel = 0.05 * RETURN_SPEED;
-			this.setVelocity(this.getVelocity().multiply(0.95).add(toOwner.normalize().multiply(accel)));
-		} else if (this.dealtDamage && (owner == null || !owner.isAlive())) {
-			// Owner gone -> stop homing and fall as a normal projectile the player can pick up later.
+		if ((this.dealtDamage || this.isNoClip()) && owner != null) {
+			if (!isOwnerAlive(owner)) {
+				if (!this.getWorld().isClient && this.pickupType == PickupPermission.ALLOWED) {
+					this.dropStack(this.asItemStack(), 0.1F);
+				}
+				this.discard();
+			} else {
+				this.setNoClip(true);
+				Vec3d toOwner = owner.getEyePos().subtract(this.getPos());
+				this.setPos(this.getX(), this.getY() + toOwner.y * 0.015, this.getZ());
+				if (this.getWorld().isClient) {
+					this.lastRenderY = this.getY();
+				}
+				double accel = 0.05 * RETURN_SPEED;
+				this.setVelocity(this.getVelocity().multiply(0.95).add(toOwner.normalize().multiply(accel)));
+				if (this.returnTimer == 0) {
+					this.playSound(SoundEvents.ITEM_TRIDENT_RETURN, 10.0F, 1.0F);
+				}
+				++this.returnTimer;
+			}
+		} else if (this.dealtDamage || this.isNoClip()) {
+			// Owner null -> stop homing and fall as a normal projectile the player can pick up later.
 			this.setNoClip(false);
 		}
+		super.tick();
+	}
+
+	/** The {@code TridentEntity.isOwnerAlive} test (javap-verified): dead or spectator = not alive. */
+	private static boolean isOwnerAlive(Entity owner) {
+		return owner.isAlive() && !(owner instanceof ServerPlayerEntity && owner.isSpectator());
+	}
+
+	/**
+	 * PPE's {@code age()} despawns any landed projectile after 1200 ticks — which would quietly
+	 * delete a stuck owner-offline harpoon despite the "never lost" promise. Mirror
+	 * {@code TridentEntity.age} (javap: skip aging while pickup is ALLOWED and loyalty is on);
+	 * loyalty is intrinsic here, so only the ALLOWED check remains.
+	 */
+	@Override
+	protected void age() {
+		if (this.pickupType != PickupPermission.ALLOWED) {
+			super.age();
+		}
+	}
+
+	/**
+	 * PPE's inherited arrow water drag (0.6) geometrically kills the throw within ~6 blocks
+	 * underwater — melee range for the ocean mod's signature ranged weapon. Mirror
+	 * {@code TridentEntity.getDragInWater} (0.99F, javap-verified) so it actually flies there.
+	 */
+	@Override
+	protected float getDragInWater() {
+		return 0.99F;
+	}
+
+	/** Block-stick sound: PPE defaults to the arrow thunk; mirror the trident's spear *thunk*. */
+	@Override
+	protected SoundEvent getHitSound() {
+		return SoundEvents.ITEM_TRIDENT_HIT_GROUND;
 	}
 
 	/**

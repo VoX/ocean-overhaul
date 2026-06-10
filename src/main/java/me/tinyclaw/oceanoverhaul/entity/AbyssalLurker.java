@@ -16,9 +16,12 @@ import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.ai.pathing.SwimNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.ServerWorldAccess;
@@ -88,6 +91,44 @@ public class AbyssalLurker extends HostileEntity {
 		// HostileEntity is a land mob and canBreatheInWater() is final, so it would
 		// suffocate underwater. Pin its air supply so the lurker never drowns at home.
 		return air;
+	}
+
+	// =====================================================================
+	// Voice — the (non-elder) guardian family: the vanilla deep hostile at the same
+	// ~2-block scale, one register down from the boss's elder-guardian voice. Each
+	// pair mirrors GuardianEntity's isInsideWaterOrBubbleColumn() water/land split.
+	// =====================================================================
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_GUARDIAN_AMBIENT
+				: SoundEvents.ENTITY_GUARDIAN_AMBIENT_LAND;
+	}
+
+	@Override
+	protected SoundEvent getHurtSound(DamageSource source) {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_GUARDIAN_HURT
+				: SoundEvents.ENTITY_GUARDIAN_HURT_LAND;
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_GUARDIAN_DEATH
+				: SoundEvents.ENTITY_GUARDIAN_DEATH_LAND;
+	}
+
+	/**
+	 * Bite sound — {@code MobEntity.tryAttack} calls this hook (default-empty, so the
+	 * bite was silent). Same evoker-fangs jaw snap as the boss bite, but at natural
+	 * volume/pitch: a lean predator's snap, not the boss's cavernous chomp. (NOT
+	 * ENTITY_GUARDIAN_ATTACK — that's the laser-beam zap, wrong for a melee bite.)
+	 */
+	@Override
+	protected void playAttackSound() {
+		this.playSound(SoundEvents.ENTITY_EVOKER_FANGS_ATTACK, 1.0F, 1.0F);
 	}
 
 	/**

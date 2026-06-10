@@ -24,11 +24,14 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -47,8 +50,10 @@ import net.minecraft.world.World;
  */
 public class Megalodon extends HostileEntity {
 
+	// getDisplayName() (not a literal) so the bar title comes from the lang key and a
+	// name-tagged boss shows its custom name — the WitherEntity field-init pattern.
 	private final ServerBossBar bossBar =
-			new ServerBossBar(Text.literal("Megalodon"), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
+			new ServerBossBar(this.getDisplayName(), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
 
 	/** Body-following hitbox parts (server-side; transient — never saved). */
 	private final List<MegalodonSegment> segments = new ArrayList<>();
@@ -61,6 +66,9 @@ public class Megalodon extends HostileEntity {
 		// Aquatic movement: glide through water, ignore the water pathfinding penalty.
 		this.moveControl = new AquaticMoveControl(this, 85, 10, 1.0F, 1.0F, true);
 		this.setPathfindingPenalty(PathNodeType.WATER, 0.0F);
+		// Boss-tier XP, not the inherited zombie-tier 5: the Wither (the other ~boss-bar
+		// hostile) sets experiencePoints = 50 in its ctor — same pattern, same number.
+		this.experiencePoints = 50;
 	}
 
 	public static DefaultAttributeContainer.Builder createAttributes() {
@@ -105,11 +113,60 @@ public class Megalodon extends HostileEntity {
 		return air;
 	}
 
+	/**
+	 * Despawn policy: an UNTOUCHED wild shark despawns when unseen like any hostile
+	 * (vanilla {@code MobEntity.checkDespawn} — natural spawns must have outflow or
+	 * sharks + boss bars accumulate forever), but the FIRST player-sourced hit pins it
+	 * via {@link #setPersistent()} so an engaged boss can never vanish mid-fight.
+	 * Persistence is saved as {@code PersistenceRequired} NBT, surviving reloads, and
+	 * {@code checkDespawn} short-circuits on it before either discard path — no
+	 * {@code canImmediatelyDespawn} override needed. A despawn goes through
+	 * {@link #remove}, which clears the boss bar.
+	 */
 	@Override
-	public boolean canImmediatelyDespawn(double distanceSquared) {
-		// The wandering boss must stay findable: never despawn just because players
-		// moved away (vanilla HostileEntity despawns at distance once unseen).
-		return false;
+	public boolean damage(DamageSource source, float amount) {
+		boolean damaged = super.damage(source, amount);
+		if (damaged && source.getAttacker() instanceof PlayerEntity) {
+			this.setPersistent();
+		}
+		return damaged;
+	}
+
+	// =====================================================================
+	// Voice — the elder-guardian family (the vanilla deep-water heavyweight), so the
+	// flagship boss isn't silent. Each pair mirrors GuardianEntity's
+	// isInsideWaterOrBubbleColumn() water/land split (javap-verified ids).
+	// =====================================================================
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_ELDER_GUARDIAN_AMBIENT
+				: SoundEvents.ENTITY_ELDER_GUARDIAN_AMBIENT_LAND;
+	}
+
+	@Override
+	protected SoundEvent getHurtSound(DamageSource source) {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_ELDER_GUARDIAN_HURT
+				: SoundEvents.ENTITY_ELDER_GUARDIAN_HURT_LAND;
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return this.isInsideWaterOrBubbleColumn()
+				? SoundEvents.ENTITY_ELDER_GUARDIAN_DEATH
+				: SoundEvents.ENTITY_ELDER_GUARDIAN_DEATH_LAND;
+	}
+
+	/**
+	 * Bite sound. {@code MobEntity.tryAttack} calls this hook (default-empty, so the
+	 * 12-damage bite was soundless). The evoker-fangs snap is vanilla's only
+	 * jaws-clamping-shut sound; loud + pitched low it reads as a giant bite.
+	 */
+	@Override
+	protected void playAttackSound() {
+		this.playSound(SoundEvents.ENTITY_EVOKER_FANGS_ATTACK, 2.0F, 0.6F);
 	}
 
 	/**
@@ -158,6 +215,13 @@ public class Megalodon extends HostileEntity {
 		// so the open jaws cover the player's height.
 		double reach = 2.5;
 		return base.stretch(fx * reach, 0.0, fz * reach).expand(0.0, 0.3, 0.0);
+	}
+
+	@Override
+	public void setCustomName(Text name) {
+		// Keep the boss bar in sync with renames (WitherEntity does exactly this).
+		super.setCustomName(name);
+		this.bossBar.setName(this.getDisplayName());
 	}
 
 	@Override

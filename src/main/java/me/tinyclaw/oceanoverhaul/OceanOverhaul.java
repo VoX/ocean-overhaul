@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -268,8 +269,12 @@ public class OceanOverhaul implements ModInitializer {
 			ABYSSAL_PEARL_BLOCK, new Item.Settings());
 
 	// --- Block: Crushed Coral Block (gravel-like, but a full block) -------
+	// GRAVEL settings, not PRISMARINE: copying a stone block carried requiresTool, so the
+	// "gravel-like" block dropped NOTHING when dug barehand (audit L32). Settings has no
+	// requiresTool un-setter (javap-verified) — switching the copy source is the fix, and
+	// brings gravel hardness/sounds along. Still a plain Block, so it does not fall.
 	public static final Block CRUSHED_CORAL_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
+			AbstractBlock.Settings.copy(Blocks.GRAVEL));
 	public static final BlockItem CRUSHED_CORAL_BLOCK_ITEM = new BlockItem(
 			CRUSHED_CORAL_BLOCK, new Item.Settings());
 
@@ -800,6 +805,20 @@ public class OceanOverhaul implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("driftwood_door"), DRIFTWOOD_DOOR);
 		Registry.register(Registries.ITEM, id("driftwood_door"), DRIFTWOOD_DOOR_ITEM);
 
+		// Driftwood burns like the oak it mimics — FireBlock's flammable map only covers
+		// vanilla blocks, so without this registration fire never spreads to/consumes the
+		// set (audit L36). 5/20 are vanilla's exact oak-planks burn/spread values, applied
+		// to the pieces whose oak counterparts are flammable (planks/stairs/slab/fence/
+		// fence gate). Door, trapdoor, button and pressure plate are skipped on the same
+		// vanilla precedent (oak's aren't registered); the wall has no vanilla wooden
+		// counterpart but is solid planks, so it burns with them.
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_STAIRS, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_SLAB, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_WALL, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_FENCE, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_FENCE_GATE, 5, 20);
+
 		Registry.register(Registries.BLOCK, id("pearl_block"), PEARL_BLOCK);
 		Registry.register(Registries.ITEM, id("pearl_block"), PEARL_BLOCK_ITEM);
 		Registry.register(Registries.BLOCK, id("pearl_block_stairs"), PEARL_BLOCK_STAIRS);
@@ -1035,8 +1054,8 @@ public class OceanOverhaul implements ModInitializer {
 		//   * Feature 3 Diving Kit, PER PIECE (wear any one alone -> its effect):
 		//       Flippers (boots)      -> DOLPHINS_GRACE while in water (swim speed; no-op on land)
 		//       Oxygen Tank (chest)   -> WATER_BREATHING (harmless on land; no gate)
-		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (short duration so it fades
-		//                                within ~3 s of surfacing, avoiding the night-vision flash)
+		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (steady-render duration;
+		//                                the remaining 220-300 ticks linger ~11-15 s after surfacing)
 		// The effects are silent (no particles, no HUD icon).
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
@@ -1064,7 +1083,10 @@ public class OceanOverhaul implements ModInitializer {
 					// Applied duration (300t/15s) stays comfortably above Minecraft's 200-tick
 					// steady-render threshold the entire time it is worn, so night vision renders
 					// STEADY underwater instead of strobing; the 220-tick reapply window keeps it
-					// always >200 while submerged yet lets it expire within ~4s of surfacing/removal.
+					// always >200 while submerged. The trade-off: on surfacing/removal the
+					// remaining 220-300 ticks run out on their own — an ~11-15 s linger (the
+					// price of staying above the strobe threshold; the last 10 s still blink,
+					// vanilla's expiry warning).
 					refreshEffect(player, StatusEffects.NIGHT_VISION, 300, 220);
 				}
 			}
