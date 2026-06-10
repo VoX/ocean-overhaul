@@ -17,6 +17,7 @@ import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.PlacedFeature;
 
 import me.tinyclaw.oceanoverhaul.OceanOverhaul;
+import me.tinyclaw.oceanoverhaul.block.GiantClamBlock;
 
 /**
  * Headless server-side GameTests for the <b>Abyssal Trench</b> worldgen.
@@ -28,7 +29,8 @@ import me.tinyclaw.oceanoverhaul.OceanOverhaul;
  * treasure) plus three new blocks. {@code ./gradlew build} compiles the JSON-referencing Java
  * but can't see whether the worldgen JSON actually <i>loads</i>, whether each
  * {@code placed_feature <- configured_feature} reference resolves at runtime, or whether the
- * giant clam's loot is wired to drop a pearl rather than itself. These tests close that gap.</p>
+ * giant clam's loot gates the pearl behind the grown {@code has_pearl} state — empty clams
+ * drop nothing (the L14 fix). These tests close that gap.</p>
  *
  * <p>Three layers of coverage:</p>
  * <ul>
@@ -45,8 +47,9 @@ import me.tinyclaw.oceanoverhaul.OceanOverhaul;
  *       can't flake.</li>
  *   <li><b>Place / break / drop</b> ({@link #newBlocksPlaceBreakDrop}) — mirrors
  *       {@link BlockGameTest}: each new block places and reads back, the two decorative blocks
- *       drop themselves, and — the one assertion that proves the destination reward is wired —
- *       the giant clam drops the existing {@code abyssal_pearl} item, NOT itself.</li>
+ *       drop themselves, and — the load-bearing assertions that prove the destination reward is
+ *       wired — the giant clam's pearl is gated behind the grown {@code has_pearl} state; empty
+ *       clams drop nothing (the L14 fix).</li>
  * </ul>
  *
  * <p><b>Caveat (same as the mob suites):</b> a gametest uses {@code EMPTY_STRUCTURE} + a direct
@@ -156,9 +159,10 @@ public class WorldgenGameTest implements FabricGameTest {
 	 * block gets its own grid slot (STONE floor beneath, block above) and an
 	 * {@code expectBlock} round-trip. Then loot is resolved via {@link Block#getDroppedStacks}
 	 * (the same data path a real break reads): the two decorative blocks drop themselves, and —
-	 * the load-bearing assertion — the giant clam drops the existing {@code abyssal_pearl} item
-	 * rather than itself. That single check proves the destination loot table is wired, not a
-	 * copy-paste self-drop. All deterministic (loot resolved directly, no tool/enchant variance).
+	 * the load-bearing assertions — the giant clam's pearl is gated behind the grown
+	 * {@code has_pearl} state: a default-state (empty) clam resolves NO drops at all (the L14
+	 * fix — finding a cluster no longer mints pearls), while a grown clam drops the pearl and
+	 * not the block item. All deterministic (loot resolved directly, no tool/enchant variance).
 	 */
 	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
 	public void newBlocksPlaceBreakDrop(TestContext context) {
@@ -172,16 +176,27 @@ public class WorldgenGameTest implements FabricGameTest {
 		placeAndExpect(context, OceanOverhaul.ABYSSAL_VENT, 2);
 		assertDropsSelf(context, world, OceanOverhaul.ABYSSAL_VENT, 2);
 
-		// --- Giant Clam: places, but drops the GUARANTEED abyssal_pearl (not itself). ---
+		// --- Giant Clam: places, but the pearl is GATED behind the grown has_pearl state. ---
 		placeAndExpect(context, OceanOverhaul.GIANT_CLAM, 4);
 		BlockPos clamRel = new BlockPos(4, 2, 0);
 		BlockPos clamAbs = context.getAbsolutePos(clamRel);
-		BlockState clamState = world.getBlockState(clamAbs);
-		List<ItemStack> clamDrops = Block.getDroppedStacks(clamState, world, clamAbs, null);
-		boolean droppedPearl = clamDrops.stream().anyMatch(s -> s.isOf(OceanOverhaul.ABYSSAL_PEARL));
+		// Default-state (empty) clam: NO drops — the L14 fix (finding a worldgen cluster no
+		// longer mints pearls; the harvest-over-time loop is the pearl source).
+		List<ItemStack> emptyClamDrops = Block.getDroppedStacks(world.getBlockState(clamAbs), world, clamAbs, null);
 		context.assertTrue(
-				droppedPearl,
-				"giant_clam did not drop the abyssal_pearl reward; drops=" + clamDrops);
+				emptyClamDrops.isEmpty(),
+				"empty (default-state) giant_clam must drop nothing; drops=" + emptyClamDrops);
+		// Grown clam (has_pearl=true): the pearl drops — and the block item does NOT (silk
+		// touch is its only survival source).
+		context.setBlockState(clamRel,
+				OceanOverhaul.GIANT_CLAM.getDefaultState().with(GiantClamBlock.HAS_PEARL, true));
+		List<ItemStack> grownClamDrops = Block.getDroppedStacks(world.getBlockState(clamAbs), world, clamAbs, null);
+		context.assertTrue(
+				grownClamDrops.stream().anyMatch(s -> s.isOf(OceanOverhaul.ABYSSAL_PEARL)),
+				"grown (has_pearl=true) giant_clam did not drop the abyssal_pearl; drops=" + grownClamDrops);
+		context.assertTrue(
+				grownClamDrops.stream().noneMatch(s -> s.isOf(OceanOverhaul.GIANT_CLAM_ITEM)),
+				"grown giant_clam dropped its block item without silk touch; drops=" + grownClamDrops);
 
 		context.complete();
 	}

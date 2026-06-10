@@ -1,7 +1,6 @@
 {
   "variants": {
-    "": {
-      "model": "oceanoverhaul:block/giant_clam"
-    }
+    "has_pearl=false": { "model": "oceanoverhaul:block/giant_clam" },
+    "has_pearl=true":  { "model": "oceanoverhaul:block/giant_clam" }
   }
 }
