@@ -25,10 +25,11 @@ import net.minecraft.world.gen.feature.PlacedFeature;
  * <p>This is also where the <b>Abyssal Trench</b> is delivered: rather than a new biome
  * (which would need TerraBlender or a dimension override), the trench is pure content
  * layered onto the vanilla deep-ocean biomes via the existing {@code IS_DEEP_OCEAN}
- * selector — bioluminescent plankton, abyssal vents, abyssal coral, and the giant-clam
- * treasure (whose loot drops a guaranteed abyssal pearl) as procedural floor features,
- * plus concentrated Megalodon + Abyssal Lurker spawns. Finding deep ocean = finding the
- * trench.</p>
+ * selector — bioluminescent plankton, abyssal vents, abyssal coral, and the giant clam,
+ * the trench's renewable pearl producer (its loot gates the pearl behind the grown
+ * {@code has_pearl} state; an empty clam drops nothing — pearls come from the
+ * grow-and-harvest loop), as procedural floor features, plus concentrated Megalodon +
+ * Abyssal Lurker spawns. Finding deep ocean = finding the trench.</p>
  *
  * <p>No new selector/helper plumbing is introduced here — purely worldgen placement +
  * spawn-weight tuning of blocks/entities registered in {@link OceanOverhaul}.</p>
@@ -71,7 +72,8 @@ public final class OceanOverhaulWorldgen {
 		// all at VEGETAL_DECORATION, all gated on OCEAN_FLOOR_WG + a water predicate via
 		// their placed_feature JSON) layered onto the deep-ocean floor. Glowing plankton
 		// is common (count 3); abyssal vents are sparse (rarity 6); the giant clam — the
-		// trench treasure whose loot drops a guaranteed abyssal_pearl — is rarest
+		// trench's renewable pearl producer (pearl gated behind the grown has_pearl
+		// state; empty clams drop nothing) — is rarest
 		// (rarity 8) so each one is a discrete find worth the dive.
 		addDeepOceanFeature("glowing_plankton_patch", GenerationStep.Feature.VEGETAL_DECORATION);
 		addDeepOceanFeature("abyssal_vent_cluster",   GenerationStep.Feature.VEGETAL_DECORATION);

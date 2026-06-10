@@ -3,6 +3,8 @@ package me.tinyclaw.oceanoverhaul;
 import me.tinyclaw.oceanoverhaul.block.AbyssalVentBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlockEntity;
+import me.tinyclaw.oceanoverhaul.block.GiantClamBlock;
+import me.tinyclaw.oceanoverhaul.block.GiantClamBlockEntity;
 import me.tinyclaw.oceanoverhaul.entity.AbyssalLurker;
 import me.tinyclaw.oceanoverhaul.entity.HarpoonEntity;
 import me.tinyclaw.oceanoverhaul.entity.Jellyfish;
@@ -316,9 +318,10 @@ public class OceanOverhaul implements ModInitializer {
 	//     still under the lantern so it's clearly "alive" not "lit").
 	//   * Abyssal Vent — PRISMARINE base (stays opaque + pickaxe-mineable, unlike
 	//     sea lantern), luminance 7 (a smoldering ember in the dark).
-	//   * Giant Clam — PRISMARINE base, luminance 5 (faint pearl glow); this is the
-	//     trench DESTINATION: its loot table drops a guaranteed ABYSSAL_PEARL (the
-	//     existing item, NOT re-registered), so diving the deep is worth it.
+	//   * Giant Clam — PRISMARINE base, state luminance 3 (growing) → 7 (pearl
+	//     ready); this is the trench DESTINATION: a pearl-growing block entity (see
+	//     its own section below) that makes diving the deep worth RETURNING to —
+	//     it grows an ABYSSAL_PEARL over ~a MC day, harvested by right-click.
 
 	// --- Block: Glowing Plankton Block (bioluminescent, luminance 11) -----
 	// FROGLIGHT sounds, not the SEA_LANTERN copy's glass chime (audit L37): froglight is
@@ -340,12 +343,30 @@ public class OceanOverhaul implements ModInitializer {
 	public static final BlockItem ABYSSAL_VENT_ITEM = new BlockItem(
 			ABYSSAL_VENT, new Item.Settings());
 
-	// --- Block: Giant Clam (trench destination, luminance 5) --------------
-	// Loot drops a GUARANTEED ABYSSAL_PEARL (the existing item), not itself.
-	public static final Block GIANT_CLAM = new Block(
-			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 5));
+	// --- Block: Giant Clam (pearl-growing block entity, luminance 3 → 7) --
+	// Reworked from a plain decorative block into the trench's renewable pearl producer
+	// (the audit-2 L14 fix): a BlockWithEntity that grows an ABYSSAL_PEARL while
+	// waterlogged (~1 MC day), gapes open + brightens when ready, and is harvested by
+	// right-click — pearl straight to inventory, cycle restarts. The loot table now
+	// gates the pearl on the has_pearl state: an empty clam drops NOTHING when broken
+	// (no more 5 free pearls per worldgen find), and silk touch is the block item's
+	// only survival source. Settings: copy(PRISMARINE) keeps requiresTool (the pickaxe
+	// regression-guard test), state luminance 3 (growing) → 7 (ready), nonOpaque (it's
+	// a partial shape now), ticksRandomly (powers the old-world lazy BE heal ONLY) and
+	// BONE sounds — shell = calcium carbonate (audit L37).
+	public static final GiantClamBlock GIANT_CLAM = new GiantClamBlock(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE)
+					.luminance(state -> state.get(GiantClamBlock.HAS_PEARL) ? 7 : 3)
+					.nonOpaque()
+					.ticksRandomly()
+					.sounds(BlockSoundGroup.BONE));
 	public static final BlockItem GIANT_CLAM_ITEM = new BlockItem(
 			GIANT_CLAM, new Item.Settings());
+
+	// The Giant Clam's BlockEntityType — the mod's second (Aquarium precedent):
+	// Builder.create(factory, GIANT_CLAM).build(null), null datafixer Type as standard.
+	public static final BlockEntityType<GiantClamBlockEntity> GIANT_CLAM_BLOCK_ENTITY =
+			BlockEntityType.Builder.create(GiantClamBlockEntity::new, GIANT_CLAM).build(null);
 
 	// --- Block: Chiseled Prismarine Tiles ---------------------------------
 	public static final Block CHISELED_PRISMARINE_TILES = new Block(
@@ -938,13 +959,17 @@ public class OceanOverhaul implements ModInitializer {
 		Registry.register(Registries.BLOCK, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK);
 		Registry.register(Registries.ITEM, id("prismarine_crystal_block"), PRISMARINE_CRYSTAL_BLOCK_ITEM);
 
-		// The Abyssal Trench blocks (giant_clam's loot drops the existing abyssal_pearl).
+		// The Abyssal Trench blocks (the giant_clam grows the existing abyssal_pearl —
+		// its loot gates the pearl on the has_pearl state). The clam's BlockEntityType
+		// registers under the same frozen 'giant_clam' id as its block + item — legal
+		// across different registries (the Aquarium precedent).
 		Registry.register(Registries.BLOCK, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK);
 		Registry.register(Registries.ITEM, id("glowing_plankton_block"), GLOWING_PLANKTON_BLOCK_ITEM);
 		Registry.register(Registries.BLOCK, id("abyssal_vent"), ABYSSAL_VENT);
 		Registry.register(Registries.ITEM, id("abyssal_vent"), ABYSSAL_VENT_ITEM);
 		Registry.register(Registries.BLOCK, id("giant_clam"), GIANT_CLAM);
 		Registry.register(Registries.ITEM, id("giant_clam"), GIANT_CLAM_ITEM);
+		Registry.register(Registries.BLOCK_ENTITY_TYPE, id("giant_clam"), GIANT_CLAM_BLOCK_ENTITY);
 
 		Registry.register(Registries.BLOCK, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES);
 		Registry.register(Registries.ITEM, id("chiseled_prismarine_tiles"), CHISELED_PRISMARINE_TILES_ITEM);
@@ -1181,6 +1206,12 @@ public class OceanOverhaul implements ModInitializer {
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
 		OceanOverhaulWorldgen.register();
 
+		// Old-world clam migration: heal missing Giant Clam BEs at server chunk load,
+		// BEFORE the chunk ships — a BE attached after the chunk packet never reaches the
+		// client, and the all-BER-drawn clam would render as an invisible collision box
+		// until its first has_pearl flip (see the GiantClamBlock javadoc).
+		GiantClamBlock.registerChunkLoadHeal();
+
 		// Gear of the Deep — worn-armor effects (no mixin): poll every server tick and refresh
 		// short-duration effects so they never lapse. All grants go through refreshEffect(...),
 		// which gates re-application to ~once per refresh (absent-or-about-to-lapse) instead of
@@ -1242,7 +1273,7 @@ public class OceanOverhaul implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 1 block entity (the Aquarium), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**
