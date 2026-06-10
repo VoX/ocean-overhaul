@@ -6,12 +6,15 @@ import me.tinyclaw.oceanoverhaul.block.AquariumBlockEntity;
 import me.tinyclaw.oceanoverhaul.entity.AbyssalLurker;
 import me.tinyclaw.oceanoverhaul.entity.HarpoonEntity;
 import me.tinyclaw.oceanoverhaul.entity.Jellyfish;
+import me.tinyclaw.oceanoverhaul.entity.Kraken;
+import me.tinyclaw.oceanoverhaul.entity.KrakenTentacle;
 import me.tinyclaw.oceanoverhaul.entity.Megalodon;
 import me.tinyclaw.oceanoverhaul.entity.MegalodonSegment;
 import me.tinyclaw.oceanoverhaul.entity.ReefFish;
 import me.tinyclaw.oceanoverhaul.item.AbyssalFangMaterial;
 import me.tinyclaw.oceanoverhaul.item.HarpoonItem;
 import me.tinyclaw.oceanoverhaul.item.JellyfishBucketItem;
+import me.tinyclaw.oceanoverhaul.item.KrakenHeartItem;
 import me.tinyclaw.oceanoverhaul.item.TidalArmorItem;
 import me.tinyclaw.oceanoverhaul.item.TidalToolMaterial;
 
@@ -79,6 +82,7 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
@@ -97,9 +101,10 @@ import org.slf4j.LoggerFactory;
  * registration hub: the block set (sea-themed decoratives, the driftwood functional
  * set, the Abyssal Trench blocks, the Aquarium tank + its block entity), the items
  * (ocean ingredients + foods, the Tidal tool/armor sets, the Abyssal Fang apex
- * sword, the Harpoon, the three-piece Diving Kit, mob buckets, spawn eggs), the
- * four mobs (Megalodon boss, Reef Fish, Jellyfish, Abyssal Lurker — plus the boss's
- * hitbox-segment and the Harpoon-projectile entity types) with their attributes and
+ * sword, the Harpoon, the three-piece Diving Kit, the Heart of the Kraken, mob
+ * buckets, spawn eggs), the five mobs (Megalodon boss, Kraken boss, Reef Fish,
+ * Jellyfish, Abyssal Lurker — plus the boss hitbox-segment, Kraken-tentacle and
+ * Harpoon-projectile entity types) with their attributes and
  * spawn rules, the worldgen {@code BiomeModifications} hooks, the worn-gear effect
  * tick handlers, and a dedicated "Ocean Overhaul" creative tab that holds it all —
  * wired up with the Minecraft 1.21.1 Fabric registry API.</p>
@@ -684,6 +689,53 @@ public class OceanOverhaul implements ModInitializer {
 			new SpawnEggItem(ABYSSAL_LURKER, 0x0E1828, 0x4FE0C0, new Item.Settings());
 
 	// =====================================================================
+	// Feature 5 — the Kraken (second Abyssal Trench mini-boss) + its reward
+	// =====================================================================
+	// --- Boss Entity: Kraken (the mantle) ---------------------------------
+	// Registered here (not in onInitialize) so the SpawnEggItem field below can
+	// reference a fully-built EntityType (the MEGALODON pattern). Stationary by
+	// design: the entity anchors itself to the seafloor and never pathfinds; its
+	// 2.8x2.2 box is the invulnerable-while-guarded mantle only — the six ring
+	// tentacles below are the independently damageable parts.
+	public static final EntityType<Kraken> KRAKEN = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("kraken"),
+			EntityType.Builder.create(Kraken::new, SpawnGroup.MONSTER)
+					.dimensions(2.8F, 2.2F)
+					.eyeHeight(1.4F)
+					.maxTrackingRange(10)
+					.build("kraken"));
+
+	// --- Kraken tentacles (the ring of six independent 24-HP targets) -----
+	// Real client-visible LivingEntities (NOT forwarding hitbox shells like the
+	// MEGALODON_SEGMENT): each has its own health/hurt/death feedback, and the
+	// owning Kraken hard-teleports it onto its world-fixed ring slot every tick.
+	// MISC group (no mob-cap pressure) + disableSaving (transient — the
+	// authoritative per-slot health mirror rides the Kraken's own NBT), both the
+	// segment precedent.
+	public static final EntityType<KrakenTentacle> KRAKEN_TENTACLE = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("kraken_tentacle"),
+			EntityType.Builder.<KrakenTentacle>create(KrakenTentacle::new, SpawnGroup.MISC)
+					.dimensions(0.8F, 2.6F)
+					.maxTrackingRange(10)
+					.disableSaving()
+					.build("kraken_tentacle"));
+
+	// --- Spawn egg for the Kraken (deep violet body / magenta accent) -----
+	public static final SpawnEggItem KRAKEN_SPAWN_EGG =
+			new SpawnEggItem(KRAKEN, 0x2A1B3D, 0xB05CE6, new Item.Settings());
+
+	// --- Item: Heart of the Kraken (guaranteed boss drop; EPIC, 1-of) -----
+	// The trench's UTILITY apex, counterpart of the Megalodon-tooth COMBAT apex:
+	// held in either hand while submerged it grants Conduit Power (water breathing
+	// + underwater vision + Haste) via the worn-bonus poll in onInitialize. Not
+	// craftable and consumed by no recipe — the boss drop is the only source (a
+	// Nether Star without the crafting sink).
+	public static final Item KRAKEN_HEART = new KrakenHeartItem(
+			new Item.Settings().maxCount(1).rarity(Rarity.EPIC));
+
+	// =====================================================================
 	// Feature 4 — Mob buckets + the Aquarium BlockEntityType
 	// =====================================================================
 	// Vanilla EntityBucketItem semantics, one per bucketable mob, mirroring the vanilla
@@ -758,6 +810,8 @@ public class OceanOverhaul implements ModInitializer {
 				// Gear of the Deep: tools, armor, foods.
 				entries.add(TIDAL_SWORD);
 				entries.add(ABYSSAL_FANG);
+				// Feature 5: the Kraken's held-utility reward (after the combat apex).
+				entries.add(KRAKEN_HEART);
 				entries.add(TIDAL_PICKAXE);
 				entries.add(TIDAL_AXE);
 				entries.add(TIDAL_SHOVEL);
@@ -779,6 +833,7 @@ public class OceanOverhaul implements ModInitializer {
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
 				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+				entries.add(KRAKEN_SPAWN_EGG);
 				// Feature 4: mob buckets (after the spawn eggs).
 				entries.add(REEF_FISH_BUCKET);
 				entries.add(JELLYFISH_BUCKET);
@@ -1003,6 +1058,20 @@ public class OceanOverhaul implements ModInitializer {
 		SpawnRestriction.register(ABYSSAL_LURKER, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AbyssalLurker::canSpawn);
 
+		// Feature 5: the Kraken boss — heart + spawn-egg items, default attributes
+		// for BOTH entity types (the tentacle is a LivingEntity with its own health
+		// pool, so unlike the attribute-less Megalodon segment it needs a container),
+		// and a deep-water natural-spawn restriction. Kraken.canSpawn layers the
+		// trench-floor depth gate (sea level -24, deeper than the shark's -16), a
+		// 1-in-16 rarity roll and a 48-block solitude query on top of IN_WATER so
+		// wild Krakens stay rare, deep, and never two in sight of each other.
+		Registry.register(Registries.ITEM, id("kraken_heart"), KRAKEN_HEART);
+		Registry.register(Registries.ITEM, id("kraken_spawn_egg"), KRAKEN_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(KRAKEN, Kraken.createAttributes());
+		FabricDefaultAttributeRegistry.register(KRAKEN_TENTACLE, KrakenTentacle.createAttributes());
+		SpawnRestriction.register(KRAKEN, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, Kraken::canSpawn);
+
 		// Register our custom creative tab.
 		Registry.register(Registries.ITEM_GROUP, OCEAN_GROUP_KEY, OCEAN_GROUP);
 
@@ -1069,6 +1138,8 @@ public class OceanOverhaul implements ModInitializer {
 			// Feature 4: mob buckets (vanilla puts fish buckets in the Tools tab).
 			entries.add(REEF_FISH_BUCKET);
 			entries.add(JELLYFISH_BUCKET);
+			// Feature 5: the Kraken's held-utility reward.
+			entries.add(KRAKEN_HEART);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
 			entries.add(TIDAL_SWORD);
@@ -1092,6 +1163,7 @@ public class OceanOverhaul implements ModInitializer {
 			entries.add(REEF_FISH_SPAWN_EGG);
 			entries.add(JELLYFISH_SPAWN_EGG);
 			entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+			entries.add(KRAKEN_SPAWN_EGG);
 		});
 
 		// Wire natural-deposit worldgen (configured/placed features -> biomes).
@@ -1107,6 +1179,8 @@ public class OceanOverhaul implements ModInitializer {
 		//       Oxygen Tank (chest)   -> WATER_BREATHING (harmless on land; no gate)
 		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (steady-render duration;
 		//                                the remaining 220-300 ticks linger ~11-15 s after surfacing)
+		//   * Feature 5 Heart of the Kraken, HELD in either hand (not worn):
+		//       -> CONDUIT_POWER while submerged (water breathing + underwater vision + Haste)
 		// The effects are particle-free but DO show their HUD icon (audit M12/L22): the icon is
 		// the only always-visible cue that a worn bonus — especially the hidden 4-piece Tidal
 		// rule — is actually active (the inventory screen lists effects either way; the HUD
@@ -1143,10 +1217,20 @@ public class OceanOverhaul implements ModInitializer {
 					// vanilla's expiry warning).
 					refreshEffect(player, StatusEffects.NIGHT_VISION, 300, 220);
 				}
+
+				// Feature 5 — Heart of the Kraken: a HELD (main or off hand) bonus, not
+				// a worn one. Conduit Power supersedes the Oxygen Tank + Deep-Sea Helmet
+				// functions while freeing both armor slots, and adds underwater Haste —
+				// the boss-earned utility apex.
+				if ((player.getMainHandStack().getItem() == KRAKEN_HEART
+						|| player.getOffHandStack().getItem() == KRAKEN_HEART)
+						&& player.isSubmergedInWater()) {
+					refreshEffect(player, StatusEffects.CONDUIT_POWER, 220, 40);
+				}
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 68 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + seafood foods + Reef Fish/Jellyfish mob buckets), 4 entities (Megalodon boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**

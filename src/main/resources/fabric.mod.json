@@ -3,7 +3,7 @@
 	"id": "oceanoverhaul",
 	"version": "${version}",
 	"name": "Ocean Overhaul",
-	"description": "Adds 36 ocean-themed blocks (decorative prismarine, pearl, and sea glass sets, a full driftwood wood set, and the deep-ocean Abyssal Trench's glowing plankton, abyssal vents, and giant clams), the Tidal tool + armor sets, a deep-sea diving kit (Deep-Sea Helmet, Oxygen Tank, Flippers), the loyalty-throw Harpoon, a stockable Aquarium, Reef Fish + Jellyfish buckets, ocean foods, Megalodon Tooth + Abyssal Fang drops, and four naturally-spawning sea creatures (the Megalodon boss, the hostile Abyssal Lurker, Reef Fish, and Jellyfish), plus a dedicated Ocean Overhaul creative tab.",
+	"description": "Adds 36 ocean-themed blocks (decorative prismarine, pearl, and sea glass sets, a full driftwood wood set, and the deep-ocean Abyssal Trench's glowing plankton, abyssal vents, and giant clams), the Tidal tool + armor sets, a deep-sea diving kit (Deep-Sea Helmet, Oxygen Tank, Flippers), the loyalty-throw Harpoon, a stockable Aquarium, Reef Fish + Jellyfish buckets, ocean foods, Megalodon Tooth + Abyssal Fang + Heart of the Kraken drops, and five naturally-spawning sea creatures (the Megalodon and Kraken bosses, the hostile Abyssal Lurker, Reef Fish, and Jellyfish), plus a dedicated Ocean Overhaul creative tab.",
 	"authors": [
 		"tinyclaw"
 	],
@@ -32,7 +32,8 @@
 			"me.tinyclaw.oceanoverhaul.gametest.WorldgenGameTest",
 			"me.tinyclaw.oceanoverhaul.gametest.HarpoonGameTest",
 			"me.tinyclaw.oceanoverhaul.gametest.DivingKitGameTest",
-			"me.tinyclaw.oceanoverhaul.gametest.AquariumGameTest"
+			"me.tinyclaw.oceanoverhaul.gametest.AquariumGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.KrakenGameTest"
 		]
 	},
 	"depends": {

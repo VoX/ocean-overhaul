@@ -79,5 +79,10 @@
 	"item.oceanoverhaul.jellyfish_bucket.variant.pink": "Pink",
 	"item.oceanoverhaul.jellyfish_bucket.variant.red": "Red",
 	"item.oceanoverhaul.jellyfish_bucket.variant.orange": "Orange",
+	"entity.oceanoverhaul.kraken": "Kraken",
+	"entity.oceanoverhaul.kraken_tentacle": "Kraken Tentacle",
+	"item.oceanoverhaul.kraken_spawn_egg": "Kraken Spawn Egg",
+	"item.oceanoverhaul.kraken_heart": "Heart of the Kraken",
+	"item.oceanoverhaul.kraken_heart.tooltip": "Held: Conduit Power while submerged",
 	"itemGroup.oceanoverhaul.ocean_overhaul": "Ocean Overhaul"
 }
