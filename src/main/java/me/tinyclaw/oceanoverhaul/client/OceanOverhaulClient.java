@@ -13,10 +13,10 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 /**
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
  * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
- * Lurker, the Harpoon's flying-item renderer, the Aquarium's block-entity renderer,
- * and the non-SOLID block render layers (the Aquarium + sea-glass family on
- * translucent, the driftwood door/trapdoor on cutout) — client-only, these classes
- * are never touched on a dedicated server.
+ * Lurker, the Kraken mantle + its tentacles, the Harpoon's flying-item renderer,
+ * the Aquarium's block-entity renderer, and the non-SOLID block render layers (the
+ * Aquarium + sea-glass family on translucent, the driftwood door/trapdoor on
+ * cutout) — client-only, these classes are never touched on a dedicated server.
  */
 public class OceanOverhaulClient implements ClientModInitializer {
 
@@ -40,6 +40,16 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(
 				AbyssalLurkerModel.LAYER, AbyssalLurkerModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanOverhaul.ABYSSAL_LURKER, AbyssalLurkerRenderer::new);
+
+		// Feature 5: Kraken trench boss — the stationary mantle (with its emissive-eyes
+		// feature) plus its ring of tentacles. Each tentacle is a real LivingEntity with
+		// its own model + renderer, so hurt flash and death keel-over come from vanilla.
+		EntityModelLayerRegistry.registerModelLayer(
+				KrakenModel.LAYER, KrakenModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanOverhaul.KRAKEN, KrakenRenderer::new);
+		EntityModelLayerRegistry.registerModelLayer(
+				KrakenTentacleModel.LAYER, KrakenTentacleModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanOverhaul.KRAKEN_TENTACLE, KrakenTentacleRenderer::new);
 
 		// Feature 3: Harpoon projectile — stock billboard renderer (draws the harpoon item model
 		// via FlyingItemEntity.getStack()). No custom model/texture/render code, no model layer.
