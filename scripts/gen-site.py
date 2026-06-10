@@ -72,6 +72,7 @@ FEATURES = [
 ]
 
 MOBS = [
+    ("Kraken", "renders/kraken-site.png", "A stationary trench boss: six independently-damageable tentacles guard an untouchable mantle &mdash; break the ring to open the kill window, and claim the Heart of the Kraken."),
     ("Megalodon", "renders/megalodon-site.png", "A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth."),
     ("Abyssal Lurker", "renders/abyssal_lurker-site.png", "A bioluminescent anglerfish of the depths, its lure glowing in the dark."),
     ("Reef Fish", "renders/reef_fish-site.png", "Schooling tropical reef fish that bring color to shallow waters."),
@@ -165,7 +166,7 @@ def main():
   <h1>Ocean Overhaul</h1>
   <p class="tag">A deep-dive overhaul of Minecraft's oceans &mdash; a boss, a bioluminescent trench, apex gear, diving kit, aquariums, and the creatures and blocks to fill it all.</p>
   <div class="badges"><span class="badge">Minecraft 1.21.1</span><span class="badge">Fabric</span>
-    <span class="badge">%(nblocks)d blocks</span><span class="badge">%(nitems)d items</span><span class="badge">4 mobs</span><span class="badge">%(nrec)d recipes</span></div>
+    <span class="badge">%(nblocks)d blocks</span><span class="badge">%(nitems)d items</span><span class="badge">%(nmobs)d mobs</span><span class="badge">%(nrec)d recipes</span></div>
   <div class="btns"><a class="btn-primary" href="https://github.com/VoX/ocean-overhaul/releases">Download</a>
     <a class="btn-ghost" href="https://github.com/VoX/ocean-overhaul">View on GitHub</a></div>
 </div></header>
@@ -210,6 +211,7 @@ def main():
         "recipes": "\n".join("<div class='rc'><img src='%s' alt='%s' loading='lazy'><span class='n'>%s</span></div>" % (rel, lbl, lbl) for lbl, rel in recipe_pairs),
         "steps": steps,
         "nblocks": len(block_pairs), "nitems": len(item_pairs), "nrec": len(recipe_pairs),
+        "nmobs": len(MOBS),
     }
     open(os.path.join(DOCS, "index.html"), "w").write(html)
     # .nojekyll so GitHub Pages serves the asset dirs verbatim (no Jekyll processing)
