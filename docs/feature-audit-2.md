@@ -155,9 +155,9 @@ Baseline at audit time — HEAD `2088177`, 74 recipes, 36 block loot tables + 4 
 | Gametest suite (`report.xml`) | **52/52, 0 failures** @ 2026-06-09T21:54:55Z | **52/52, 0 failures** (fresh, 2026-06-10T00:0x UTC, same HEAD) |
 | `./gradlew build` | clean (v0.12.0) | clean |
 | Registration↔data id sweep | 0 dangling | validate-data PASS, 322 files |
-| In-world worldgen flyover screenshot (closes **M6**) | missing | __ |
-| Stocked-aquarium through-glass screenshot (closes **M11**, checks L29) | missing | __ |
-| Boss + boss-bar HUD screenshot (closes L4) | missing | __ |
-| Worn diving-kit render (closes half of L25) | missing | __ |
+| In-world worldgen flyover screenshot (closes **M6**) | missing | **DONE** — `docs/renders/trench-worldgen.png` (natural gen @ seed-12345 deep ocean, 128/384: plankton patch + vents visible) |
+| Stocked-aquarium through-glass screenshot (closes **M11**, checks L29) | missing | **DONE** — `docs/renders/aquarium-stocked.png` (pink jelly variant 2 + reef fish, adjacent tanks seamless = L29 cull verified) |
+| Boss + boss-bar HUD screenshot (closes L4) | missing | **DONE** — `docs/renders/megalodon-bossbar.png` (lang-key title via getDisplayName) |
+| Worn diving-kit render (closes half of L25) | missing | **DONE** — `docs/renders/diving-kit-worn.png` (textured worn layers confirmed) |
 
 Round-1 fix regression spot-checks, all held as of this audit: `pickaxe.json:26-28` trench trio · `OceanOverhaul.java:1068` NV 300/220 · `salt_block_from_block.json` x9 · `OceanOverhaulWorldgen.java:113-117` lurker w8 · `README.md:42` + `OceanOverhaul.java:1073` counts · `RecipeGameTest.java:60-89` assert backfill.
