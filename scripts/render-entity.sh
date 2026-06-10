@@ -449,6 +449,9 @@ PROBE_ARGS=(
 )
 # Optional: keep the HUD (boss bars etc.) visible in the shot.
 [ -n "${PROBE_HUD:-}" ] && PROBE_ARGS+=( -Poo.probe.hud=true )
+# Optional: force the plankton-bloom environment gates open for proof shots
+# (the in-water check, budgets and particles option still apply).
+[ -n "${PROBE_BLOOM:-}" ] && PROBE_ARGS+=( -Poo.probe.bloomForce=true )
 if [ "$MULTI_SHOT" -eq 1 ]; then
     PROBE_ARGS+=( -Poo.probe.manifest="$OO_MANIFEST" )
 else

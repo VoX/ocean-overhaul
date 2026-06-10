@@ -4,6 +4,7 @@ import me.tinyclaw.oceanoverhaul.OceanOverhaul;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -14,9 +15,11 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
  * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
  * Lurker, the Kraken mantle + its tentacles, the Harpoon's flying-item renderer,
- * the Aquarium's block-entity renderer, and the non-SOLID block render layers (the
+ * the Aquarium's block-entity renderer, the non-SOLID block render layers (the
  * Aquarium + sea-glass family on translucent, the driftwood door/trapdoor on
- * cutout) — client-only, these classes are never touched on a dedicated server.
+ * cutout), and the plankton bloom particle factories + their ambient spawner /
+ * wake-scan tick hook — client-only, these classes are never touched on a
+ * dedicated server.
  */
 public class OceanOverhaulClient implements ClientModInitializer {
 
@@ -82,5 +85,14 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SEA_GLASS_SLAB, RenderLayer.getTranslucent());
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_DOOR, RenderLayer.getCutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_TRAPDOOR, RenderLayer.getCutout());
+
+		// Feature A: plankton bloom particles — sprite-backed factories (the Fabric
+		// PendingParticleFactory route hands each factory its SpriteProvider), then the
+		// client-side ambient spawner/wake scanner tick hook.
+		ParticleFactoryRegistry.getInstance().register(
+				OceanOverhaul.PLANKTON_GLOW, PlanktonGlowParticle.Factory::new);
+		ParticleFactoryRegistry.getInstance().register(
+				OceanOverhaul.PLANKTON_WAKE, PlanktonWakeParticle.Factory::new);
+		PlanktonBloomClient.init();
 	}
 }
