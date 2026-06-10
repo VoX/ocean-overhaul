@@ -1,6 +1,6 @@
 # Ocean Overhaul
 
-Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It adds a set of sea-themed decorative + functional blocks, a few ocean items, natural seafloor worldgen deposits (including a bioluminescent deep-ocean **Abyssal Trench**), the **Megalodon** boss shark and its apex **Abyssal Fang** sword, an underwater combat + traversal kit (the loyalty-returning **Harpoon** and a three-piece **Diving Kit**), a glass **Aquarium** you can keep caught fish in, and a growing cast of passive sea creatures — all wired up against the 1.21.1 Fabric registry API and shipped clean, tested, and **mixin-free**.
+Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It adds a set of sea-themed decorative + functional blocks, a few ocean items, natural seafloor worldgen deposits (including a bioluminescent deep-ocean **Abyssal Trench**), the **Megalodon** boss shark and its apex **Abyssal Fang** sword, the six-tentacled **Kraken** mini-boss and its **Heart of the Kraken** reward, an underwater combat + traversal kit (the loyalty-returning **Harpoon** and a three-piece **Diving Kit**), a glass **Aquarium** you can keep caught fish in, and a growing cast of passive sea creatures — all wired up against the 1.21.1 Fabric registry API and shipped clean, tested, and **mixin-free**.
 
 ## Contents
 
@@ -31,6 +31,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - Sea Urchin, Salted Cod (foods)
 - **Megalodon Tooth** — guaranteed Megalodon boss drop and the apex-weapon ingredient
 - **Abyssal Fang** — apex sword, one tier above Tidal (crafted from Megalodon Teeth + pearls; repaired with teeth)
+- **Heart of the Kraken** — the Kraken's guaranteed boss drop: while held in either hand underwater it grants **Conduit Power** (water breathing, underwater vision, and underwater Haste). Not craftable — the boss is the only source.
 - **Tidal gear** — Abyssal Pearl tools and armor; wearing all four Tidal armor pieces grants constant **Water Breathing** (the four-piece set bonus, noted on each piece's tooltip)
 - **Harpoon** — a throwable projectile that yanks the hit mob toward you (tether) and loyalty-returns to your hand (never lost)
 - **Diving Kit** — Flippers (Dolphin's Grace in water), Oxygen Tank (water breathing), and Deep Sea Helmet (night vision when submerged): three armor pieces with worn effects
@@ -39,13 +40,14 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 **Mobs**
 
 - **Megalodon** — a giant boss shark (~200 HP, heavy bite, boss bar, split body hitbox). Spawns rarely in deep oceans, day or night; a spawn egg is in the Ocean Overhaul + Spawn Eggs tabs.
+- **Kraken** — a stationary six-tentacled mini-boss anchored to the trench floor: six independently-killable 24-HP tentacles guard an invulnerable 80-HP mantle (purple boss bar, flips red when the last tentacle falls and the mantle is exposed). It grabs swimmers toward itself and lashes anyone in the ring; broken tentacles never regrow, so a fled fight resumes where it left off. Spawns very rarely on the deep-ocean floor; drops glow ink sacs, an Abyssal Pearl (50%), and the guaranteed **Heart of the Kraken**. Spawn egg available.
 - **Abyssal Lurker** — a hostile deep-sea anglerfish (elder-guardian sized) with a bioluminescent lure that glows in the dark. Spawns in deep oceans, day or night. Spawn egg available.
 - **Reef Fish** — a small, brightly-striped tropical fish that swims in schools. Spawns naturally in oceans; drops Raw Reef Fish (auto-cooked when killed on fire). Spawn egg available.
 - **Jellyfish** — a fragile, gently-drifting passive sea creature in five glow-in-the-dark color variants. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
 
 **Worldgen**
 
-Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, while the Megalodon and Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
+Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, while the Megalodon, the Kraken, and the Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
 
 **Crafting & recipes**
 
@@ -78,7 +80,7 @@ The built mod jar lands in `build/libs/` (the file without the `-sources` suffix
 
 ## Roadmap
 
-The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the passive sea creatures (Reef Fish, Jellyfish) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, and the Aquarium. Natural next steps:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, and the Aquarium. Natural next steps:
 
 - More sea creatures (predator/prey behaviours, breeding, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
