@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanoverhaul:tidal_chestplate"
+    "oceanoverhaul:tidal_chestplate",
+    "oceanoverhaul:oxygen_tank"
   ]
 }

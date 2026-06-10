@@ -120,6 +120,8 @@ public class RenderProbeClient implements ClientModInitializer {
 	// dir at the title screen, then quit. Item models are baked during the initial
 	// resource load, so no world is needed.
 	private final String iconDumpDir = System.getProperty("oo.probe.iconDump", "").trim();
+	// Keep the HUD visible in shots that need it (boss bars etc.): -Doo.probe.hud=true.
+	private final boolean showHud = Boolean.getBoolean("oo.probe.hud");
 
 	private List<String> resetCmds = new ArrayList<>();
 	private List<Scene> scenes = new ArrayList<>();
@@ -310,7 +312,7 @@ public class RenderProbeClient implements ClientModInitializer {
 				// Let the renderer actually DRAW before grabbing the framebuffer.
 				Scene s = current();
 				if (client.currentScreen != null) client.setScreen(null);
-				client.options.hudHidden = true;
+				client.options.hudHidden = !showHud;
 				holdCamera(client);
 				int settle = (s != null) ? s.settleTicks : DEFAULT_SETTLE_TICKS;
 				if (phaseTicks % 40 == 0) {
@@ -382,7 +384,7 @@ public class RenderProbeClient implements ClientModInitializer {
 	 * correct frame. With an aimType, recompute pitch/yaw to point at that entity.
 	 */
 	private void pose(MinecraftClient client) {
-		client.options.hudHidden = true;
+		client.options.hudHidden = !showHud;
 		client.options.setPerspective(Perspective.FIRST_PERSON);
 		try {
 			client.options.getFov().setValue(70);

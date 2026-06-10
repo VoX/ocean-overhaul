@@ -167,6 +167,9 @@ die()  { echo "RESULT: FAIL ($*)"; exit 1; }
 # ----------------------------------------------------------------------------
 cleanup() {
     note "cleanup starting"
+    # Optional: preserve the server console log for post-mortems / coordinate
+    # scraping (e.g. `locate biome` output) before the scratch is wiped.
+    [ -n "${KEEP_LOG:-}" ] && cp "$LOG" /tmp/oo-server-last.log 2>/dev/null
     # 0) player wrangler loop (writes to the FIFO; stop it before closing fd 3)
     if [ -n "${WRANGLER_PID:-}" ] && kill -0 "$WRANGLER_PID" 2>/dev/null; then
         kill "$WRANGLER_PID" 2>/dev/null; kill -9 "$WRANGLER_PID" 2>/dev/null || true
@@ -435,6 +438,7 @@ simulationDistance:6
 gamma:1.0
 guiScale:2
 fovEffectScale:0.0
+tutorialStep:none
 OPTS
 # Assemble the -Poo.probe.* args. Multi-shot passes the manifest (the probe reads
 # every scene from it); single-shot passes the legacy out/target/settle props.
@@ -443,6 +447,8 @@ PROBE_ARGS=(
     -Poo.probe.port="$MC_PORT"
     -Poo.probe.timeoutTicks="$PROBE_TIMEOUT_TICKS"
 )
+# Optional: keep the HUD (boss bars etc.) visible in the shot.
+[ -n "${PROBE_HUD:-}" ] && PROBE_ARGS+=( -Poo.probe.hud=true )
 if [ "$MULTI_SHOT" -eq 1 ]; then
     PROBE_ARGS+=( -Poo.probe.manifest="$OO_MANIFEST" )
 else

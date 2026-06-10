@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
@@ -21,7 +22,7 @@ import me.tinyclaw.oceanoverhaul.OceanOverhaul;
  * entity/gear suites. Two kinds of coverage:</p>
  *
  * <ul>
- *   <li><b>Place round-trip</b> — for a representative spread of the mod's ~41 blocks
+ *   <li><b>Place round-trip</b> — for a representative spread of the mod's 36 blocks
  *       (plain decorative, the luminous lantern/crystal, the falling salt block, and one
  *       each of the stairs/slab/wall building-set shapes), {@code setBlockState} the block
  *       then assert the world reads that exact block back. This catches a block that fails
@@ -51,8 +52,8 @@ public class BlockGameTest implements FabricGameTest {
 	/**
 	 * A representative spread of mod blocks that should each place and read back as themselves.
 	 * Kept to one block per "kind" (plain full block, glass-like, luminous, and one of each
-	 * building-set shape) rather than all 41 — enough to catch a registration/placement
-	 * regression class without a 41-line wall.
+	 * building-set shape) rather than all 36 — enough to catch a registration/placement
+	 * regression class without a 36-line wall.
 	 */
 	private static final List<Block> ROUND_TRIP_BLOCKS = List.of(
 			OceanOverhaul.ABYSSAL_CORAL_BLOCK,        // plain decorative full block
@@ -105,7 +106,36 @@ public class BlockGameTest implements FabricGameTest {
 	}
 
 	/**
-	 * Loot: a couple of representative blocks must drop themselves when mined. We evaluate the
+	 * Every block of the driftwood + prismarine building families (audit L39: only 4/36 blocks
+	 * were loot-asserted before this sweep). The shaped pieces carry the loot-table conditions
+	 * most likely to silently zero a drop — the door's {@code half=lower} block-state gate and
+	 * the slab's double-type count function — so each family member is rolled individually.
+	 */
+	private static final List<Block> FAMILY_LOOT_BLOCKS = List.of(
+			// driftwood functional set (all 10 pieces)
+			OceanOverhaul.DRIFTWOOD_PLANK,
+			OceanOverhaul.DRIFTWOOD_PLANK_STAIRS,
+			OceanOverhaul.DRIFTWOOD_PLANK_SLAB,
+			OceanOverhaul.DRIFTWOOD_PLANK_WALL,
+			OceanOverhaul.DRIFTWOOD_PLANK_FENCE,
+			OceanOverhaul.DRIFTWOOD_FENCE_GATE,
+			OceanOverhaul.DRIFTWOOD_DOOR,      // loot gated on half=lower (the default state)
+			OceanOverhaul.DRIFTWOOD_TRAPDOOR,
+			OceanOverhaul.DRIFTWOOD_BUTTON,
+			OceanOverhaul.DRIFTWOOD_PRESSURE_PLATE,
+			// prismarine families (polished bricks + chiseled tiles + the crystal block)
+			OceanOverhaul.POLISHED_PRISMARINE_BRICKS,
+			OceanOverhaul.POLISHED_PRISMARINE_BRICKS_STAIRS,
+			OceanOverhaul.POLISHED_PRISMARINE_BRICKS_SLAB,
+			OceanOverhaul.POLISHED_PRISMARINE_BRICKS_WALL,
+			OceanOverhaul.CHISELED_PRISMARINE_TILES,
+			OceanOverhaul.CHISELED_PRISMARINE_TILES_STAIRS,
+			OceanOverhaul.CHISELED_PRISMARINE_TILES_SLAB,
+			OceanOverhaul.CHISELED_PRISMARINE_TILES_WALL,
+			OceanOverhaul.PRISMARINE_CRYSTAL_BLOCK);
+
+	/**
+	 * Loot: representative blocks must drop themselves when mined. We evaluate the
 	 * block's loot table directly via {@link Block#getDroppedStacks} (the same resolution a
 	 * real break does — it reads {@code loot_table/blocks/<id>.json}) against the gametest's
 	 * ServerWorld, then assert the dropped stacks contain the block's own item. Driving the
@@ -124,8 +154,51 @@ public class BlockGameTest implements FabricGameTest {
 		// aquarium.json self-drop is the only survival source besides the recipe, and a rename would
 		// otherwise ship a tank that breaks into nothing.
 		assertDropsSelf(context, world, OceanOverhaul.AQUARIUM);
+		// Family sweep (audit L39): the driftwood + prismarine sets, each member rolled.
+		for (Block block : FAMILY_LOOT_BLOCKS) {
+			assertDropsSelf(context, world, block);
+		}
 
 		context.complete();
+	}
+
+	/**
+	 * Abyssal Trench no-drop regression guard (audit L13). The round-1 HIGH was the trench trio
+	 * shipping OUTSIDE {@code mineable/pickaxe}: for the two {@code requiresTool} blocks (vent +
+	 * clam, PRISMARINE-settings copies) that zeroes every real-play drop, because the harvest
+	 * check only passes when the breaking tool is correct FOR the block's mineable tag. The
+	 * {@code getDroppedStacks(..., null)} loot tests above can't see that class of bug — a null
+	 * entity skips the {@code requiresTool} gate entirely — so this asserts the tag membership
+	 * itself: delete the {@code data/minecraft/tags/block/mineable/pickaxe.json} entries and this
+	 * fails even though the loot rolls stay green.
+	 *
+	 * <p>The plankton block copies SEA_LANTERN settings (no {@code requiresTool}), so for it the
+	 * tag only governs mining speed — membership is still asserted (it's in the shipped tag), but
+	 * the tool-required half is only asserted for the two blocks whose drops actually hinge on it.</p>
+	 */
+	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	public void trenchBlocksStayInThePickaxeMineableTag(TestContext context) {
+		assertInPickaxeTag(context, OceanOverhaul.GLOWING_PLANKTON_BLOCK, false);
+		assertInPickaxeTag(context, OceanOverhaul.ABYSSAL_VENT, true);
+		assertInPickaxeTag(context, OceanOverhaul.GIANT_CLAM, true);
+		context.complete();
+	}
+
+	/**
+	 * Assert the block's default state is in {@code #minecraft:mineable/pickaxe}, and (for the
+	 * blocks whose settings demand a correct tool) that {@code isToolRequired} actually holds —
+	 * the pair of facts that together make a pickaxe harvest drop loot in real play.
+	 */
+	private static void assertInPickaxeTag(TestContext context, Block block, boolean expectToolRequired) {
+		BlockState state = block.getDefaultState();
+		context.assertTrue(
+				state.isIn(BlockTags.PICKAXE_MINEABLE),
+				"block " + block + " is NOT in #minecraft:mineable/pickaxe — the round-1 trench no-drop regression");
+		if (expectToolRequired) {
+			context.assertTrue(
+					state.isToolRequired(),
+					"block " + block + " no longer requires a tool — the pickaxe-tag guard assumes it does");
+		}
 	}
 
 	/**

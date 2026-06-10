@@ -13,10 +13,12 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.FluidModificationItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
@@ -25,6 +27,8 @@ import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 /**
@@ -74,17 +78,31 @@ public class AquariumBlock extends BlockWithEntity {
 
 	/**
 	 * Store a creature when right-clicked with a filled mob bucket. No-op (PASS) if the held item
-	 * isn't one of our mob buckets or the tank is already occupied.
+	 * isn't one of our mob buckets or the tank is already occupied — EXCEPT that an occupied tank
+	 * swallows any fluid-carrying bucket as an accepted no-op (audit L26), see below.
 	 */
 	@Override
 	protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world,
 			BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		EntityType<?> captured = bucketCreatureType(stack);
-		if (captured == null) {
-			return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		AquariumBlockEntity be =
+				world.getBlockEntity(pos) instanceof AquariumBlockEntity aquarium ? aquarium : null;
+
+		// Occupied tank + a fluid-carrying bucket (wrong mob bucket, vanilla fish/water/lava
+		// bucket, ...): swallow the click as an accepted no-op so it can't fall through to the
+		// vanilla bucket-dump that spills water + creature against the tank (audit L26). NOT the
+		// audit-suggested ItemActionResult.FAIL: bytecode-verified in 1.21.1
+		// (ClientPlayerInteractionManager.interactBlockInternal), a non-accepted FAIL falls
+		// through to ItemStack.useOnBlock — PASS for buckets — and MinecraftClient.doItemUse then
+		// proceeds to interactItem, so BucketItem.use dumps anyway. Only an ACCEPTED result stops
+		// that chain. The empty bucket is deliberately exempt: it must keep falling through to
+		// onUse, which is the retrieve path.
+		if (be != null && be.storedType() != null && isSpillableBucket(stack)) {
+			return ItemActionResult.success(world.isClient);
 		}
-		if (!(world.getBlockEntity(pos) instanceof AquariumBlockEntity be) || be.storedType() != null) {
-			// Wrong BE, or tank already stocked — leave the bucket alone.
+
+		EntityType<?> captured = bucketCreatureType(stack);
+		if (captured == null || be == null || be.storedType() != null) {
+			// Not a mob bucket, or wrong BE — leave the item alone.
 			return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
@@ -143,9 +161,73 @@ public class AquariumBlock extends BlockWithEntity {
 		super.onStateReplaced(state, world, pos, newState, moved);
 	}
 
+	/**
+	 * Ambient for a stocked tank: tiny bubble pops inside the glass + a rare, quiet pop sound, so
+	 * a live creature on display isn't dead silent (audit L27). Gated on the BE actually holding a
+	 * creature; an empty tank stays still. Uses BUBBLE_POP, NOT BUBBLE — the plain bubble particle
+	 * kills itself the moment it isn't inside real water fluid (WaterBubbleParticle.tick checks
+	 * FluidTags.WATER, bytecode-verified) and the tank holds no actual fluid; BUBBLE_POP just ages
+	 * out, so it survives inside the block space.
+	 */
+	@Override
+	public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+		if (!(world.getBlockEntity(pos) instanceof AquariumBlockEntity be) || be.storedType() == null) {
+			return;
+		}
+		world.addParticle(ParticleTypes.BUBBLE_POP,
+				pos.getX() + 0.25 + random.nextDouble() * 0.5,
+				pos.getY() + 0.25 + random.nextDouble() * 0.5,
+				pos.getZ() + 0.25 + random.nextDouble() * 0.5,
+				0.0, 0.05, 0.0);
+		if (random.nextInt(10) == 0) {
+			world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+					SoundEvents.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, SoundCategory.BLOCKS,
+					0.2F, 1.1F + random.nextFloat() * 0.4F, false);
+		}
+	}
+
+	/**
+	 * Comparator support (audit L28): an occupied tank reads 15, an empty one 0 — all-or-nothing
+	 * for a single-slot container, like vanilla's jukebox. No manual update wiring is needed:
+	 * {@code AquariumBlockEntity.sync()} calls {@code markDirty()}, whose static half already
+	 * fires {@code world.updateComparators} for any non-air state (bytecode-verified), so the
+	 * signal flips the moment the tank is stocked/emptied.
+	 */
+	@Override
+	protected boolean hasComparatorOutput(BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+		return world.getBlockEntity(pos) instanceof AquariumBlockEntity be && be.storedType() != null
+				? 15 : 0;
+	}
+
+	/**
+	 * Same-block face cull (audit L29): adjacent tanks hide their shared inner faces — the exact
+	 * {@code stateFrom.isOf(this)} pattern vanilla's TranslucentBlock (glass) uses — so a row of
+	 * tanks doesn't render double-glass seams through the genuinely-translucent texture.
+	 */
+	@Override
+	protected boolean isSideInvisible(BlockState state, BlockState stateFrom, Direction direction) {
+		return stateFrom.isOf(this) || super.isSideInvisible(state, stateFrom, direction);
+	}
+
 	// =====================================================================
 	// Helpers
 	// =====================================================================
+
+	/**
+	 * A bucket whose vanilla use would spill its contents against the tank: anything carrying a
+	 * placeable payload ({@link FluidModificationItem} covers water/lava/all mob buckets + powder
+	 * snow) EXCEPT the empty bucket — Items.BUCKET is also a {@code BucketItem} (of
+	 * {@code Fluids.EMPTY}, it spills nothing) and must keep passing through to {@code onUse} as
+	 * the retrieve key.
+	 */
+	private static boolean isSpillableBucket(ItemStack stack) {
+		return stack.getItem() instanceof FluidModificationItem && !stack.isOf(Items.BUCKET);
+	}
 
 	/** @return the creature type a mob bucket would release, or {@code null} if {@code stack} isn't a mob bucket. */
 	private static EntityType<?> bucketCreatureType(ItemStack stack) {

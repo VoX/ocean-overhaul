@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cooked_cod": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:cooked_cod"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_sea_salt": {
+      "conditions": {
+        "items": [
+          {
+            "items": "oceanoverhaul:sea_salt"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "oceanoverhaul:salted_cod"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cooked_cod",
+      "has_sea_salt"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "oceanoverhaul:salted_cod"
+    ]
+  }
+}

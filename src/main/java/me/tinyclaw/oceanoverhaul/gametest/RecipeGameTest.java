@@ -8,9 +8,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.StonecuttingRecipe;
 import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
@@ -85,9 +87,67 @@ public class RecipeGameTest implements FabricGameTest {
 		assertRecipeResult(context, recipes, lookup, "kelp_roll", OceanOverhaul.KELP_ROLL);
 		assertRecipeResult(context, recipes, lookup, "seafood_stew", OceanOverhaul.SEAFOOD_STEW);
 
-		// --- smelting: cooked reef fish (a non-crafting recipe type) ---
+		// --- smelting/smoking/campfire: cooked reef fish (non-crafting recipe types) ---
+		// All three cookers are asserted (audit L6 flagged the smoking recipe as untested; the
+		// campfire recipe is the audit-L8 parity addition) so dropping any one cooker is caught.
 		assertRecipeResult(context, recipes, lookup, "cooked_reef_fish_smelting", OceanOverhaul.COOKED_REEF_FISH);
+		assertRecipeResult(context, recipes, lookup, "cooked_reef_fish_smoking", OceanOverhaul.COOKED_REEF_FISH);
+		assertRecipeResult(context, recipes, lookup, "cooked_reef_fish_from_campfire_cooking", OceanOverhaul.COOKED_REEF_FISH);
 
+		// --- economy roots (audit L33): the 12 recipes every later craft chains back to. One
+		// silently-broken smelt here bricks several downstream crafts (e.g. no sea_salt -> no
+		// salt block / salted cod / pearl lantern), so each root is pinned individually.
+		assertRecipeResult(context, recipes, lookup, "sea_salt", OceanOverhaul.SEA_SALT);
+		assertRecipeResult(context, recipes, lookup, "tide_pearl", OceanOverhaul.TIDE_PEARL);
+		assertRecipeResult(context, recipes, lookup, "abyssal_pearl", OceanOverhaul.ABYSSAL_PEARL);
+		assertRecipeResult(context, recipes, lookup, "coral_shard", OceanOverhaul.CORAL_SHARD);
+		assertRecipeResult(context, recipes, lookup, "crushed_coral", OceanOverhaul.CRUSHED_CORAL);
+		assertRecipeResult(context, recipes, lookup, "sea_urchin", OceanOverhaul.SEA_URCHIN);
+		assertRecipeResult(context, recipes, lookup, "salted_cod", OceanOverhaul.SALTED_COD);
+		assertRecipeResult(context, recipes, lookup, "pearl_block", OceanOverhaul.PEARL_BLOCK.asItem());
+		assertRecipeResult(context, recipes, lookup, "pearl_lantern", OceanOverhaul.PEARL_LANTERN.asItem());
+		// The remaining storage-block unpacks (salt_block_from_block is asserted above): a
+		// dropped unpack is the loses-8/9-on-round-trip regression class.
+		assertRecipeResult(context, recipes, lookup, "abyssal_pearl_from_block", OceanOverhaul.ABYSSAL_PEARL);
+		assertRecipeResult(context, recipes, lookup, "crushed_coral_from_block", OceanOverhaul.CRUSHED_CORAL);
+		assertRecipeResult(context, recipes, lookup, "tide_pearl_from_pearl_block", OceanOverhaul.TIDE_PEARL);
+
+		context.complete();
+	}
+
+	/**
+	 * Stonecutting sweep (audit L39): the stonecutting recipe type was never looked up by any
+	 * gametest, so a broken cut (or the whole type failing to parse) shipped invisibly. Look up
+	 * everything the mod registered FOR THAT TYPE via {@link RecipeManager#listAllOfType} — the
+	 * real lookup path the stonecutter screen uses — and assert (a) the full shipped set loaded
+	 * (23 cuts: the per-family slab/stairs/wall cuts plus the audit-L38 ancestor cross-cuts; a
+	 * floor rather than an exact count so adding cuts doesn't break the test, while any load
+	 * failure in today's set drops below it) and (b) every cut resolves to a non-empty result
+	 * from a non-empty ingredient.
+	 */
+	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+	public void stonecuttingRecipesAllResolve(TestContext context) {
+		ServerWorld world = context.getWorld();
+		RecipeManager recipes = world.getRecipeManager();
+		RegistryWrapper.WrapperLookup lookup = world.getRegistryManager();
+
+		List<RecipeEntry<StonecuttingRecipe>> mine = recipes.listAllOfType(RecipeType.STONECUTTING)
+				.stream()
+				.filter(entry -> entry.id().getNamespace().equals(OceanOverhaul.MOD_ID))
+				.toList();
+		context.assertTrue(
+				mine.size() >= 23,
+				"expected at least the 23 shipped oceanoverhaul stonecutting recipes to load, found " + mine.size());
+
+		for (RecipeEntry<StonecuttingRecipe> entry : mine) {
+			ItemStack result = entry.value().getResult(lookup);
+			context.assertTrue(
+					!result.isEmpty(),
+					"stonecutting recipe " + entry.id() + " resolved to an EMPTY result stack");
+			context.assertTrue(
+					entry.value().getIngredients().stream().noneMatch(Ingredient::isEmpty),
+					"stonecutting recipe " + entry.id() + " has an empty ingredient (would never match)");
+		}
 		context.complete();
 	}
 

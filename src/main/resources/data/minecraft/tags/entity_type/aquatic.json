@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "oceanoverhaul:megalodon",
+    "oceanoverhaul:megalodon_segment",
+    "oceanoverhaul:abyssal_lurker",
+    "oceanoverhaul:reef_fish",
+    "oceanoverhaul:jellyfish"
+  ]
+}

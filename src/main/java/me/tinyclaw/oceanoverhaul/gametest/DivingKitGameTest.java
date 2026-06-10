@@ -5,6 +5,7 @@ import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.fillWaterPocket
 
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
@@ -94,6 +95,17 @@ public class DivingKitGameTest implements FabricGameTest {
 			context.assertTrue(
 					wearer.hasStatusEffect(StatusEffects.NIGHT_VISION),
 					"Deep-Sea Helmet did NOT grant NIGHT_VISION while submerged");
+
+			// Strobe regression guard (audit L25): presence alone would still pass if the grant
+			// regressed below Minecraft's 200-tick steady-render threshold (the round-1 flicker
+			// bug). The shipped refresh applies 300t and re-applies under 220t, so a worn helmet's
+			// remaining duration must sit above 200 at EVERY instant — assert the live instance,
+			// not just the boolean.
+			StatusEffectInstance nightVision = wearer.getStatusEffect(StatusEffects.NIGHT_VISION);
+			context.assertTrue(
+					nightVision != null && nightVision.getDuration() > 200,
+					"NIGHT_VISION duration must stay above the 200-tick steady-render threshold (300/220 refresh) but was "
+							+ (nightVision == null ? "absent" : nightVision.getDuration()));
 
 			context.assertFalse(
 					control.hasStatusEffect(StatusEffects.DOLPHINS_GRACE),
