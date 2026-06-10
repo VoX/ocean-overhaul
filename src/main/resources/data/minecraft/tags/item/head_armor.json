@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanoverhaul:tidal_helmet"
+    "oceanoverhaul:tidal_helmet",
+    "oceanoverhaul:deep_sea_helmet"
   ]
 }

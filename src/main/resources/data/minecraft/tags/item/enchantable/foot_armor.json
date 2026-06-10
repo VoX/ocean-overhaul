@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanoverhaul:tidal_boots"
+    "oceanoverhaul:tidal_boots",
+    "oceanoverhaul:flippers"
   ]
 }

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "oceanoverhaul:tidal_sword"
+    "oceanoverhaul:tidal_sword",
+    "oceanoverhaul:abyssal_fang"
   ]
 }
