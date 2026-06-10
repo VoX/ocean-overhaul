@@ -1,5 +1,6 @@
 package me.tinyclaw.oceanoverhaul;
 
+import me.tinyclaw.oceanoverhaul.block.AbyssalVentBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlockEntity;
 import me.tinyclaw.oceanoverhaul.entity.AbyssalLurker;
@@ -10,6 +11,8 @@ import me.tinyclaw.oceanoverhaul.entity.MegalodonSegment;
 import me.tinyclaw.oceanoverhaul.entity.ReefFish;
 import me.tinyclaw.oceanoverhaul.item.AbyssalFangMaterial;
 import me.tinyclaw.oceanoverhaul.item.HarpoonItem;
+import me.tinyclaw.oceanoverhaul.item.JellyfishBucketItem;
+import me.tinyclaw.oceanoverhaul.item.TidalArmorItem;
 import me.tinyclaw.oceanoverhaul.item.TidalToolMaterial;
 
 import net.fabricmc.api.ModInitializer;
@@ -24,6 +27,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockSetType;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ButtonBlock;
+import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.block.FenceBlock;
@@ -34,6 +38,7 @@ import net.minecraft.block.WoodType;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
+import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
@@ -51,6 +56,7 @@ import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.EntityBucketItem;
+import net.minecraft.item.FluidModificationItem;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -68,9 +74,13 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPointer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
 
 import java.util.EnumMap;
@@ -102,8 +112,9 @@ public class OceanOverhaul implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	// --- Block: Abyssal Coral Block ---------------------------------------
+	// CORAL sounds, not the PRISMARINE copy's stone (audit L37): it's a coral block.
 	public static final Block ABYSSAL_CORAL_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).sounds(BlockSoundGroup.CORAL));
 	public static final BlockItem ABYSSAL_CORAL_BLOCK_ITEM = new BlockItem(
 			ABYSSAL_CORAL_BLOCK, new Item.Settings());
 
@@ -257,8 +268,9 @@ public class OceanOverhaul implements ModInitializer {
 			SALT_BLOCK, new Item.Settings());
 
 	// --- Block: Barnacle Block (lumpy natural decorative) -----------------
+	// CORAL sounds, not the PRISMARINE copy's stone (audit L37): barnacles are sea life.
 	public static final Block BARNACLE_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.PRISMARINE));
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).sounds(BlockSoundGroup.CORAL));
 	public static final BlockItem BARNACLE_BLOCK_ITEM = new BlockItem(
 			BARNACLE_BLOCK, new Item.Settings());
 
@@ -272,9 +284,10 @@ public class OceanOverhaul implements ModInitializer {
 	// GRAVEL settings, not PRISMARINE: copying a stone block carried requiresTool, so the
 	// "gravel-like" block dropped NOTHING when dug barehand (audit L32). Settings has no
 	// requiresTool un-setter (javap-verified) — switching the copy source is the fix, and
-	// brings gravel hardness/sounds along. Still a plain Block, so it does not fall.
+	// brings gravel hardness along. Still a plain Block, so it does not fall. CORAL sounds
+	// on top of the gravel copy (audit L37): it's crushed CORAL, not crushed stone.
 	public static final Block CRUSHED_CORAL_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.GRAVEL));
+			AbstractBlock.Settings.copy(Blocks.GRAVEL).sounds(BlockSoundGroup.CORAL));
 	public static final BlockItem CRUSHED_CORAL_BLOCK_ITEM = new BlockItem(
 			CRUSHED_CORAL_BLOCK, new Item.Settings());
 
@@ -301,14 +314,22 @@ public class OceanOverhaul implements ModInitializer {
 	//     existing item, NOT re-registered), so diving the deep is worth it.
 
 	// --- Block: Glowing Plankton Block (bioluminescent, luminance 11) -----
+	// FROGLIGHT sounds, not the SEA_LANTERN copy's glass chime (audit L37): froglight is
+	// vanilla's luminous-ORGANIC full block — the closest group for a squishy glowing
+	// plankton mass, which shouldn't clink like glassware.
 	public static final Block GLOWING_PLANKTON_BLOCK = new Block(
-			AbstractBlock.Settings.copy(Blocks.SEA_LANTERN).luminance(state -> 11));
+			AbstractBlock.Settings.copy(Blocks.SEA_LANTERN).luminance(state -> 11)
+					.sounds(BlockSoundGroup.FROGLIGHT));
 	public static final BlockItem GLOWING_PLANKTON_BLOCK_ITEM = new BlockItem(
 			GLOWING_PLANKTON_BLOCK, new Item.Settings());
 
 	// --- Block: Abyssal Vent (opaque basalt, luminance 7) -----------------
-	public static final Block ABYSSAL_VENT = new Block(
-			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 7));
+	// AbyssalVentBlock adds the randomDisplayTick bubble/pop staging (audit L15); settings and
+	// the "abyssal_vent" registration id are unchanged. BASALT sounds to match the basalt the
+	// comment above already promised, instead of the PRISMARINE copy's stone (audit L37).
+	public static final Block ABYSSAL_VENT = new AbyssalVentBlock(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).luminance(state -> 7)
+					.sounds(BlockSoundGroup.BASALT));
 	public static final BlockItem ABYSSAL_VENT_ITEM = new BlockItem(
 			ABYSSAL_VENT, new Item.Settings());
 
@@ -450,13 +471,15 @@ public class OceanOverhaul implements ModInitializer {
 	// references: iron=15, diamond=33.
 	private static final int TIDAL_ARMOR_DURABILITY = 15;
 
-	public static final Item TIDAL_HELMET = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.HELMET,
+	// TidalArmorItem = plain ArmorItem + the "Full set: Water Breathing" tooltip line, so the
+	// 4-piece activation rule is discoverable in-game (audit M12).
+	public static final Item TIDAL_HELMET = new TidalArmorItem(TIDAL_ARMOR, ArmorItem.Type.HELMET,
 			new Item.Settings().maxDamage(ArmorItem.Type.HELMET.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
-	public static final Item TIDAL_CHESTPLATE = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.CHESTPLATE,
+	public static final Item TIDAL_CHESTPLATE = new TidalArmorItem(TIDAL_ARMOR, ArmorItem.Type.CHESTPLATE,
 			new Item.Settings().maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
-	public static final Item TIDAL_LEGGINGS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.LEGGINGS,
+	public static final Item TIDAL_LEGGINGS = new TidalArmorItem(TIDAL_ARMOR, ArmorItem.Type.LEGGINGS,
 			new Item.Settings().maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
-	public static final Item TIDAL_BOOTS = new ArmorItem(TIDAL_ARMOR, ArmorItem.Type.BOOTS,
+	public static final Item TIDAL_BOOTS = new TidalArmorItem(TIDAL_ARMOR, ArmorItem.Type.BOOTS,
 			new Item.Settings().maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(TIDAL_ARMOR_DURABILITY)));
 
 	// =====================================================================
@@ -663,14 +686,16 @@ public class OceanOverhaul implements ModInitializer {
 	// =====================================================================
 	// Feature 4 — Mob buckets + the Aquarium BlockEntityType
 	// =====================================================================
-	// Vanilla EntityBucketItem (concrete — no subclass needed), one per bucketable mob, mirroring
-	// the vanilla tropical-fish/cod buckets: maxCount(1) + recipeRemainder(BUCKET) so crafting with
+	// Vanilla EntityBucketItem semantics, one per bucketable mob, mirroring the vanilla
+	// tropical-fish/cod buckets: maxCount(1) + recipeRemainder(BUCKET) so crafting with
 	// one leaves an empty bucket. Declared AFTER the REEF_FISH/JELLYFISH EntityType fields so those
-	// are fully built. EntityBucketItem(EntityType, Fluid, emptyingSound, Settings).
+	// are fully built. EntityBucketItem(EntityType, Fluid, emptyingSound, Settings). The jellyfish
+	// bucket alone uses the JellyfishBucketItem subclass, which adds a stored-color tooltip line
+	// (audit L11) — the reef fish has no variant, so the concrete vanilla class still fits it.
 	public static final Item REEF_FISH_BUCKET = new EntityBucketItem(
 			REEF_FISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
 			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
-	public static final Item JELLYFISH_BUCKET = new EntityBucketItem(
+	public static final Item JELLYFISH_BUCKET = new JellyfishBucketItem(
 			JELLYFISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
 			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
 
@@ -941,6 +966,32 @@ public class OceanOverhaul implements ModInitializer {
 		Registry.register(Registries.ITEM, id("reef_fish_bucket"), REEF_FISH_BUCKET);
 		Registry.register(Registries.ITEM, id("jellyfish_bucket"), JELLYFISH_BUCKET);
 
+		// Dispense the mob buckets like vanilla's six fish buckets (audit L9). Vanilla wires its
+		// bucket items to one shared ANONYMOUS ItemDispenserBehavior in
+		// DispenserBehavior.registerDefaults — there is no public named class (javap-verified;
+		// it's DispenserBehavior$15 in the 1.21.1 jar) — so this is that behavior's exact
+		// decompiled body: place the fluid in front of the dispenser, fire onEmptied (which for
+		// an EntityBucketItem spawns the stored creature), and hand back the empty bucket via
+		// decrementStackWithRemainder; if the fluid can't be placed (e.g. a wall), fall back to
+		// ejecting the bucket item unchanged.
+		ItemDispenserBehavior mobBucketDispenserBehavior = new ItemDispenserBehavior() {
+			private final ItemDispenserBehavior fallbackBehavior = new ItemDispenserBehavior();
+
+			@Override
+			protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+				FluidModificationItem bucket = (FluidModificationItem) stack.getItem();
+				BlockPos blockPos = pointer.pos().offset(pointer.state().get(DispenserBlock.FACING));
+				ServerWorld world = pointer.world();
+				if (bucket.placeFluid(null, world, blockPos, null)) {
+					bucket.onEmptied(null, world, stack, blockPos);
+					return this.decrementStackWithRemainder(pointer, stack, new ItemStack(Items.BUCKET));
+				}
+				return this.fallbackBehavior.dispense(pointer, stack);
+			}
+		};
+		DispenserBlock.registerBehavior(REEF_FISH_BUCKET, mobBucketDispenserBehavior);
+		DispenserBlock.registerBehavior(JELLYFISH_BUCKET, mobBucketDispenserBehavior);
+
 		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
 		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
 		// so WaterCreatureEntity.canSpawn can't be reused (type-bound mismatch) — the
@@ -1056,7 +1107,10 @@ public class OceanOverhaul implements ModInitializer {
 		//       Oxygen Tank (chest)   -> WATER_BREATHING (harmless on land; no gate)
 		//       Deep-Sea Helmet (head)-> NIGHT_VISION while submerged (steady-render duration;
 		//                                the remaining 220-300 ticks linger ~11-15 s after surfacing)
-		// The effects are silent (no particles, no HUD icon).
+		// The effects are particle-free but DO show their HUD icon (audit M12/L22): the icon is
+		// the only always-visible cue that a worn bonus — especially the hidden 4-piece Tidal
+		// rule — is actually active (the inventory screen lists effects either way; the HUD
+		// filters on showIcon).
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 				// Tidal full-set water breathing (rerouted through refreshEffect — same 220/40
@@ -1100,9 +1154,11 @@ public class OceanOverhaul implements ModInitializer {
 	 *
 	 * <p>Re-applies {@code effect} only when it is absent or its remaining duration has dropped
 	 * below {@code reapplyBelow} — so a continuously-worn piece emits roughly one status packet per
-	 * refresh window instead of one every server tick. The effect is applied ambient + silent (no
-	 * particles, no HUD icon). Shared by the Tidal full-set water-breathing grant and all three
-	 * Feature 3 Diving Kit per-piece grants so the gating logic lives in exactly one place.</p>
+	 * refresh window instead of one every server tick. The effect is applied ambient and
+	 * particle-free, but WITH the HUD icon (showIcon=true — audit M12/L22; a hidden icon made the
+	 * worn bonuses invisible on the HUD). Shared by the Tidal full-set water-breathing grant and
+	 * all three Feature 3 Diving Kit per-piece grants so the gating logic lives in exactly one
+	 * place.</p>
 	 *
 	 * @param durationTicks duration to (re)apply; keep it comfortably above {@code reapplyBelow}
 	 *                      for an always-on effect (e.g. 220/40), or set both short for an effect
@@ -1113,8 +1169,9 @@ public class OceanOverhaul implements ModInitializer {
 			int durationTicks, int reapplyBelow) {
 		StatusEffectInstance current = player.getStatusEffect(effect);
 		if (current == null || current.getDuration() < reapplyBelow) {
+			// (effect, duration, amplifier, ambient, showParticles, showIcon)
 			player.addStatusEffect(new StatusEffectInstance(
-					effect, durationTicks, 0, true, false, false));
+					effect, durationTicks, 0, true, false, true));
 		}
 	}
 

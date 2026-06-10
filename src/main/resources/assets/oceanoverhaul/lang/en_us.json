@@ -43,6 +43,7 @@
 	"item.oceanoverhaul.tidal_chestplate": "Tidal Chestplate",
 	"item.oceanoverhaul.tidal_leggings": "Tidal Leggings",
 	"item.oceanoverhaul.tidal_boots": "Tidal Boots",
+	"item.oceanoverhaul.tidal_armor.set_bonus": "Full set: Water Breathing",
 	"item.oceanoverhaul.raw_reef_fish": "Raw Reef Fish",
 	"item.oceanoverhaul.cooked_reef_fish": "Cooked Reef Fish",
 	"item.oceanoverhaul.kelp_roll": "Kelp Roll",
@@ -73,5 +74,10 @@
 	"block.oceanoverhaul.aquarium": "Aquarium",
 	"item.oceanoverhaul.reef_fish_bucket": "Bucket of Reef Fish",
 	"item.oceanoverhaul.jellyfish_bucket": "Bucket of Jellyfish",
+	"item.oceanoverhaul.jellyfish_bucket.variant.green": "Green",
+	"item.oceanoverhaul.jellyfish_bucket.variant.blue": "Blue",
+	"item.oceanoverhaul.jellyfish_bucket.variant.pink": "Pink",
+	"item.oceanoverhaul.jellyfish_bucket.variant.red": "Red",
+	"item.oceanoverhaul.jellyfish_bucket.variant.orange": "Orange",
 	"itemGroup.oceanoverhaul.ocean_overhaul": "Ocean Overhaul"
 }

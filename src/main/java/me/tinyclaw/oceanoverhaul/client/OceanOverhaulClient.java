@@ -14,8 +14,9 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
  * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
  * Lurker, the Harpoon's flying-item renderer, the Aquarium's block-entity renderer,
- * and the Aquarium block's translucent render layer (client-only — these classes
- * are never touched on a dedicated server).
+ * and the non-SOLID block render layers (the Aquarium + sea-glass family on
+ * translucent, the driftwood door/trapdoor on cutout) — client-only, these classes
+ * are never touched on a dedicated server.
  */
 public class OceanOverhaulClient implements ClientModInitializer {
 
@@ -60,5 +61,16 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		// as an opaque box, hiding the creature the BER draws inside). Vanilla stained glass uses
 		// the same translucent layer.
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.AQUARIUM, RenderLayer.getTranslucent());
+
+		// Audit L40: the rest of the glass/door-shaped blocks defaulted to SOLID, which silently
+		// renders any future alpha texture opaque. Sea glass (frosted glass) goes TRANSLUCENT like
+		// the stained/tinted-glass precedent and the Aquarium above; the driftwood door/trapdoor
+		// go CUTOUT like their vanilla oak counterparts (binary-alpha window holes). All five
+		// textures are 100%-opaque today, so this is a visual no-op until a texture gains alpha.
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SEA_GLASS, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SEA_GLASS_STAIRS, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SEA_GLASS_SLAB, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_DOOR, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_TRAPDOOR, RenderLayer.getCutout());
 	}
 }

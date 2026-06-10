@@ -21,7 +21,7 @@ import me.tinyclaw.oceanoverhaul.OceanOverhaul;
  * entity/gear suites. Two kinds of coverage:</p>
  *
  * <ul>
- *   <li><b>Place round-trip</b> — for a representative spread of the mod's ~41 blocks
+ *   <li><b>Place round-trip</b> — for a representative spread of the mod's 36 blocks
  *       (plain decorative, the luminous lantern/crystal, the falling salt block, and one
  *       each of the stairs/slab/wall building-set shapes), {@code setBlockState} the block
  *       then assert the world reads that exact block back. This catches a block that fails
@@ -51,8 +51,8 @@ public class BlockGameTest implements FabricGameTest {
 	/**
 	 * A representative spread of mod blocks that should each place and read back as themselves.
 	 * Kept to one block per "kind" (plain full block, glass-like, luminous, and one of each
-	 * building-set shape) rather than all 41 — enough to catch a registration/placement
-	 * regression class without a 41-line wall.
+	 * building-set shape) rather than all 36 — enough to catch a registration/placement
+	 * regression class without a 36-line wall.
 	 */
 	private static final List<Block> ROUND_TRIP_BLOCKS = List.of(
 			OceanOverhaul.ABYSSAL_CORAL_BLOCK,        // plain decorative full block
