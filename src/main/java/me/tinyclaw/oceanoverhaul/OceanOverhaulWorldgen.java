@@ -126,6 +126,18 @@ public final class OceanOverhaulWorldgen {
 				SpawnGroup.MONSTER,
 				OceanOverhaul.MEGALODON,
 				3, 1, 1);
+
+		// The Abyssal Trench: the SECOND mini-boss, rarest of all. The Kraken is a
+		// stationary tentacle puzzle anchored to the trench floor — weight 1 (vs
+		// the Megalodon's 3 and the lurker's 8) in groups of exactly 1, and its
+		// canSpawn predicate layers a deeper depth gate (sea level -24), a 1-in-16
+		// rarity roll and a 48-block solitude query on top, so finding the trench
+		// floor risks at most ONE Kraken per seafloor.
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_DEEP_OCEAN),
+				SpawnGroup.MONSTER,
+				OceanOverhaul.KRAKEN,
+				1, 1, 1);
 	}
 
 	private static void addOceanFeature(String name, GenerationStep.Feature step) {
