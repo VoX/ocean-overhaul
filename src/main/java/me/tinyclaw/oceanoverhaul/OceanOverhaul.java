@@ -23,6 +23,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 
 import net.minecraft.block.AbstractBlock;
@@ -71,6 +72,7 @@ import net.minecraft.item.ShovelItem;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -736,6 +738,16 @@ public class OceanOverhaul implements ModInitializer {
 			new Item.Settings().maxCount(1).rarity(Rarity.EPIC));
 
 	// =====================================================================
+	// Feature A (round 2) — bioluminescent plankton bloom particles.
+	// Registered COMMON-side (registry is synced + /particle needs them);
+	// all spawning/behavior is client-only (PlanktonBloomClient).
+	// =====================================================================
+	public static final SimpleParticleType PLANKTON_GLOW = Registry.register(
+			Registries.PARTICLE_TYPE, id("plankton_glow"), FabricParticleTypes.simple());
+	public static final SimpleParticleType PLANKTON_WAKE = Registry.register(
+			Registries.PARTICLE_TYPE, id("plankton_wake"), FabricParticleTypes.simple());
+
+	// =====================================================================
 	// Feature 4 — Mob buckets + the Aquarium BlockEntityType
 	// =====================================================================
 	// Vanilla EntityBucketItem semantics, one per bucketable mob, mirroring the vanilla
@@ -1230,7 +1242,7 @@ public class OceanOverhaul implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 1 block entity (the Aquarium), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 1 block entity (the Aquarium), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**
