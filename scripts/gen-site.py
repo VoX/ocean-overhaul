@@ -60,7 +60,7 @@ FEATURES = [
     ("Megalodon &amp; Apex Gear",
      "Hunt the <strong>Megalodon</strong>, a colossal apex boss shark, for guaranteed <strong>Megalodon Teeth</strong>, then forge the <strong>Abyssal Fang</strong> &mdash; an apex sword a full tier above Tidal (9 attack damage, 2200 durability, repaired with teeth)."),
     ("The Abyssal Trench",
-     "Deep oceans now grow <strong>bioluminescent plankton</strong> and <strong>hydrothermal vents</strong>; <strong>giant clams</strong> hide guaranteed pearls, and the Megalodon and Abyssal Lurker concentrate down in the dark. Finding the deep <em>is</em> the deep-content gate."),
+     "Deep oceans now grow <strong>bioluminescent plankton</strong> and <strong>hydrothermal vents</strong>; <strong>giant clams</strong> grow Abyssal Pearls over a Minecraft day &mdash; return and right-click to harvest (empty clams drop nothing) &mdash; and the Megalodon and Abyssal Lurker concentrate down in the dark. Finding the deep <em>is</em> the deep-content gate."),
     ("Harpoon &amp; Diving Kit",
      "Throw a <strong>Harpoon</strong> that yanks your target back toward you and loyalty-returns to your hand. Equip <strong>Flippers</strong> (swim speed), an <strong>Oxygen Tank</strong> (water breathing) and a <strong>Deep-Sea Helmet</strong> (night vision) to make the depths traversable."),
     ("Aquariums",

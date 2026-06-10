@@ -14,7 +14,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Pearl Lantern** — full-bright light source (like a sea lantern)
 - **Prismarine Crystal Block** — full-bright luminous block
 - **Salt Block**, **Barnacle Block**, **Abyssal Pearl Block**, **Crushed Coral Block** — standalone decoratives
-- **Glowing Plankton Block**, **Abyssal Vent**, **Giant Clam** — Abyssal Trench bioluminescent deep-ocean blocks (the Giant Clam drops an Abyssal Pearl when broken)
+- **Glowing Plankton Block**, **Abyssal Vent**, **Giant Clam** — Abyssal Trench bioluminescent deep-ocean blocks (the Giant Clam is now a living block-entity: it grows an Abyssal Pearl over ~a Minecraft day while waterlogged, gapes open + brightens when ready — right-click to harvest and it keeps producing; breaking an empty clam drops nothing, silk touch relocates the clam itself)
 - **Aquarium** — a glass tank block-entity: right-click it with a Reef Fish / Jellyfish bucket to store the creature, and watch it swim inside through the glass (right-click empty-handed to bucket it back out)
 
 **Driftwood functional set**

@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "oceanoverhaul:block/giant_clam"
-  }
+  "textures": { "particle": "oceanoverhaul:block/giant_clam" }
 }

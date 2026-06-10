@@ -34,7 +34,8 @@
 			"me.tinyclaw.oceanoverhaul.gametest.DivingKitGameTest",
 			"me.tinyclaw.oceanoverhaul.gametest.AquariumGameTest",
 			"me.tinyclaw.oceanoverhaul.gametest.KrakenGameTest",
-			"me.tinyclaw.oceanoverhaul.gametest.PlanktonGameTest"
+			"me.tinyclaw.oceanoverhaul.gametest.PlanktonGameTest",
+			"me.tinyclaw.oceanoverhaul.gametest.GiantClamGameTest"
 		]
 	},
 	"depends": {
