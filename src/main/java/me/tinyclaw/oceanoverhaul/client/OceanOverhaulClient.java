@@ -15,7 +15,8 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
  * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
  * Lurker, the Kraken mantle + its tentacles, the Harpoon's flying-item renderer,
- * the Aquarium's block-entity renderer, the non-SOLID block render layers (the
+ * the Aquarium's and the pearl-growing Giant Clam's block-entity renderers (plus
+ * the clam's model layer), the non-SOLID block render layers (the
  * Aquarium + sea-glass family on translucent, the driftwood door/trapdoor on
  * cutout), and the plankton bloom particle factories + their ambient spawner /
  * wake-scan tick hook — client-only, these classes are never touched on a
@@ -68,6 +69,14 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		// registrations above.
 		BlockEntityRendererRegistry.register(OceanOverhaul.AQUARIUM_BLOCK_ENTITY,
 				AquariumBlockEntityRenderer::new);
+
+		// Giant Clam rework: model layer + BER. Same mechanism as the Aquarium BER
+		// (registered EntityModelLayer -> ctx.getLayerModelPart), but ALL clam geometry
+		// lives here (chest pattern -- the blockstate model is a particle-texture stub).
+		EntityModelLayerRegistry.registerModelLayer(
+				GiantClamModel.LAYER, GiantClamModel::getTexturedModelData);
+		BlockEntityRendererRegistry.register(OceanOverhaul.GIANT_CLAM_BLOCK_ENTITY,
+				GiantClamBlockEntityRenderer::new);
 
 		// Feature 4: render the Aquarium on the TRANSLUCENT layer so its semi-transparent glass
 		// texture actually blends (the default SOLID layer ignores alpha and would draw the tank
