@@ -91,7 +91,9 @@ public final class OceanOverhaulWorldgen {
 	 * WATER_AMBIENT group (the vanilla cod/salmon/tropicalfish cap) across all ocean
 	 * biomes (IS_OCEAN covers ocean + deep_ocean). Reef fish spawn in tight schools
 	 * (weight 12, groups of 4-8); jellyfish are a rarer, smaller drift (weight 6,
-	 * groups of 1-3) so they read as an occasional sight rather than a swarm.
+	 * groups of 1-3) so they read as an occasional sight rather than a swarm. The
+	 * Shore Crab — the mod's first walking + first breedable mob — attaches to the
+	 * CREATURE group in beach biomes only (IS_BEACH; never an ocean tag).
 	 */
 	private static void registerMobSpawns() {
 		BiomeModifications.addSpawn(
@@ -104,6 +106,17 @@ public final class OceanOverhaulWorldgen {
 				SpawnGroup.WATER_AMBIENT,
 				OceanOverhaul.JELLYFISH,
 				6, 1, 3);
+
+		// Shore Crab: the beach/tide-line walker. IS_BEACH ONLY (beach + snowy_beach — the
+		// whole vanilla tag) — deliberately NO ocean tags, so this cannot collide with the
+		// in-progress trench biome work. Weight 8 vs the vanilla beach turtle's 5/(2-5)
+		// (extracted from the jar's beach.json): crabs are the common sight, turtles stay
+		// regular. Groups of 2-4 read as a scuttle, not a carpet.
+		BiomeModifications.addSpawn(
+				BiomeSelectors.tag(BiomeTags.IS_BEACH),
+				SpawnGroup.CREATURE,
+				OceanOverhaul.SHORE_CRAB,
+				8, 2, 4);
 
 		// The Abyssal Trench: a hostile deep-sea predator, CONCENTRATED into the deep.
 		// Deep oceans only (IS_DEEP_OCEAN), MONSTER group, weight 8 — concentrated enough
