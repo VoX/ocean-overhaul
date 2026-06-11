@@ -2,23 +2,19 @@ package me.tinyclaw.oceanoverhaul.gametest;
 
 import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.SPAWN;
 import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.fillWaterPocket;
+import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.rollEntityLoot;
 
 import java.util.List;
 
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.SalmonEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -40,9 +36,9 @@ import me.tinyclaw.oceanoverhaul.entity.KrakenTentacle;
  *
  * <p>Registered via the {@code fabric-gametest} entrypoint in fabric.mod.json. Mirrors
  * {@link MegalodonGameTest}'s direct-drive style (call the real damage/grab/attack body
- * directly rather than waiting on AI/cooldown timing), {@link MobGameTest}'s entity
- * loot-table rolls, and {@link HarpoonGameTest}'s mock-server-player + public-NBT
- * round-trip idioms.</p>
+ * directly rather than waiting on AI/cooldown timing), the shared
+ * {@link GameTestSupport#rollEntityLoot} entity loot rolls, and
+ * {@link HarpoonGameTest}'s mock-server-player + public-NBT round-trip idioms.</p>
  *
  * <p><b>Shared-world gotcha</b> (see {@link MegalodonGameTest}): every {@code @GameTest}
  * runs in one batched world at nearby positions, so tentacles are always filtered by
@@ -341,7 +337,7 @@ public class KrakenGameTest implements FabricGameTest {
 	 * (8) Kraken loot: one roll must pay the guaranteed pools — exactly 1 Heart of the
 	 * Kraken (the boss's entire reward slot; a kill that pays no heart guts the feature)
 	 * and 3-5 glow ink sacs. Deterministic even with the table's looting function:
-	 * {@link #rollEntityLoot} builds its context without an attacker, so
+	 * {@link GameTestSupport#rollEntityLoot} builds its context without an attacker, so
 	 * enchanted_count_increase adds 0. (The 50% Abyssal Pearl pool mirrors the megalodon's
 	 * and is left statistical.)
 	 */
@@ -368,7 +364,7 @@ public class KrakenGameTest implements FabricGameTest {
 	 * (9) tentacle loot — the mid-fight feedback drop: every broken tentacle pays exactly
 	 * 1 glow ink sac. Also proves the auto-derived
 	 * {@code oceanoverhaul:entities/kraken_tentacle} table is genuinely loaded (the
-	 * dangling-table guard lives in {@link #rollEntityLoot}).
+	 * dangling-table guard lives in {@link GameTestSupport#rollEntityLoot}).
 	 */
 	@GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
 	public void krakenTentacleLootDropsGlowInk(TestContext context) {
@@ -608,10 +604,10 @@ public class KrakenGameTest implements FabricGameTest {
 	}
 
 	// =====================================================================
-	// Helpers — the shared-world ownership filter, the MobGameTest loot pair
-	// (private there — copied per the suite convention), the HarpoonGameTest
-	// player placer, and the Megalodon seed probes parameterized to the
-	// Kraken's 1-in-16 roll.
+	// Helpers — the shared-world ownership filter, the local stack counter,
+	// the HarpoonGameTest player placer, and the Megalodon seed probes
+	// parameterized to the Kraken's 1-in-16 roll. (Entity loot rolls ride
+	// the shared GameTestSupport.rollEntityLoot.)
 	// =====================================================================
 
 	/** All live tentacles owned by THIS boss (never count by radius — shared-world rule). */
@@ -620,29 +616,6 @@ public class KrakenGameTest implements FabricGameTest {
 				.stream()
 				.filter(tentacle -> tentacle.isPartOf(boss))
 				.toList();
-	}
-
-	/**
-	 * Resolve the entity's loot table through the server's reloadable registries (the exact
-	 * lookup {@code LivingEntity.dropLoot} performs) and generate one roll with the
-	 * ENTITY-type parameter set; a plain generic damage source models a no-fire, no-enchant,
-	 * no-attacker kill (so looting-gated functions add 0). Also asserts the table is
-	 * genuinely LOADED — a dangling id resolves to LootTable.EMPTY. Copied from
-	 * {@link MobGameTest} (private there).
-	 */
-	private static List<ItemStack> rollEntityLoot(TestContext context, LivingEntity entity) {
-		ServerWorld world = context.getWorld();
-		LootTable table = world.getServer().getReloadableRegistries().getLootTable(entity.getLootTable());
-		context.assertTrue(
-				table != LootTable.EMPTY,
-				"no loot table loaded for " + entity.getType() + " (dangling " + entity.getLootTable().getValue() + "?)");
-
-		LootContextParameterSet params = new LootContextParameterSet.Builder(world)
-				.add(LootContextParameters.THIS_ENTITY, entity)
-				.add(LootContextParameters.ORIGIN, entity.getPos())
-				.add(LootContextParameters.DAMAGE_SOURCE, world.getDamageSources().generic())
-				.build(LootContextTypes.ENTITY);
-		return table.generateLoot(params);
 	}
 
 	/** Total count of the given item across all stacks in a roll. */

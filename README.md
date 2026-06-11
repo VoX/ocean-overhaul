@@ -36,6 +36,8 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Harpoon** — a throwable projectile that yanks the hit mob toward you (tether) and loyalty-returns to your hand (never lost)
 - **Diving Kit** — Flippers (Dolphin's Grace in water), Oxygen Tank (water breathing), and Deep Sea Helmet (night vision when submerged): three armor pieces with worn effects
 - **Reef Fish Bucket**, **Jellyfish Bucket** — mob buckets that scoop a creature (the jellyfish bucket preserves its color variant)
+- **Raw Crab Meat → Cooked Crab Meat → Crab Cake** — the Shore Crab food chain: raw meat is risky (30% chance of Hunger, the raw-chicken treatment), the cook-triple (furnace / smoker / campfire) turns it into solid mid-game food, and the **Crab Cake** (Cooked Crab Meat + Sea Salt + Egg) is the game's best stackable food — golden-carrot saturation at steak nutrition — adding a second renewable consumer to the beach salt-flat economy
+- **Crab Carapace** — 25% Shore Crab drop (Looting-scaled) and a pure-data **armor-trim material**: one carapace trims any trimmable armor crab-orange at the smithing table
 
 **Mobs**
 
@@ -44,10 +46,11 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Abyssal Lurker** — a hostile deep-sea anglerfish (elder-guardian sized) with a bioluminescent lure that glows in the dark. Spawns in deep oceans, day or night. Spawn egg available.
 - **Reef Fish** — a small, brightly-striped tropical fish that swims in schools. Spawns naturally in oceans; drops Raw Reef Fish (auto-cooked when killed on fire). Spawn egg available.
 - **Jellyfish** — a fragile, gently-drifting passive sea creature in five glow-in-the-dark color variants. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
+- **Shore Crab** — the mod's first walking and first **breedable** mob: a small amphibious crab that scuttles the beach sand band, common on every beach from world-gen (it spawns on dry sand *and* the submerged shore floor, day or night). It walks the seabed without floating or drowning and always wanders back ashore on its own; feed two crabs **kelp** (its first husbandry use) for a baby and a renewable protein farm. Drops 1–2 Raw Crab Meat plus a 25% Crab Carapace (Looting scales both; killed-by-fire auto-cooks the meat, babies drop nothing). Spawn egg available.
 
 **Worldgen**
 
-Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, while the Megalodon, the Kraken, and the Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
+Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, Shore Crabs scuttle in groups on every beach (and the shallow shore floor just past the tide line), while the Megalodon, the Kraken, and the Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
 
 **Plankton blooms**
 
@@ -84,9 +87,9 @@ The built mod jar lands in `build/libs/` (the file without the `-sources` suffix
 
 ## Roadmap
 
-The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, and the Aquarium. Natural next steps:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, and the Aquarium. Natural next steps:
 
-- More sea creatures (predator/prey behaviours, breeding, more variety)
+- More sea creatures (predator/prey behaviours, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
 - Larger **worldgen** structures (coral reefs, shipwreck-adjacent decoration)
 
@@ -95,9 +98,9 @@ Contributions and ideas welcome — fork it and build the ocean out.
 <!-- RECIPES:START (generated by scripts/gen-recipe-docs.py — do not edit by hand) -->
 ## Recipes
 
-All 86 recipes the mod adds, generated straight from the recipe JSON (`scripts/gen-recipe-docs.py`). Shaped patterns are shown row-by-row (`.` = empty slot) with a key legend; “Any Coral” / “Any Coral Block” means any of the five vanilla coral colors works.
+All 90 recipes the mod adds, generated straight from the recipe JSON (`scripts/gen-recipe-docs.py`). Shaped patterns are shown row-by-row (`.` = empty slot) with a key legend; “Any Coral” / “Any Coral Block” means any of the five vanilla coral colors works.
 
-### Crafting table (57)
+### Crafting table (58)
 
 | Result | Qty | Kind | Ingredients |
 | --- | --- | --- | --- |
@@ -112,6 +115,7 @@ All 86 recipes the mod adds, generated straight from the recipe JSON (`scripts/g
 | Chiseled Prismarine Tiles Stairs | 4 | Shaped | `#.. / ##. / ###`  (# = Chiseled Prismarine Tiles) |
 | Chiseled Prismarine Tiles Wall | 6 | Shaped | `### / ###`  (# = Chiseled Prismarine Tiles) |
 | Coral Shard | 1 | Shapeless | Any Coral |
+| Crab Cake | 1 | Shapeless | Cooked Crab Meat + Sea Salt + Egg |
 | Crushed Coral | 2 | Shapeless | Coral Shard |
 | Crushed Coral | 9 | Shapeless | Crushed Coral Block |
 | Crushed Coral Block | 1 | Shaped | `### / ### / ###`  (# = Crushed Coral) |
@@ -159,11 +163,14 @@ All 86 recipes the mod adds, generated straight from the recipe JSON (`scripts/g
 | Tidal Sword | 1 | Shaped | `A / A / S`  (A = Abyssal Pearl, S = Stick) |
 | Tide Pearl | 9 | Shapeless | Pearl Block |
 
-### Smelting & cooking (6)
+### Smelting & cooking (9)
 
 | Result | Process | Source | XP | Time (ticks) |
 | --- | --- | --- | --- | --- |
 | Abyssal Pearl | Smelt | Abyssal Coral Block | 0.3 | 200 |
+| Cooked Crab Meat | Campfire | Raw Crab Meat | 0.35 | 600 |
+| Cooked Crab Meat | Smelt | Raw Crab Meat | 0.35 | 200 |
+| Cooked Crab Meat | Smoke | Raw Crab Meat | 0.35 | 100 |
 | Cooked Reef Fish | Campfire | Raw Reef Fish | 0.35 | 600 |
 | Cooked Reef Fish | Smelt | Raw Reef Fish | 0.35 | 200 |
 | Cooked Reef Fish | Smoke | Raw Reef Fish | 0.35 | 100 |
@@ -228,97 +235,98 @@ Every crafting-table recipe the mod adds, rendered as the grid + result (icons a
 </tr>
 <tr>
 <td align="center"><img src="docs/recipes/coral_shard.png" width="300"><br><sub>Coral Shard</sub></td>
+<td align="center"><img src="docs/recipes/crab_cake.png" width="300"><br><sub>Crab Cake</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/crushed_coral.png" width="300"><br><sub>Crushed Coral ×2</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/crushed_coral_from_block.png" width="300"><br><sub>Crushed Coral ×9</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/crushed_coral_block.png" width="300"><br><sub>Crushed Coral Block</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/deep_sea_helmet.png" width="300"><br><sub>Deep Sea Helmet</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_button.png" width="300"><br><sub>Driftwood Button</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_door.png" width="300"><br><sub>Driftwood Door ×3</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_fence_gate.png" width="300"><br><sub>Driftwood Fence Gate</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank.png" width="300"><br><sub>Driftwood Plank ×8</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_fence.png" width="300"><br><sub>Driftwood Plank Fence ×3</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_slab.png" width="300"><br><sub>Driftwood Plank Slab ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_stairs.png" width="300"><br><sub>Driftwood Plank Stairs ×4</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_wall.png" width="300"><br><sub>Driftwood Plank Wall ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_pressure_plate.png" width="300"><br><sub>Driftwood Pressure Plate</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_trapdoor.png" width="300"><br><sub>Driftwood Trapdoor ×2</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/flippers.png" width="300"><br><sub>Flippers</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/harpoon.png" width="300"><br><sub>Harpoon</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/kelp_roll.png" width="300"><br><sub>Kelp Roll</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/oxygen_tank.png" width="300"><br><sub>Oxygen Tank</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/pearl_block.png" width="300"><br><sub>Pearl Block</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/pearl_block_slab.png" width="300"><br><sub>Pearl Block Slab ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/pearl_block_stairs.png" width="300"><br><sub>Pearl Block Stairs ×4</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/pearl_block_wall.png" width="300"><br><sub>Pearl Block Wall ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/pearl_lantern.png" width="300"><br><sub>Pearl Lantern</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks.png" width="300"><br><sub>Polished Prismarine Bricks ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks_slab.png" width="300"><br><sub>Polished Prismarine Bricks Slab ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks_stairs.png" width="300"><br><sub>Polished Prismarine Bricks Stairs ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks_wall.png" width="300"><br><sub>Polished Prismarine Bricks Wall ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/prismarine_crystal_block.png" width="300"><br><sub>Prismarine Crystal Block</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/salt_block.png" width="300"><br><sub>Salt Block</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/salted_cod.png" width="300"><br><sub>Salted Cod</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/sea_glass.png" width="300"><br><sub>Sea Glass</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/sea_glass_slab.png" width="300"><br><sub>Sea Glass Slab ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/sea_glass_stairs.png" width="300"><br><sub>Sea Glass Stairs ×4</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/salt_block_from_block.png" width="300"><br><sub>Sea Salt ×9</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/sea_urchin.png" width="300"><br><sub>Sea Urchin</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/seafood_stew.png" width="300"><br><sub>Seafood Stew</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_axe.png" width="300"><br><sub>Tidal Axe</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_boots.png" width="300"><br><sub>Tidal Boots</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_chestplate.png" width="300"><br><sub>Tidal Chestplate</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_helmet.png" width="300"><br><sub>Tidal Helmet</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_hoe.png" width="300"><br><sub>Tidal Hoe</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_leggings.png" width="300"><br><sub>Tidal Leggings</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/tidal_pickaxe.png" width="300"><br><sub>Tidal Pickaxe</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/tidal_shovel.png" width="300"><br><sub>Tidal Shovel</sub></td>
-<td align="center"><img src="docs/recipes/tidal_sword.png" width="300"><br><sub>Tidal Sword</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="docs/recipes/tidal_sword.png" width="300"><br><sub>Tidal Sword</sub></td>
 <td align="center"><img src="docs/recipes/tide_pearl_from_pearl_block.png" width="300"><br><sub>Tide Pearl ×9</sub></td>
 </tr>
 </table>
