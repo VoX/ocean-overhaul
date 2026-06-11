@@ -2,19 +2,15 @@ package me.tinyclaw.oceanoverhaul.gametest;
 
 import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.SPAWN;
 import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.fillWaterPocket;
+import static me.tinyclaw.oceanoverhaul.gametest.GameTestSupport.rollEntityLoot;
 
 import java.util.List;
 
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
@@ -311,29 +307,6 @@ public class MobGameTest implements FabricGameTest {
 				countOf(roll, OceanOverhaul.COOKED_REEF_FISH) == 0,
 				"Reef Fish roll paid COOKED fish on a no-fire kill — the furnace_smelt condition gate broke");
 		context.complete();
-	}
-
-	/**
-	 * Resolve the entity's loot table through the server's reloadable registries (the exact
-	 * lookup {@code LivingEntity.dropLoot} performs, javap-verified) and generate one roll with
-	 * the ENTITY-type parameter set: THIS_ENTITY + ORIGIN + DAMAGE_SOURCE are that type's
-	 * required parameters, and a plain generic damage source models a no-fire, no-enchant kill.
-	 * Also asserts the table is genuinely LOADED — a dangling id resolves to LootTable.EMPTY,
-	 * which would otherwise just roll zero stacks and muddy the per-test failure messages.
-	 */
-	private static List<ItemStack> rollEntityLoot(TestContext context, LivingEntity entity) {
-		ServerWorld world = context.getWorld();
-		LootTable table = world.getServer().getReloadableRegistries().getLootTable(entity.getLootTable());
-		context.assertTrue(
-				table != LootTable.EMPTY,
-				"no loot table loaded for " + entity.getType() + " (dangling " + entity.getLootTable().getValue() + "?)");
-
-		LootContextParameterSet params = new LootContextParameterSet.Builder(world)
-				.add(LootContextParameters.THIS_ENTITY, entity)
-				.add(LootContextParameters.ORIGIN, entity.getPos())
-				.add(LootContextParameters.DAMAGE_SOURCE, world.getDamageSources().generic())
-				.build(LootContextTypes.ENTITY);
-		return table.generateLoot(params);
 	}
 
 	/** Total count of the given item across all stacks in a roll. */

@@ -13,6 +13,7 @@ import me.tinyclaw.oceanoverhaul.entity.KrakenTentacle;
 import me.tinyclaw.oceanoverhaul.entity.Megalodon;
 import me.tinyclaw.oceanoverhaul.entity.MegalodonSegment;
 import me.tinyclaw.oceanoverhaul.entity.ReefFish;
+import me.tinyclaw.oceanoverhaul.entity.ShoreCrab;
 import me.tinyclaw.oceanoverhaul.item.AbyssalFangMaterial;
 import me.tinyclaw.oceanoverhaul.item.HarpoonItem;
 import me.tinyclaw.oceanoverhaul.item.JellyfishBucketItem;
@@ -106,9 +107,9 @@ import org.slf4j.LoggerFactory;
  * set, the Abyssal Trench blocks, the Aquarium tank + its block entity), the items
  * (ocean ingredients + foods, the Tidal tool/armor sets, the Abyssal Fang apex
  * sword, the Harpoon, the three-piece Diving Kit, the Heart of the Kraken, mob
- * buckets, spawn eggs), the five mobs (Megalodon boss, Kraken boss, Reef Fish,
- * Jellyfish, Abyssal Lurker — plus the boss hitbox-segment, Kraken-tentacle and
- * Harpoon-projectile entity types) with their attributes and
+ * buckets, spawn eggs), the six mobs (Megalodon boss, Kraken boss, Reef Fish,
+ * Jellyfish, Abyssal Lurker, Shore Crab — plus the boss hitbox-segment,
+ * Kraken-tentacle and Harpoon-projectile entity types) with their attributes and
  * spawn rules, the worldgen {@code BiomeModifications} hooks, the worn-gear effect
  * tick handlers, and a dedicated "Ocean Overhaul" creative tab that holds it all —
  * wired up with the Minecraft 1.21.1 Fabric registry API.</p>
@@ -616,6 +617,31 @@ public class OceanOverhaul implements ModInitializer {
 					.statusEffect(new StatusEffectInstance(StatusEffects.DOLPHINS_GRACE, 1200, 0), 1.0f)
 					.build()));
 
+	// --- Shore Crab drops + foods (Feature: Shore Crab) -------------------
+	// Raw = the raw-chicken treatment (30% Hunger I, 600t — shellfish risk sells the
+	// cook step); cooked mirrors Cooked Reef Fish exactly (the mod's established
+	// cooked-protein tier); the Crab Cake (cooked meat + sea salt + egg, see the
+	// recipe JSONs) is the mod's top stackable food — golden carrot's 14.4 sat at
+	// steak's 8 nutrition. Carapace is a plain trim ingredient (MEGALODON_TOOTH
+	// pattern).
+	public static final Item RAW_CRAB_MEAT = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(2)
+					.saturationModifier(0.1f)
+					.statusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 600, 0), 0.3f)
+					.build()));
+	public static final Item COOKED_CRAB_MEAT = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(6)
+					.saturationModifier(0.8f)
+					.build()));
+	public static final Item CRAB_CAKE = new Item(new Item.Settings()
+			.food(new FoodComponent.Builder()
+					.nutrition(8)
+					.saturationModifier(0.9f)
+					.build()));
+	public static final Item CRAB_CARAPACE = new Item(new Item.Settings());
+
 	// --- Boss Entity: Megalodon -------------------------------------------
 	// Registered here (not in onInitialize) so the SpawnEggItem field below can
 	// reference a fully-built EntityType. build(String) takes the id path.
@@ -690,6 +716,25 @@ public class OceanOverhaul implements ModInitializer {
 	// --- Spawn egg for the Jellyfish (soft purple / pale pink) ------------
 	public static final SpawnEggItem JELLYFISH_SPAWN_EGG =
 			new SpawnEggItem(JELLYFISH, 0xB070D0, 0xE8C0F0, new Item.Settings());
+
+	// --- Passive mob: Shore Crab (first walking + first breedable mob) ----
+	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
+	// below can reference a fully-built EntityType. CREATURE = the vanilla farm-
+	// animal group (turtle/cow cap semantics: never despawns, chunk-gen herds).
+	// Wide flat little tank; baby hitbox auto-halves via PassiveEntity's CHILD
+	// tracked data. eyeHeight 0.4F: eyestalks on top of the shell.
+	public static final EntityType<ShoreCrab> SHORE_CRAB = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("shore_crab"),
+			EntityType.Builder.create(ShoreCrab::new, SpawnGroup.CREATURE)
+					.dimensions(0.8F, 0.45F)
+					.eyeHeight(0.4F)
+					.maxTrackingRange(8)
+					.build("shore_crab"));
+
+	// --- Spawn egg for the Shore Crab (carapace red-orange / wet-sand cream) ---
+	public static final SpawnEggItem SHORE_CRAB_SPAWN_EGG =
+			new SpawnEggItem(SHORE_CRAB, 0xC2531F, 0xF2E0B8, new Item.Settings());
 
 	// --- Hostile mob: Abyssal Lurker (deep-sea HostileEntity predator) ----
 	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
@@ -838,6 +883,7 @@ public class OceanOverhaul implements ModInitializer {
 				entries.add(ABYSSAL_PEARL);
 				entries.add(CRUSHED_CORAL);
 				entries.add(MEGALODON_TOOTH);
+				entries.add(CRAB_CARAPACE);
 				entries.add(SEA_URCHIN);
 				entries.add(SALTED_COD);
 				// Gear of the Deep: tools, armor, foods.
@@ -862,10 +908,15 @@ public class OceanOverhaul implements ModInitializer {
 				entries.add(COOKED_REEF_FISH);
 				entries.add(KELP_ROLL);
 				entries.add(SEAFOOD_STEW);
+				// Feature: Shore Crab — the beach protein loop.
+				entries.add(RAW_CRAB_MEAT);
+				entries.add(COOKED_CRAB_MEAT);
+				entries.add(CRAB_CAKE);
 				entries.add(MEGALODON_SPAWN_EGG);
 				entries.add(REEF_FISH_SPAWN_EGG);
 				entries.add(JELLYFISH_SPAWN_EGG);
 				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+				entries.add(SHORE_CRAB_SPAWN_EGG);
 				entries.add(KRAKEN_SPAWN_EGG);
 				// Feature 4: mob buckets (after the spawn eggs).
 				entries.add(REEF_FISH_BUCKET);
@@ -1028,6 +1079,14 @@ public class OceanOverhaul implements ModInitializer {
 		Registry.register(Registries.ITEM, id("kelp_roll"), KELP_ROLL);
 		Registry.register(Registries.ITEM, id("seafood_stew"), SEAFOOD_STEW);
 
+		// Feature: Shore Crab — drops + foods (the cook-triple + cake recipes and the
+		// carapace trim-material data live in the datapack; the carapace itself is the
+		// trim ingredient).
+		Registry.register(Registries.ITEM, id("raw_crab_meat"), RAW_CRAB_MEAT);
+		Registry.register(Registries.ITEM, id("cooked_crab_meat"), COOKED_CRAB_MEAT);
+		Registry.register(Registries.ITEM, id("crab_cake"), CRAB_CAKE);
+		Registry.register(Registries.ITEM, id("crab_carapace"), CRAB_CARAPACE);
+
 		// Register the Megalodon boss: spawn-egg item + its default attributes.
 		// (The EntityType itself is registered in its static-field initializer above.)
 		Registry.register(Registries.ITEM, id("megalodon_spawn_egg"), MEGALODON_SPAWN_EGG);
@@ -1053,6 +1112,18 @@ public class OceanOverhaul implements ModInitializer {
 		FabricDefaultAttributeRegistry.register(JELLYFISH, Jellyfish.createAttributes());
 		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
+
+		// Register the Shore Crab passive mob: spawn-egg item, default attributes, and
+		// the natural-spawn placement. Neither vanilla SpawnLocationTypes constant fits
+		// an amphibious shoreline mob (ON_GROUND can never pass a submerged position,
+		// IN_WATER never passes a dry one), so the crab carries its own SpawnLocation —
+		// the dry-sand/submerged-shore union — plus a sand-or-gravel tide-band predicate.
+		// Natural-spawn biome attachment (IS_BEACH only) is wired in
+		// OceanOverhaulWorldgen.register().
+		Registry.register(Registries.ITEM, id("shore_crab_spawn_egg"), SHORE_CRAB_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(SHORE_CRAB, ShoreCrab.createAttributes());
+		SpawnRestriction.register(SHORE_CRAB, ShoreCrab.SPAWN_LOCATION,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, ShoreCrab::canSpawn);
 
 		// Feature 4: mob buckets for the two bucketable mobs (reef fish + jellyfish).
 		Registry.register(Registries.ITEM, id("reef_fish_bucket"), REEF_FISH_BUCKET);
@@ -1158,6 +1229,7 @@ public class OceanOverhaul implements ModInitializer {
 			entries.add(ABYSSAL_PEARL);
 			entries.add(CRUSHED_CORAL);
 			entries.add(MEGALODON_TOOTH);
+			entries.add(CRAB_CARAPACE);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(entries -> {
 			entries.add(SEA_URCHIN);
@@ -1166,6 +1238,9 @@ public class OceanOverhaul implements ModInitializer {
 			entries.add(COOKED_REEF_FISH);
 			entries.add(KELP_ROLL);
 			entries.add(SEAFOOD_STEW);
+			entries.add(RAW_CRAB_MEAT);
+			entries.add(COOKED_CRAB_MEAT);
+			entries.add(CRAB_CAKE);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
 			entries.add(TIDAL_PICKAXE);
@@ -1200,6 +1275,7 @@ public class OceanOverhaul implements ModInitializer {
 			entries.add(REEF_FISH_SPAWN_EGG);
 			entries.add(JELLYFISH_SPAWN_EGG);
 			entries.add(ABYSSAL_LURKER_SPAWN_EGG);
+			entries.add(SHORE_CRAB_SPAWN_EGG);
 			entries.add(KRAKEN_SPAWN_EGG);
 		});
 
@@ -1273,7 +1349,7 @@ public class OceanOverhaul implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 70 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood foods + Reef Fish/Jellyfish mob buckets), 5 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 75 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood/crab foods + Reef Fish/Jellyfish mob buckets), 6 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish + Shore Crab passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**

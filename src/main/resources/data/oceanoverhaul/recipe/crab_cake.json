@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "oceanoverhaul:cooked_crab_meat"
+    },
+    {
+      "item": "oceanoverhaul:sea_salt"
+    },
+    {
+      "item": "minecraft:egg"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:crab_cake"
+  }
+}

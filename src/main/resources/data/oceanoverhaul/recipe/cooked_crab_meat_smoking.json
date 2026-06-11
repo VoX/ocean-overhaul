@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smoking",
+  "category": "food",
+  "ingredient": {
+    "item": "oceanoverhaul:raw_crab_meat"
+  },
+  "result": {
+    "id": "oceanoverhaul:cooked_crab_meat"
+  },
+  "experience": 0.35,
+  "cookingtime": 100
+}

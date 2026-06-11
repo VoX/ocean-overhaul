@@ -1,0 +1,9 @@
+{
+  "asset_name": "carapace",
+  "description": {
+    "color": "#D97E45",
+    "translate": "trim_material.oceanoverhaul.carapace"
+  },
+  "ingredient": "oceanoverhaul:crab_carapace",
+  "item_model_index": 0.05
+}

@@ -72,6 +72,7 @@ FEATURES = [
 ]
 
 MOBS = [
+    ("Shore Crab", "renders/shore_crab.png", "An amphibious beach scuttler &mdash; the mod's first walking and breedable mob. Hunt it for crab meat, breed pairs with kelp, and trim armor with its carapace."),
     ("Kraken", "renders/kraken-site.png", "A stationary trench boss: six independently-damageable tentacles guard an untouchable mantle &mdash; break the ring to open the kill window, and claim the Heart of the Kraken."),
     ("Megalodon", "renders/megalodon-site.png", "A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth."),
     ("Abyssal Lurker", "renders/abyssal_lurker-site.png", "A bioluminescent anglerfish of the depths, its lure glowing in the dark."),
