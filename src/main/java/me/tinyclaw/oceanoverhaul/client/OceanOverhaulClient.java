@@ -13,14 +13,14 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 
 /**
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
- * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish and Abyssal
- * Lurker, the Kraken mantle + its tentacles, the Harpoon's flying-item renderer,
- * the Aquarium's and the pearl-growing Giant Clam's block-entity renderers (plus
- * the clam's model layer), the non-SOLID block render layers (the
- * Aquarium + sea-glass family on translucent, the driftwood door/trapdoor on
- * cutout), and the plankton bloom particle factories + their ambient spawner /
- * wake-scan tick hook — client-only, these classes are never touched on a
- * dedicated server.
+ * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish, Abyssal
+ * Lurker and Shore Crab, the Kraken mantle + its tentacles, the Harpoon's
+ * flying-item renderer, the Aquarium's and the pearl-growing Giant Clam's
+ * block-entity renderers (plus the clam's model layer), the non-SOLID block
+ * render layers (the Aquarium + sea-glass family on translucent, the driftwood
+ * door/trapdoor on cutout), and the plankton bloom particle factories + their
+ * ambient spawner / wake-scan tick hook — client-only, these classes are never
+ * touched on a dedicated server.
  */
 public class OceanOverhaulClient implements ClientModInitializer {
 
@@ -44,6 +44,11 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(
 				AbyssalLurkerModel.LAYER, AbyssalLurkerModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanOverhaul.ABYSSAL_LURKER, AbyssalLurkerRenderer::new);
+
+		// Shore Crab: the beach walker.
+		EntityModelLayerRegistry.registerModelLayer(
+				ShoreCrabModel.LAYER, ShoreCrabModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanOverhaul.SHORE_CRAB, ShoreCrabRenderer::new);
 
 		// Feature 5: Kraken trench boss — the stationary mantle (with its emissive-eyes
 		// feature) plus its ring of tentacles. Each tentacle is a real LivingEntity with

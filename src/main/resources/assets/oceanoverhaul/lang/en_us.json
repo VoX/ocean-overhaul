@@ -84,5 +84,12 @@
 	"item.oceanoverhaul.kraken_spawn_egg": "Kraken Spawn Egg",
 	"item.oceanoverhaul.kraken_heart": "Heart of the Kraken",
 	"item.oceanoverhaul.kraken_heart.tooltip": "Held: Conduit Power while submerged",
+	"entity.oceanoverhaul.shore_crab": "Shore Crab",
+	"item.oceanoverhaul.shore_crab_spawn_egg": "Shore Crab Spawn Egg",
+	"item.oceanoverhaul.raw_crab_meat": "Raw Crab Meat",
+	"item.oceanoverhaul.cooked_crab_meat": "Cooked Crab Meat",
+	"item.oceanoverhaul.crab_cake": "Crab Cake",
+	"item.oceanoverhaul.crab_carapace": "Crab Carapace",
+	"trim_material.oceanoverhaul.carapace": "Carapace Material",
 	"itemGroup.oceanoverhaul.ocean_overhaul": "Ocean Overhaul"
 }
