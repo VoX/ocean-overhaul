@@ -99,6 +99,10 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SEA_GLASS_SLAB, RenderLayer.getTranslucent());
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_DOOR, RenderLayer.getCutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.DRIFTWOOD_TRAPDOOR, RenderLayer.getCutout());
+		// Shipwreck Decor: the wheel disc's transparent corners and the sail's wind-torn
+		// alpha holes need CUTOUT (anchor + rope textures are fully opaque — no entry).
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.SHIPS_WHEEL, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(OceanOverhaul.TATTERED_SAIL, RenderLayer.getCutout());
 
 		// Feature A: plankton bloom particles — sprite-backed factories (the Fabric
 		// PendingParticleFactory route hands each factory its SpriteProvider), then the
