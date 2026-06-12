@@ -2,11 +2,15 @@ package me.tinyclaw.oceanoverhaul;
 
 import me.tinyclaw.oceanoverhaul.block.AbyssalCoralBlock;
 import me.tinyclaw.oceanoverhaul.block.AbyssalVentBlock;
+import me.tinyclaw.oceanoverhaul.block.AnchorBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlockEntity;
 import me.tinyclaw.oceanoverhaul.block.GiantClamBlock;
 import me.tinyclaw.oceanoverhaul.block.GiantClamBlockEntity;
 import me.tinyclaw.oceanoverhaul.block.LivingAbyssalCoralBlock;
+import me.tinyclaw.oceanoverhaul.block.RopeBlock;
+import me.tinyclaw.oceanoverhaul.block.ShipsWheelBlock;
+import me.tinyclaw.oceanoverhaul.block.TatteredSailBlock;
 import me.tinyclaw.oceanoverhaul.entity.AbyssalLurker;
 import me.tinyclaw.oceanoverhaul.entity.HarpoonEntity;
 import me.tinyclaw.oceanoverhaul.entity.Jellyfish;
@@ -49,6 +53,7 @@ import net.minecraft.block.StairsBlock;
 import net.minecraft.block.WallBlock;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -250,6 +255,51 @@ public class OceanOverhaul implements ModInitializer {
 			AbstractBlock.Settings.copy(Blocks.OAK_DOOR).nonOpaque()) {};
 	public static final BlockItem DRIFTWOOD_DOOR_ITEM = new BlockItem(
 			DRIFTWOOD_DOOR, new Item.Settings());
+
+	// =====================================================================
+	// Shipwreck Decor Set — anchor, ship's wheel, rope, tattered sail
+	// =====================================================================
+	// Four crafted-only builder blocks (NO worldgen placement), the driftwood lane's
+	// dockside extension. All four implement Waterloggable with the repo's verified
+	// boilerplate and end in .nonOpaque() (none is a full cube). The rope's single
+	// mechanic (climbability) is data-driven via the minecraft:climbable tag.
+
+	// --- Block: Anchor (heavy iron decor; anvil placement model) ----------
+	// copy(IRON_BLOCK): METAL sounds, requiresTool, hardness 5 — NOT copy(ANVIL)
+	// (blast resistance 1200 + piston-BLOCK behavior are wrong for decor). No support
+	// requirement, default PistonBehavior.NORMAL: pistons push it like an iron block.
+	public static final Block ANCHOR = new AnchorBlock(
+			AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).nonOpaque());
+	public static final BlockItem ANCHOR_ITEM = new BlockItem(
+			ANCHOR, new Item.Settings());
+
+	// --- Block: Ship's Wheel (wall-mounted spoked disc) -------------------
+	// Settings-copy from a mod block (the PEARL_BLOCK_STAIRS precedent): wood sounds,
+	// oak-plank hardness. DESTROY, not the copied NORMAL — every vanilla wall-attached
+	// decor block is piston-DESTROY (design ledger #1).
+	public static final Block SHIPS_WHEEL = new ShipsWheelBlock(
+			AbstractBlock.Settings.copy(DRIFTWOOD_PLANK).nonOpaque()
+					.pistonBehavior(PistonBehavior.DESTROY));
+	public static final BlockItem SHIPS_WHEEL_ITEM = new BlockItem(
+			SHIPS_WHEEL, new Item.Settings());
+
+	// --- Block: Rope (climbable hanging line) -----------------------------
+	// copy(LADDER): ladder hardness (0.4, fast hand-break) AND the carried
+	// pistonBehavior(DESTROY) — both wanted (ledger #1). WOOL sounds (no new sound
+	// files). NOT copy(VINE): vine settings are replaceable, which would let any
+	// block placement silently delete a rope.
+	public static final Block ROPE = new RopeBlock(
+			AbstractBlock.Settings.copy(Blocks.LADDER).sounds(BlockSoundGroup.WOOL).nonOpaque());
+	public static final BlockItem ROPE_ITEM = new BlockItem(
+			ROPE, new Item.Settings());
+
+	// --- Block: Tattered Sail (weathered-canvas wall panel) ---------------
+	// copy(WHITE_WOOL): wool sounds, 0.8 hardness, no tool needed. DESTROY per ledger #1.
+	public static final Block TATTERED_SAIL = new TatteredSailBlock(
+			AbstractBlock.Settings.copy(Blocks.WHITE_WOOL).nonOpaque()
+					.pistonBehavior(PistonBehavior.DESTROY));
+	public static final BlockItem TATTERED_SAIL_ITEM = new BlockItem(
+			TATTERED_SAIL, new Item.Settings());
 
 	// --- Building set: Sea Glass (stairs + slab only, no wall) ------------
 	public static final Block SEA_GLASS_STAIRS = new StairsBlock(
@@ -876,6 +926,10 @@ public class OceanOverhaul implements ModInitializer {
 				entries.add(DRIFTWOOD_DOOR);
 				entries.add(DRIFTWOOD_BUTTON);
 				entries.add(DRIFTWOOD_PRESSURE_PLATE);
+				entries.add(ANCHOR);
+				entries.add(SHIPS_WHEEL);
+				entries.add(ROPE);
+				entries.add(TATTERED_SAIL);
 				entries.add(PEARL_BLOCK);
 				entries.add(PEARL_BLOCK_STAIRS);
 				entries.add(PEARL_BLOCK_SLAB);
@@ -1001,6 +1055,23 @@ public class OceanOverhaul implements ModInitializer {
 		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_WALL, 5, 20);
 		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_PLANK_FENCE, 5, 20);
 		FlammableBlockRegistry.getDefaultInstance().add(DRIFTWOOD_FENCE_GATE, 5, 20);
+
+		// Shipwreck Decor Set: four crafted-only builder blocks (block + item, same id).
+		Registry.register(Registries.BLOCK, id("anchor"), ANCHOR);
+		Registry.register(Registries.ITEM, id("anchor"), ANCHOR_ITEM);
+		Registry.register(Registries.BLOCK, id("ships_wheel"), SHIPS_WHEEL);
+		Registry.register(Registries.ITEM, id("ships_wheel"), SHIPS_WHEEL_ITEM);
+		Registry.register(Registries.BLOCK, id("rope"), ROPE);
+		Registry.register(Registries.ITEM, id("rope"), ROPE_ITEM);
+		Registry.register(Registries.BLOCK, id("tattered_sail"), TATTERED_SAIL);
+		Registry.register(Registries.ITEM, id("tattered_sail"), TATTERED_SAIL_ITEM);
+
+		// Shipwreck Decor flammability: ships_wheel 5/20 (it IS driftwood — full
+		// driftwood-set parity), rope 15/100 (vanilla vine's values — fibrous,
+		// flash-burns), tattered_sail 30/60 (vanilla wool's values). Anchor: none (iron).
+		FlammableBlockRegistry.getDefaultInstance().add(SHIPS_WHEEL, 5, 20);
+		FlammableBlockRegistry.getDefaultInstance().add(ROPE, 15, 100);
+		FlammableBlockRegistry.getDefaultInstance().add(TATTERED_SAIL, 30, 60);
 
 		Registry.register(Registries.BLOCK, id("pearl_block"), PEARL_BLOCK);
 		Registry.register(Registries.ITEM, id("pearl_block"), PEARL_BLOCK_ITEM);

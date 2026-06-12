@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "oceanoverhaul:block/ships_wheel",
+    "all": "oceanoverhaul:block/ships_wheel"
+  },
+  "elements": [
+    {
+      "from": [1, 1, 14], "to": [15, 15, 16],
+      "faces": {
+        "north": { "uv": [1, 1, 15, 15], "texture": "#all" },
+        "south": { "uv": [1, 1, 15, 15], "texture": "#all" },
+        "up":    { "uv": [1, 7, 15, 9], "texture": "#all" },
+        "down":  { "uv": [1, 7, 15, 9], "texture": "#all" },
+        "west":  { "uv": [7, 1, 9, 15], "texture": "#all" },
+        "east":  { "uv": [7, 1, 9, 15], "texture": "#all" }
+      }
+    }
+  ]
+}

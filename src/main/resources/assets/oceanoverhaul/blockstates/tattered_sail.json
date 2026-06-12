@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "oceanoverhaul:block/tattered_sail" },
+    "facing=south": { "model": "oceanoverhaul:block/tattered_sail", "y": 180 },
+    "facing=west": { "model": "oceanoverhaul:block/tattered_sail", "y": 270 },
+    "facing=east": { "model": "oceanoverhaul:block/tattered_sail", "y": 90 }
+  }
+}

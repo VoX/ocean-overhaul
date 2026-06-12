@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "oceanoverhaul:block/anchor" },
+    "facing=south": { "model": "oceanoverhaul:block/anchor", "y": 180 },
+    "facing=west": { "model": "oceanoverhaul:block/anchor", "y": 270 },
+    "facing=east": { "model": "oceanoverhaul:block/anchor", "y": 90 }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": {
+      "item": "oceanoverhaul:driftwood_plank"
+    },
+    "P": {
+      "item": "oceanoverhaul:tide_pearl"
+    }
+  },
+  "pattern": [
+    " D ",
+    "DPD",
+    " D "
+  ],
+  "result": {
+    "count": 1,
+    "id": "oceanoverhaul:ships_wheel"
+  }
+}
