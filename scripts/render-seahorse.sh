@@ -76,7 +76,10 @@ summon ${B}:seahorse 10 100 9 {Variant:4,NoAI:1b,Silent:1b,PersistenceRequired:1
 esac
 
 # Invisible camera-aim marker at the line/tank centre (x10,y100,z7).
-SUMMON_CMD='summon minecraft:armor_stand 10 100 7 {Marker:1b,Invisible:1b,NoGravity:1b,Invulnerable:1b,PersistenceRequired:1b}'
+# minecraft:marker — armor stands RENDER via console summon even with
+# Marker:1b+Invisible:1b (the harness lesson this wrapper originally re-tripped:
+# both proof shots shipped with a visible stand mid-scene).
+SUMMON_CMD='summon minecraft:marker 10 100 7'
 
 MC_PORT="${MC_PORT:-43281}" \
 DISPLAY_NUM="${DISPLAY_NUM:-88}" \
@@ -86,6 +89,6 @@ VANTAGE="${VANTAGE:-$VANTAGE_DEFAULT}" \
 ARENA_MEDIUM="${ARENA_MEDIUM:-$MEDIUM_DEFAULT}" \
 STAGE_CMDS="$STAGE" \
 SUMMON_CMD="$SUMMON_CMD" \
-TARGET_SELECTOR="${TARGET_SELECTOR:-type=minecraft:armor_stand}" \
-TARGET_TYPE="${TARGET_TYPE:-minecraft:armor_stand}" \
-exec bash "$HERE/render-entity.sh" minecraft:armor_stand "$OUT"
+TARGET_SELECTOR="${TARGET_SELECTOR:-type=minecraft:marker}" \
+TARGET_TYPE="${TARGET_TYPE:-}" \
+exec bash "$HERE/render-entity.sh" minecraft:marker "$OUT"
