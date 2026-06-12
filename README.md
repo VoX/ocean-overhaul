@@ -16,7 +16,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Prismarine Crystal Block** — full-bright luminous block
 - **Salt Block**, **Barnacle Block**, **Abyssal Pearl Block**, **Crushed Coral Block** — standalone decoratives
 - **Glowing Plankton Block**, **Abyssal Vent**, **Giant Clam** — Abyssal Trench bioluminescent deep-ocean blocks (the Giant Clam is now a living block-entity: it grows an Abyssal Pearl over ~a Minecraft day while waterlogged, gapes open + brightens when ready — right-click to harvest and it keeps producing; breaking an empty clam drops nothing, silk touch relocates the clam itself)
-- **Aquarium** — a glass tank block-entity: right-click it with a Reef Fish / Jellyfish bucket to store the creature, and watch it swim inside through the glass (right-click empty-handed to bucket it back out)
+- **Aquarium** — a glass tank block-entity: right-click it with a Reef Fish / Jellyfish / Seahorse bucket to store the creature, and watch it swim inside through the glass (right-click empty-handed to bucket it back out)
 
 **Driftwood functional set**
 
@@ -43,7 +43,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Tidal gear** — Abyssal Pearl tools and armor; wearing all four Tidal armor pieces grants constant **Water Breathing** (the four-piece set bonus, noted on each piece's tooltip)
 - **Harpoon** — a throwable projectile that yanks the hit mob toward you (tether) and loyalty-returns to your hand (never lost)
 - **Diving Kit** — Flippers (Dolphin's Grace in water), Oxygen Tank (water breathing), and Deep Sea Helmet (night vision when submerged): three armor pieces with worn effects
-- **Reef Fish Bucket**, **Jellyfish Bucket** — mob buckets that scoop a creature (the jellyfish bucket preserves its color variant)
+- **Reef Fish Bucket**, **Jellyfish Bucket**, **Seahorse Bucket** — mob buckets that scoop a creature (the jellyfish and seahorse buckets preserve the color variant, and the seahorse bucket's tooltip names the color it carries)
 - **Raw Crab Meat → Cooked Crab Meat → Crab Cake** — the Shore Crab food chain: raw meat is risky (30% chance of Hunger, the raw-chicken treatment), the cook-triple (furnace / smoker / campfire) turns it into solid mid-game food, and the **Crab Cake** (Cooked Crab Meat + Sea Salt + Egg) is the game's best stackable food — golden-carrot saturation at steak nutrition — adding a second renewable consumer to the beach salt-flat economy
 - **Crab Carapace** — 25% Shore Crab drop (Looting-scaled) and a pure-data **armor-trim material**: one carapace trims any trimmable armor crab-orange at the smithing table
 
@@ -55,10 +55,11 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Reef Fish** — a small, brightly-striped tropical fish that swims in schools. Spawns naturally in oceans; drops Raw Reef Fish (auto-cooked when killed on fire). Spawn egg available.
 - **Jellyfish** — a fragile, gently-drifting passive sea creature in five glow-in-the-dark color variants. Rarer ocean spawns in small groups; drops 0–1 slime balls. Spawn egg available.
 - **Shore Crab** — the mod's first walking and first **breedable** mob: a small amphibious crab that scuttles the beach sand band, common on every beach from world-gen (it spawns on dry sand *and* the submerged shore floor, day or night). It walks the seabed without floating or drowning and always wanders back ashore on its own; feed two crabs **kelp** (its first husbandry use) for a baby and a renewable protein farm. Drops 1–2 Raw Crab Meat plus a 25% Crab Carapace (Looting scales both; killed-by-fire auto-cooks the meat, babies drop nothing). Spawn egg available.
+- **Seahorse** — the **bucketable collect-the-variants coral pet**: a tiny, slow-drifting solitary fish in five colors (yellow, orange, red, teal, purple). It spawns near the surface of warm oceans (rarer in lukewarm) and loiters over living coral — vanilla reefs and the mod's abyssal corals alike, via the data-driven `#oceanoverhaul:seahorse_corals` block tag. Scoop it with a water bucket and its color rides along in the **Seahorse Bucket** (named on the tooltip); release it anywhere and it keeps the color and **never despawns**, or display it in the **Aquarium** (the variant survives that round-trip too). No breeding — the Shore Crab owns that lane; it drops nothing but a rare pinch of bone meal. Spawn egg available.
 
 **Worldgen**
 
-Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, Shore Crabs scuttle in groups on every beach (and the shallow shore floor just past the tide line), while the Megalodon, the Kraken, and the Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
+Eleven natural deposits generate on and under the seafloor across ocean / deep-ocean / beach biomes (abyssal coral, crushed coral, barnacle clusters, beach salt flats, deep-ocean abyssal coral patches, abyssal pearl veins, prismarine crystal geodes, a rare pearl geode, and three deep-ocean "Abyssal Trench" deposits — glowing plankton patches, abyssal vent clusters, and giant clam clusters). Reef Fish and Jellyfish spawn naturally in oceans, Seahorses drift in the warm + lukewarm ocean surface band, Shore Crabs scuttle in groups on every beach (and the shallow shore floor just past the tide line), while the Megalodon, the Kraken, and the Abyssal Lurker spawn rarely in deep oceans (day or night) — boss spawns are concentrated in the deep-ocean trench biomes.
 
 **Plankton blooms**
 
@@ -95,7 +96,7 @@ The built mod jar lands in `build/libs/` (the file without the `-sources` suffix
 
 ## Roadmap
 
-The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, the Aquarium, the spreading **Living Abyssal Coral** (block ecology: the trench coral is now renewable), and the crafted-only **Shipwreck Decor set** (Anchor, Ship's Wheel, climbable Rope, Tattered Sail — the driftwood lane's dockside extension). Natural next steps:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, the bucketable five-color Seahorse, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, the Aquarium, the spreading **Living Abyssal Coral** (block ecology: the trench coral is now renewable), and the crafted-only **Shipwreck Decor set** (Anchor, Ship's Wheel, climbable Rope, Tattered Sail — the driftwood lane's dockside extension). Natural next steps:
 
 - More sea creatures (predator/prey behaviours, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
