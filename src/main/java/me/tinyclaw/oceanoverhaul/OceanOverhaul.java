@@ -19,11 +19,13 @@ import me.tinyclaw.oceanoverhaul.entity.KrakenTentacle;
 import me.tinyclaw.oceanoverhaul.entity.Megalodon;
 import me.tinyclaw.oceanoverhaul.entity.MegalodonSegment;
 import me.tinyclaw.oceanoverhaul.entity.ReefFish;
+import me.tinyclaw.oceanoverhaul.entity.Seahorse;
 import me.tinyclaw.oceanoverhaul.entity.ShoreCrab;
 import me.tinyclaw.oceanoverhaul.item.AbyssalFangMaterial;
 import me.tinyclaw.oceanoverhaul.item.HarpoonItem;
 import me.tinyclaw.oceanoverhaul.item.JellyfishBucketItem;
 import me.tinyclaw.oceanoverhaul.item.KrakenHeartItem;
+import me.tinyclaw.oceanoverhaul.item.SeahorseBucketItem;
 import me.tinyclaw.oceanoverhaul.item.TidalArmorItem;
 import me.tinyclaw.oceanoverhaul.item.TidalToolMaterial;
 
@@ -114,8 +116,8 @@ import org.slf4j.LoggerFactory;
  * set, the Abyssal Trench blocks, the Aquarium tank + its block entity), the items
  * (ocean ingredients + foods, the Tidal tool/armor sets, the Abyssal Fang apex
  * sword, the Harpoon, the three-piece Diving Kit, the Heart of the Kraken, mob
- * buckets, spawn eggs), the six mobs (Megalodon boss, Kraken boss, Reef Fish,
- * Jellyfish, Abyssal Lurker, Shore Crab — plus the boss hitbox-segment,
+ * buckets, spawn eggs), the seven mobs (Megalodon boss, Kraken boss, Reef Fish,
+ * Jellyfish, Seahorse, Abyssal Lurker, Shore Crab — plus the boss hitbox-segment,
  * Kraken-tentacle and Harpoon-projectile entity types) with their attributes and
  * spawn rules, the worldgen {@code BiomeModifications} hooks, the worn-gear effect
  * tick handlers, and a dedicated "Ocean Overhaul" creative tab that holds it all —
@@ -783,6 +785,22 @@ public class OceanOverhaul implements ModInitializer {
 	public static final SpawnEggItem JELLYFISH_SPAWN_EGG =
 			new SpawnEggItem(JELLYFISH, 0xB070D0, 0xE8C0F0, new Item.Settings());
 
+	// --- Passive mob: Seahorse (solitary bucketable coral pet) ------------
+	// A FishEntity subclass (solitary — deliberately NOT SchoolingFishEntity).
+	// Declared BEFORE the bucket fields below so SEAHORSE_BUCKET's EntityType
+	// reference is fully built (the same ordering rule those fields document).
+	public static final EntityType<Seahorse> SEAHORSE = Registry.register(
+			Registries.ENTITY_TYPE,
+			id("seahorse"),
+			EntityType.Builder.create(Seahorse::new, SpawnGroup.WATER_AMBIENT)
+					.dimensions(0.35F, 0.7F)     // narrow upright box
+					.maxTrackingRange(4)         // reef-fish value (small ambient mob)
+					.build("seahorse"));
+
+	// --- Spawn egg for the Seahorse (gold body / teal fin) ----------------
+	public static final SpawnEggItem SEAHORSE_SPAWN_EGG =
+			new SpawnEggItem(SEAHORSE, 0xE8B23A, 0x3FA7A0, new Item.Settings());
+
 	// --- Passive mob: Shore Crab (first walking + first breedable mob) ----
 	// Registered in a static initializer (like MEGALODON) so the spawn-egg field
 	// below can reference a fully-built EntityType. CREATURE = the vanilla farm-
@@ -894,6 +912,11 @@ public class OceanOverhaul implements ModInitializer {
 	public static final Item JELLYFISH_BUCKET = new JellyfishBucketItem(
 			JELLYFISH, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
 			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
+	// The seahorse bucket mirrors the jellyfish one: a tooltip-bearing subclass, because the
+	// seahorse carries a color variant the player should see before release.
+	public static final Item SEAHORSE_BUCKET = new SeahorseBucketItem(
+			SEAHORSE, Fluids.WATER, SoundEvents.ITEM_BUCKET_EMPTY_FISH,
+			new Item.Settings().maxCount(1).recipeRemainder(Items.BUCKET));
 
 	// The Aquarium's BlockEntityType — the mod's first. Builder.create(factory, AQUARIUM).build(null);
 	// the null datafixer Type is the standard modded idiom. Declared AFTER the AQUARIUM block field.
@@ -988,10 +1011,12 @@ public class OceanOverhaul implements ModInitializer {
 				entries.add(JELLYFISH_SPAWN_EGG);
 				entries.add(ABYSSAL_LURKER_SPAWN_EGG);
 				entries.add(SHORE_CRAB_SPAWN_EGG);
+				entries.add(SEAHORSE_SPAWN_EGG);
 				entries.add(KRAKEN_SPAWN_EGG);
 				// Feature 4: mob buckets (after the spawn eggs).
 				entries.add(REEF_FISH_BUCKET);
 				entries.add(JELLYFISH_BUCKET);
+				entries.add(SEAHORSE_BUCKET);
 			})
 			.build();
 
@@ -1203,6 +1228,15 @@ public class OceanOverhaul implements ModInitializer {
 		SpawnRestriction.register(JELLYFISH, SpawnLocationTypes.IN_WATER,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
 
+		// Seahorse: the bucketable coral pet — same repo-standard aquatic spawn stack as
+		// the reef fish/jellyfish (IN_WATER + the static WaterCreatureEntity.canSpawn
+		// surface band, which is where the coral reefs it loiters over live). Biome
+		// attachment (warm/lukewarm oceans) is wired in OceanOverhaulWorldgen.register().
+		Registry.register(Registries.ITEM, id("seahorse_spawn_egg"), SEAHORSE_SPAWN_EGG);
+		FabricDefaultAttributeRegistry.register(SEAHORSE, Seahorse.createAttributes());
+		SpawnRestriction.register(SEAHORSE, SpawnLocationTypes.IN_WATER,
+				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, WaterCreatureEntity::canSpawn);
+
 		// Register the Shore Crab passive mob: spawn-egg item, default attributes, and
 		// the natural-spawn placement. Neither vanilla SpawnLocationTypes constant fits
 		// an amphibious shoreline mob (ON_GROUND can never pass a submerged position,
@@ -1215,9 +1249,10 @@ public class OceanOverhaul implements ModInitializer {
 		SpawnRestriction.register(SHORE_CRAB, ShoreCrab.SPAWN_LOCATION,
 				Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, ShoreCrab::canSpawn);
 
-		// Feature 4: mob buckets for the two bucketable mobs (reef fish + jellyfish).
+		// Feature 4: mob buckets for the three bucketable mobs (reef fish + jellyfish + seahorse).
 		Registry.register(Registries.ITEM, id("reef_fish_bucket"), REEF_FISH_BUCKET);
 		Registry.register(Registries.ITEM, id("jellyfish_bucket"), JELLYFISH_BUCKET);
+		Registry.register(Registries.ITEM, id("seahorse_bucket"), SEAHORSE_BUCKET);
 
 		// Dispense the mob buckets like vanilla's six fish buckets (audit L9). Vanilla wires its
 		// bucket items to one shared ANONYMOUS ItemDispenserBehavior in
@@ -1244,6 +1279,7 @@ public class OceanOverhaul implements ModInitializer {
 		};
 		DispenserBlock.registerBehavior(REEF_FISH_BUCKET, mobBucketDispenserBehavior);
 		DispenserBlock.registerBehavior(JELLYFISH_BUCKET, mobBucketDispenserBehavior);
+		DispenserBlock.registerBehavior(SEAHORSE_BUCKET, mobBucketDispenserBehavior);
 
 		// Register the Abyssal Lurker hostile mob: spawn-egg item, default attributes,
 		// and a deep-water natural-spawn restriction. Its EntityType is a HostileEntity,
@@ -1341,6 +1377,7 @@ public class OceanOverhaul implements ModInitializer {
 			// Feature 4: mob buckets (vanilla puts fish buckets in the Tools tab).
 			entries.add(REEF_FISH_BUCKET);
 			entries.add(JELLYFISH_BUCKET);
+			entries.add(SEAHORSE_BUCKET);
 			// Feature 5: the Kraken's held-utility reward.
 			entries.add(KRAKEN_HEART);
 		});
@@ -1367,6 +1404,7 @@ public class OceanOverhaul implements ModInitializer {
 			entries.add(JELLYFISH_SPAWN_EGG);
 			entries.add(ABYSSAL_LURKER_SPAWN_EGG);
 			entries.add(SHORE_CRAB_SPAWN_EGG);
+			entries.add(SEAHORSE_SPAWN_EGG);
 			entries.add(KRAKEN_SPAWN_EGG);
 		});
 
@@ -1440,7 +1478,7 @@ public class OceanOverhaul implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 75 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood/crab foods + Reef Fish/Jellyfish mob buckets), 6 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish + Shore Crab passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 77 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood/crab foods + Reef Fish/Jellyfish/Seahorse mob buckets), 7 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish + Seahorse + Shore Crab passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**

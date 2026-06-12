@@ -9,6 +9,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.PlacedFeature;
 
@@ -87,13 +88,13 @@ public final class OceanOverhaulWorldgen {
 	}
 
 	/**
-	 * Attach the Reef Life passive mobs to natural ocean spawning. Both spawn in the
-	 * WATER_AMBIENT group (the vanilla cod/salmon/tropicalfish cap) across all ocean
-	 * biomes (IS_OCEAN covers ocean + deep_ocean). Reef fish spawn in tight schools
-	 * (weight 12, groups of 4-8); jellyfish are a rarer, smaller drift (weight 6,
-	 * groups of 1-3) so they read as an occasional sight rather than a swarm. The
-	 * Shore Crab — the mod's first walking + first breedable mob — attaches to the
-	 * CREATURE group in beach biomes only (IS_BEACH; never an ocean tag).
+	 * Attach the Reef Life passive mobs to natural ocean spawning. All three swim in the
+	 * WATER_AMBIENT group (the vanilla cod/salmon/tropicalfish cap). Reef fish spawn in
+	 * tight schools (weight 12, groups of 4-8) and jellyfish as a rarer, smaller drift
+	 * (weight 6, groups of 1-3) across all ocean biomes (IS_OCEAN covers ocean +
+	 * deep_ocean); the seahorse is keyed to the tropical reef waters only (warm 10/1-3,
+	 * lukewarm 4/1-2). The Shore Crab — the mod's first walking + first breedable mob —
+	 * attaches to the CREATURE group in beach biomes only (IS_BEACH; never an ocean tag).
 	 */
 	private static void registerMobSpawns() {
 		BiomeModifications.addSpawn(
@@ -106,6 +107,18 @@ public final class OceanOverhaulWorldgen {
 				SpawnGroup.WATER_AMBIENT,
 				OceanOverhaul.JELLYFISH,
 				6, 1, 3);
+
+		// Seahorse: the rare, solitary reef find — keyed biomes, not tags (deliberately
+		// NOT IS_OCEAN/deep tags: a surface-band coral pet has no business in the trench
+		// spawn lists). Warm ocean is the coral home (weight 10 vs vanilla tropical
+		// fish's 25/8-8 in the same biome); lukewarm is the seagrass fringe at lower
+		// weight. The IN_WATER + WaterCreatureEntity.canSpawn restriction registered in
+		// OceanOverhaul keeps every spawn in the sea-level surface band, where the reefs
+		// it loiters over actually generate.
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(BiomeKeys.WARM_OCEAN),
+				SpawnGroup.WATER_AMBIENT, OceanOverhaul.SEAHORSE, 10, 1, 3);
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(BiomeKeys.LUKEWARM_OCEAN),
+				SpawnGroup.WATER_AMBIENT, OceanOverhaul.SEAHORSE, 4, 1, 2);
 
 		// Shore Crab: the beach/tide-line walker. IS_BEACH ONLY (beach + snowy_beach — the
 		// whole vanilla tag) — deliberately NO ocean tags, so this cannot collide with the

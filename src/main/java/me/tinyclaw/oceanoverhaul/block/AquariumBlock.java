@@ -237,6 +237,9 @@ public class AquariumBlock extends BlockWithEntity {
 		if (stack.isOf(OceanOverhaul.JELLYFISH_BUCKET)) {
 			return OceanOverhaul.JELLYFISH;
 		}
+		if (stack.isOf(OceanOverhaul.SEAHORSE_BUCKET)) {
+			return OceanOverhaul.SEAHORSE;
+		}
 		return null;
 	}
 
@@ -249,15 +252,15 @@ public class AquariumBlock extends BlockWithEntity {
 		return 0;
 	}
 
-	/** Build the filled bucket for {@code type}, writing the variant into BUCKET_ENTITY_DATA for the jelly. */
+	/** Build the filled bucket for {@code type}, writing the variant into BUCKET_ENTITY_DATA for the variant-carrying species. */
 	private static ItemStack buildFilledBucket(EntityType<?> type, int variant) {
-		if (type == OceanOverhaul.JELLYFISH) {
-			ItemStack bucket = new ItemStack(OceanOverhaul.JELLYFISH_BUCKET);
+		if (type == OceanOverhaul.JELLYFISH || type == OceanOverhaul.SEAHORSE) {
+			ItemStack bucket = new ItemStack(type == OceanOverhaul.JELLYFISH
+					? OceanOverhaul.JELLYFISH_BUCKET : OceanOverhaul.SEAHORSE_BUCKET);
 			NbtComponent.set(DataComponentTypes.BUCKET_ENTITY_DATA, bucket,
 					nbt -> nbt.putInt("Variant", variant));
 			return bucket;
 		}
-		// Reef fish (and any future variantless creature) — no variant payload.
-		return new ItemStack(OceanOverhaul.REEF_FISH_BUCKET);
+		return new ItemStack(OceanOverhaul.REEF_FISH_BUCKET);  // variantless fallback, as today
 	}
 }
