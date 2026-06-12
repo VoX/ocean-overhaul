@@ -7,6 +7,7 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 **Decorative blocks**
 
 - **Abyssal Coral Block** — coral-and-prismarine block
+- **Living Abyssal Coral** — spreads underwater, bonemeal-able, dies to Crushed Coral out of water (bonemeal a submerged Abyssal Coral Block to awaken one; it glows faintly and slowly colonizes nearby submerged sand / gravel / dirt / clay / crushed coral into a lacy mat — never smeltable, so the Abyssal Pearl economy is untouched)
 - **Sea Glass** — base + stairs + slab
 - **Polished Prismarine Bricks** — base + stairs + slab + wall
 - **Chiseled Prismarine Tiles** — base + stairs + slab + wall
@@ -87,7 +88,7 @@ The built mod jar lands in `build/libs/` (the file without the `-sources` suffix
 
 ## Roadmap
 
-The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, and the Aquarium. Natural next steps:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, the Aquarium, and the spreading **Living Abyssal Coral** (block ecology: the trench coral is now renewable). Natural next steps:
 
 - More sea creatures (predator/prey behaviours, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
