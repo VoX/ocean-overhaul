@@ -1478,7 +1478,7 @@ public class OceanOverhaul implements ModInitializer {
 			}
 		});
 
-		LOGGER.info("Ocean Overhaul loaded: 36 blocks (incl. the Aquarium tank), 77 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood/crab foods + Reef Fish/Jellyfish/Seahorse mob buckets), 7 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish + Seahorse + Shore Crab passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
+		LOGGER.info("Ocean Overhaul loaded: 41 blocks (incl. the Aquarium tank), 82 items (incl. Tidal tools/armor + the Abyssal Fang apex sword + the Harpoon thrown spear + the Diving Kit + Megalodon Tooth + the Heart of the Kraken + seafood/crab foods + Reef Fish/Jellyfish/Seahorse mob buckets), 7 entities (Megalodon boss + Kraken boss + Abyssal Lurker predator + Reef Fish + Jellyfish + Seahorse + Shore Crab passive mobs) plus the Megalodon hitbox segment, the Kraken tentacle and the Harpoon projectile, 2 block entities (the Aquarium + the pearl-growing Giant Clam), 2 ambient particle types (plankton bloom + wake), ocean_overhaul tab, 11 worldgen deposits.");
 	}
 
 	/**
