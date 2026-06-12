@@ -1,10 +1,12 @@
 package me.tinyclaw.oceanoverhaul;
 
+import me.tinyclaw.oceanoverhaul.block.AbyssalCoralBlock;
 import me.tinyclaw.oceanoverhaul.block.AbyssalVentBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlock;
 import me.tinyclaw.oceanoverhaul.block.AquariumBlockEntity;
 import me.tinyclaw.oceanoverhaul.block.GiantClamBlock;
 import me.tinyclaw.oceanoverhaul.block.GiantClamBlockEntity;
+import me.tinyclaw.oceanoverhaul.block.LivingAbyssalCoralBlock;
 import me.tinyclaw.oceanoverhaul.entity.AbyssalLurker;
 import me.tinyclaw.oceanoverhaul.entity.HarpoonEntity;
 import me.tinyclaw.oceanoverhaul.entity.Jellyfish;
@@ -123,10 +125,24 @@ public class OceanOverhaul implements ModInitializer {
 
 	// --- Block: Abyssal Coral Block ---------------------------------------
 	// CORAL sounds, not the PRISMARINE copy's stone (audit L37): it's a coral block.
-	public static final Block ABYSSAL_CORAL_BLOCK = new Block(
+	// AbyssalCoralBlock is the minimal spreading-coral class swap (design §2): same id,
+	// same settings expression, no states/ticks — just bonemeal-awakenable into the
+	// living form when submerged. Existing worlds + worldgen deposits need no migration.
+	public static final Block ABYSSAL_CORAL_BLOCK = new AbyssalCoralBlock(
 			AbstractBlock.Settings.copy(Blocks.PRISMARINE).sounds(BlockSoundGroup.CORAL));
 	public static final BlockItem ABYSSAL_CORAL_BLOCK_ITEM = new BlockItem(
 			ABYSSAL_CORAL_BLOCK, new Item.Settings());
+
+	// --- Block: Living Abyssal Coral Block --------------------------------
+	// The spreading form (design §2-§5): static settings base + luminance 3 (the growing
+	// giant clam's glow, the trench bioluminescence language) + ticksRandomly() to power
+	// the spread/decay randomTick. Full opaque cube, NOT waterloggable — submersion is
+	// the 6-neighbor water-contact scan (LivingAbyssalCoralBlock.isInWater).
+	public static final Block LIVING_ABYSSAL_CORAL_BLOCK = new LivingAbyssalCoralBlock(
+			AbstractBlock.Settings.copy(Blocks.PRISMARINE).sounds(BlockSoundGroup.CORAL)
+					.luminance(state -> 3).ticksRandomly());
+	public static final BlockItem LIVING_ABYSSAL_CORAL_BLOCK_ITEM = new BlockItem(
+			LIVING_ABYSSAL_CORAL_BLOCK, new Item.Settings());
 
 	// --- Block: Sea Glass -------------------------------------------------
 	public static final Block SEA_GLASS = new Block(
@@ -842,6 +858,7 @@ public class OceanOverhaul implements ModInitializer {
 			.displayName(Text.translatable("itemGroup.oceanoverhaul.ocean_overhaul"))
 			.entries((displayContext, entries) -> {
 				entries.add(ABYSSAL_CORAL_BLOCK);
+				entries.add(LIVING_ABYSSAL_CORAL_BLOCK);
 				entries.add(SEA_GLASS);
 				entries.add(SEA_GLASS_STAIRS);
 				entries.add(SEA_GLASS_SLAB);
@@ -931,6 +948,8 @@ public class OceanOverhaul implements ModInitializer {
 		// Register each block, then its item form (same id for both).
 		Registry.register(Registries.BLOCK, id("abyssal_coral_block"), ABYSSAL_CORAL_BLOCK);
 		Registry.register(Registries.ITEM, id("abyssal_coral_block"), ABYSSAL_CORAL_BLOCK_ITEM);
+		Registry.register(Registries.BLOCK, id("living_abyssal_coral_block"), LIVING_ABYSSAL_CORAL_BLOCK);
+		Registry.register(Registries.ITEM, id("living_abyssal_coral_block"), LIVING_ABYSSAL_CORAL_BLOCK_ITEM);
 
 		Registry.register(Registries.BLOCK, id("sea_glass"), SEA_GLASS);
 		Registry.register(Registries.ITEM, id("sea_glass"), SEA_GLASS_ITEM);
@@ -1186,6 +1205,7 @@ public class OceanOverhaul implements ModInitializer {
 		// Backup: also surface content in vanilla groups so it's easy to find.
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register(entries -> {
 			entries.add(ABYSSAL_CORAL_BLOCK);
+			entries.add(LIVING_ABYSSAL_CORAL_BLOCK);
 			entries.add(BARNACLE_BLOCK);
 			entries.add(CRUSHED_CORAL_BLOCK);
 			entries.add(PRISMARINE_CRYSTAL_BLOCK);

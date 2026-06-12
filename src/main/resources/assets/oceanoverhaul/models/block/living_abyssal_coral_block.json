@@ -1,0 +1,6 @@
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "oceanoverhaul:block/living_abyssal_coral_block"
+	}
+}
