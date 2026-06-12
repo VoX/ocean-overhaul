@@ -13,7 +13,7 @@ import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 
 /**
  * Client entrypoint for Ocean Overhaul. Registers every model layer + renderer: the
- * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish, Abyssal
+ * Megalodon (and its no-op segment renderer), Reef Fish, Jellyfish, Seahorse, Abyssal
  * Lurker and Shore Crab, the Kraken mantle + its tentacles, the Harpoon's
  * flying-item renderer, the Aquarium's and the pearl-growing Giant Clam's
  * block-entity renderers (plus the clam's model layer), the non-SOLID block
@@ -39,6 +39,12 @@ public class OceanOverhaulClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(
 				JellyfishModel.LAYER, JellyfishModel::getTexturedModelData);
 		EntityRendererRegistry.register(OceanOverhaul.JELLYFISH, JellyfishRenderer::new);
+
+		// Seahorse: the bucketable coral pet (registering the layer here also lets the
+		// Aquarium BER below resolve it via ctx.getLayerModelPart — no extra entry needed).
+		EntityModelLayerRegistry.registerModelLayer(
+				SeahorseModel.LAYER, SeahorseModel::getTexturedModelData);
+		EntityRendererRegistry.register(OceanOverhaul.SEAHORSE, SeahorseRenderer::new);
 
 		// The Depths: hostile Abyssal Lurker.
 		EntityModelLayerRegistry.registerModelLayer(

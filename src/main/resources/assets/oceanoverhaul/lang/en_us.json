@@ -96,5 +96,13 @@
 	"block.oceanoverhaul.ships_wheel": "Ship's Wheel",
 	"block.oceanoverhaul.rope": "Rope",
 	"block.oceanoverhaul.tattered_sail": "Tattered Sail",
+	"entity.oceanoverhaul.seahorse": "Seahorse",
+	"item.oceanoverhaul.seahorse_spawn_egg": "Seahorse Spawn Egg",
+	"item.oceanoverhaul.seahorse_bucket": "Bucket of Seahorse",
+	"item.oceanoverhaul.seahorse_bucket.variant.yellow": "Yellow",
+	"item.oceanoverhaul.seahorse_bucket.variant.orange": "Orange",
+	"item.oceanoverhaul.seahorse_bucket.variant.red": "Red",
+	"item.oceanoverhaul.seahorse_bucket.variant.teal": "Teal",
+	"item.oceanoverhaul.seahorse_bucket.variant.purple": "Purple",
 	"itemGroup.oceanoverhaul.ocean_overhaul": "Ocean Overhaul"
 }

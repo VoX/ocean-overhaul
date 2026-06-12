@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:corals",
+    "#minecraft:coral_blocks",
+    "#minecraft:wall_corals",
+    "oceanoverhaul:abyssal_coral_block",
+    "oceanoverhaul:living_abyssal_coral_block"
+  ]
+}
