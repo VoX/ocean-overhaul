@@ -70,12 +70,22 @@ public class ShoreCrabModel extends SinglePartEntityModel<ShoreCrab> {
 				ModelPartBuilder.create().uv(0, 0).cuboid(-4.0F, -3.0F, -3.0F, 8.0F, 3.0F, 6.0F),
 				ModelTransform.pivot(0.0F, 23.0F, 0.0F));
 
-		// Claws — two forward-pointing pincers off the shell's front corners.
+		// Claws — arm + a chunky two-jaw pincer head per side. The arm alone read as
+		// a stump in the shipped v1 (owner report); the pincer is a 3-wide upper jaw
+		// protruding 1px past a shorter lower jaw, so the open-pincer gap shows in
+		// silhouette from both the side and the front. All three cuboids share the
+		// claw part, so the existing idle sway animates the whole assembly.
 		body.addChild("claw_left",
-				ModelPartBuilder.create().uv(0, 10).cuboid(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F),
+				ModelPartBuilder.create()
+						.uv(0, 10).cuboid(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F)
+						.uv(0, 22).cuboid(-1.5F, -1.5F, -7.0F, 3.0F, 2.0F, 3.0F)
+						.uv(32, 22).cuboid(-1.5F, 0.5F, -6.0F, 3.0F, 1.0F, 2.0F),
 				ModelTransform.pivot(-3.5F, -1.0F, -3.0F));
 		body.addChild("claw_right",
-				ModelPartBuilder.create().uv(24, 10).cuboid(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F),
+				ModelPartBuilder.create()
+						.uv(24, 10).cuboid(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F)
+						.uv(16, 22).cuboid(-1.5F, -1.5F, -7.0F, 3.0F, 2.0F, 3.0F)
+						.uv(44, 22).cuboid(-1.5F, 0.5F, -6.0F, 3.0F, 1.0F, 2.0F),
 				ModelTransform.pivot(3.5F, -1.0F, -3.0F));
 
 		// Three walking legs per side, each with its own UV cell on row 18.

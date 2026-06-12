@@ -74,6 +74,12 @@ PARTS = {
     'body':       (0, 0, 8, 3, 6),
     'claw_left':  (0, 10, 2, 2, 4),
     'claw_right': (24, 10, 2, 2, 4),
+    # Pincer heads (added after the v1 stump report): a 3x2x3 upper jaw and a
+    # shorter 3x1x2 lower jaw per claw — same claw ModelPart, separate cuboids.
+    'pincer_ul':  (0, 22, 3, 2, 3),
+    'pincer_ur':  (16, 22, 3, 2, 3),
+    'pincer_ll':  (32, 22, 3, 1, 2),
+    'pincer_lr':  (44, 22, 3, 1, 2),
     'leg_l0':     (0, 18, 1, 2, 1),
     'leg_l1':     (6, 18, 1, 2, 1),
     'leg_l2':     (12, 18, 1, 2, 1),
@@ -164,6 +170,32 @@ def paint_entity():
             ux, uy, uw, uh = c[f]
             for i in range(uw):
                 px[ux + i, uy + uh - 1] = TIP
+
+    # ---- PINCER HEADS  (geometry carries the silhouette; paint = pale head vs
+    # orange arm, with a dark RIM line on every gap-facing face) ----
+    for name in ('pincer_ul', 'pincer_ur'):
+        c = PF[name]
+        for f in ('up', 'down', 'east', 'north', 'west', 'south'):
+            rect(*c[f], TIP)
+        dx, dy, dw, dh = c['down']           # render-top: mottle speckle for texture
+        for i in range(0, dw, 2):
+            px[dx + i, dy + (i % dh)] = MOTTLE
+        ux, uy, uw, uh = c['up']             # render-bottom faces the gap: RIM front row
+        for i in range(uw):
+            px[ux + i, uy + uh - 1] = RIM
+        nx, ny, nw, nh = c['north']          # front face: RIM bottom row = the open mouth
+        for i in range(nw):
+            px[nx + i, ny + nh - 1] = RIM
+        sx_, sy_, sw_, sh_ = c['south']      # rear face meets the arm: shell tone
+        rect(sx_, sy_, sw_, sh_, SHELL)
+    for name in ('pincer_ll', 'pincer_lr'):
+        c = PF[name]
+        for f in ('up', 'down', 'east', 'north', 'west', 'south'):
+            rect(*c[f], TIP)
+        dx, dy, dw, dh = c['down']           # render-top faces the gap: RIM full
+        rect(dx, dy, dw, dh, RIM)
+        sx_, sy_, sw_, sh_ = c['south']
+        rect(sx_, sy_, sw_, sh_, SHELL)
         # Knuckle shading at the back lip of the top face.
         ux, uy, uw, uh = c['down']
         for i in range(uw):
