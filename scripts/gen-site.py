@@ -64,7 +64,7 @@ FEATURES = [
     ("Harpoon &amp; Diving Kit",
      "Throw a <strong>Harpoon</strong> that yanks your target back toward you and loyalty-returns to your hand. Equip <strong>Flippers</strong> (swim speed), an <strong>Oxygen Tank</strong> (water breathing) and a <strong>Deep-Sea Helmet</strong> (night vision) to make the depths traversable."),
     ("Aquariums",
-     "Bucket the mod's <strong>Reef Fish</strong> and <strong>Jellyfish</strong> &mdash; color variants preserved &mdash; and place an <strong>Aquarium</strong> block to watch your catch swim around inside a glass tank."),
+     "Bucket the mod's <strong>Reef Fish</strong>, <strong>Jellyfish</strong> and <strong>Seahorses</strong> &mdash; color variants preserved &mdash; and place an <strong>Aquarium</strong> block to watch your catch swim around inside a glass tank."),
     ("Tidal Gear",
      "A full <strong>Tidal</strong> armor and tool set crafted from ocean materials, granting water-breathing and built for life below the surface."),
     ("Ocean Building Sets",
@@ -72,6 +72,7 @@ FEATURES = [
 ]
 
 MOBS = [
+    ("Seahorse", "renders/seahorse-variants.png", "A tiny solitary reef pet in five colors &mdash; bucket it (color preserved), display it in an aquarium, or let it drift near the coral it loves."),
     ("Shore Crab", "renders/shore_crab.png", "An amphibious beach scuttler &mdash; the mod's first walking and breedable mob. Hunt it for crab meat, breed pairs with kelp, and trim armor with its carapace."),
     ("Kraken", "renders/kraken-site.png", "A stationary trench boss: six independently-damageable tentacles guard an untouchable mantle &mdash; break the ring to open the kill window, and claim the Heart of the Kraken."),
     ("Megalodon", "renders/megalodon-site.png", "A massive apex boss shark that patrols the deep ocean and drops guaranteed Megalodon Teeth."),

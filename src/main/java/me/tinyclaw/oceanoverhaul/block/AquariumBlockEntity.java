@@ -35,8 +35,8 @@ import net.minecraft.util.math.BlockPos;
  * <p><b>Defensive read.</b> {@code Registries.ENTITY_TYPE.get(Identifier)} returns the registry's
  * DEFAULT entry (NOT null) for an unknown id, so a foreign/garbage {@code StoredEntity} would
  * otherwise render as a default entity (e.g. a pig) inside the tank. {@link #readNbt} therefore
- * treats any resolved type that isn't one of this mod's two bucketable mobs (Reef Fish / Jellyfish)
- * as empty.</p>
+ * treats any resolved type that isn't one of this mod's three bucketable mobs (Reef Fish /
+ * Jellyfish / Seahorse) as empty.</p>
  */
 public class AquariumBlockEntity extends BlockEntity {
 
@@ -70,9 +70,9 @@ public class AquariumBlockEntity extends BlockEntity {
 			EntityType<?> resolved =
 					Registries.ENTITY_TYPE.get(Identifier.of(nbt.getString(KEY_STORED_ENTITY)));
 			// Registries.ENTITY_TYPE.get returns the DEFAULT entry (not null) for an unknown id,
-			// so only accept this mod's two bucketable mobs; anything else => empty tank.
-			storedType = (resolved == OceanOverhaul.REEF_FISH || resolved == OceanOverhaul.JELLYFISH)
-					? resolved : null;
+			// so only accept this mod's three bucketable mobs; anything else => empty tank.
+			storedType = (resolved == OceanOverhaul.REEF_FISH || resolved == OceanOverhaul.JELLYFISH
+					|| resolved == OceanOverhaul.SEAHORSE) ? resolved : null;
 			storedVariant = nbt.getInt(KEY_STORED_VARIANT);
 		} else {
 			storedType = null;
