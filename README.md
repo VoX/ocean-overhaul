@@ -25,6 +25,13 @@ Ocean Overhaul is an ocean-content mod for **Minecraft 1.21.1 (Fabric)**. It add
 - **Driftwood Door** + **Trapdoor**
 - **Driftwood Button** + **Pressure Plate**
 
+**Shipwreck decor set** (crafted-only — no worldgen placement)
+
+- **Anchor** — a chunky flat-plane wrought-iron anchor (shank, stock, arms, ring); faces you when placed and sits anywhere — anvil-style, no support requirement. Pickaxe-mined, waterloggable
+- **Ship's Wheel** — a thin spoked driftwood disc mounted on any full solid face (a wall, or a 1×1 driftwood-plank post). Ladder-style attachment: remove the wall and the wheel pops off as an item. Axe-mined, waterloggable
+- **Rope** — a climbable 4-px hanging line (pure `minecraft:climbable` tag data, vine-family feel: no collision box, walk into the line and hold jump to climb). Hangs from any center-solid bottom face — full blocks, fence posts, chains — or from another rope, so placing rope under rope extends the line; break the top rope and the whole line cascades down, dropping every rope (a popped waterlogged rope leaves a water source behind). Waterloggable, burnable
+- **Tattered Sail** — a 2-px weathered-canvas wall panel with a ragged hem and wind-torn holes; no collision (it's cloth — walk through it). Waterloggable, very burnable
+
 **Items**
 
 - Tide Pearl, Coral Shard, Sea Salt
@@ -63,7 +70,7 @@ Everything is craftable. The base blocks are made from ocean ingredients (prisma
 
 **Tags**
 
-Blocks are wired into the relevant vanilla tags so they behave like their counterparts: `planks`, `slabs`, `stairs`, `walls`, `wooden_fences`, `wooden_buttons`, `wooden_pressure_plates`, `wooden_doors`, `wooden_trapdoors`, `fence_gates`, `mineable/axe`, `mineable/pickaxe`, and `beacon_base_blocks`.
+Blocks are wired into the relevant vanilla tags so they behave like their counterparts: `planks`, `slabs`, `stairs`, `walls`, `wooden_fences`, `wooden_buttons`, `wooden_pressure_plates`, `wooden_doors`, `wooden_trapdoors`, `fence_gates`, `mineable/axe`, `mineable/pickaxe`, `climbable` (the Rope's whole climbing mechanic is this one tag), and `beacon_base_blocks`.
 
 **Creative tab**
 
@@ -88,7 +95,7 @@ The built mod jar lands in `build/libs/` (the file without the `-sources` suffix
 
 ## Roadmap
 
-The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, the Aquarium, and the spreading **Living Abyssal Coral** (block ecology: the trench coral is now renewable). Natural next steps:
+The mod grows in rounds, each one clean, tested, and reliably-buildable. Already shipped: the decorative + driftwood block sets, ocean items, eleven seafloor worldgen deposits (including the bioluminescent Abyssal Trench), the Megalodon boss with its Megalodon Tooth / Abyssal Fang apex gear, the six-tentacled Kraken mini-boss with its Heart of the Kraken, the passive sea creatures (Reef Fish, Jellyfish, and the breedable beach-walking Shore Crab with its Crab Cake food chain + carapace armor trim) and the hostile Abyssal Lurker, the loyalty-returning Harpoon, the three-piece Diving Kit, the Aquarium, the spreading **Living Abyssal Coral** (block ecology: the trench coral is now renewable), and the crafted-only **Shipwreck Decor set** (Anchor, Ship's Wheel, climbable Rope, Tattered Sail — the driftwood lane's dockside extension). Natural next steps:
 
 - More sea creatures (predator/prey behaviours, more variety)
 - Ocean **biomes** (warm/cold/deep variants, reefs)
@@ -223,76 +230,80 @@ Every crafting-table recipe the mod adds, rendered as the grid + result (icons a
 <td align="center"><img src="docs/recipes/abyssal_pearl_block.png" width="300"><br><sub>Abyssal Pearl Block</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="docs/recipes/anchor.png" width="300"><br><sub>Anchor</sub></td>
 <td align="center"><img src="docs/recipes/aquarium.png" width="300"><br><sub>Aquarium</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/barnacle_block.png" width="300"><br><sub>Barnacle Block</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/chiseled_prismarine_tiles.png" width="300"><br><sub>Chiseled Prismarine Tiles ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/chiseled_prismarine_tiles_slab.png" width="300"><br><sub>Chiseled Prismarine Tiles Slab ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/chiseled_prismarine_tiles_stairs.png" width="300"><br><sub>Chiseled Prismarine Tiles Stairs ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/chiseled_prismarine_tiles_wall.png" width="300"><br><sub>Chiseled Prismarine Tiles Wall ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/coral_shard.png" width="300"><br><sub>Coral Shard</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/crab_cake.png" width="300"><br><sub>Crab Cake</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/crushed_coral.png" width="300"><br><sub>Crushed Coral ×2</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/crushed_coral_from_block.png" width="300"><br><sub>Crushed Coral ×9</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/crushed_coral_block.png" width="300"><br><sub>Crushed Coral Block</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/deep_sea_helmet.png" width="300"><br><sub>Deep Sea Helmet</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_button.png" width="300"><br><sub>Driftwood Button</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_door.png" width="300"><br><sub>Driftwood Door ×3</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_fence_gate.png" width="300"><br><sub>Driftwood Fence Gate</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank.png" width="300"><br><sub>Driftwood Plank ×8</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_fence.png" width="300"><br><sub>Driftwood Plank Fence ×3</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_slab.png" width="300"><br><sub>Driftwood Plank Slab ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_stairs.png" width="300"><br><sub>Driftwood Plank Stairs ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_plank_wall.png" width="300"><br><sub>Driftwood Plank Wall ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/driftwood_pressure_plate.png" width="300"><br><sub>Driftwood Pressure Plate</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/driftwood_trapdoor.png" width="300"><br><sub>Driftwood Trapdoor ×2</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/flippers.png" width="300"><br><sub>Flippers</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/harpoon.png" width="300"><br><sub>Harpoon</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/kelp_roll.png" width="300"><br><sub>Kelp Roll</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/oxygen_tank.png" width="300"><br><sub>Oxygen Tank</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/pearl_block.png" width="300"><br><sub>Pearl Block</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/pearl_block_slab.png" width="300"><br><sub>Pearl Block Slab ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/pearl_block_stairs.png" width="300"><br><sub>Pearl Block Stairs ×4</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/pearl_block_wall.png" width="300"><br><sub>Pearl Block Wall ×6</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/pearl_lantern.png" width="300"><br><sub>Pearl Lantern</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks.png" width="300"><br><sub>Polished Prismarine Bricks ×4</sub></td>
-</tr>
-<tr>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks_slab.png" width="300"><br><sub>Polished Prismarine Bricks Slab ×6</sub></td>
-<td align="center"><img src="docs/recipes/polished_prismarine_bricks_stairs.png" width="300"><br><sub>Polished Prismarine Bricks Stairs ×4</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="docs/recipes/polished_prismarine_bricks_stairs.png" width="300"><br><sub>Polished Prismarine Bricks Stairs ×4</sub></td>
 <td align="center"><img src="docs/recipes/polished_prismarine_bricks_wall.png" width="300"><br><sub>Polished Prismarine Bricks Wall ×6</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="docs/recipes/prismarine_crystal_block.png" width="300"><br><sub>Prismarine Crystal Block</sub></td>
+<td align="center"><img src="docs/recipes/rope.png" width="300"><br><sub>Rope ×3</sub></td>
 </tr>
 <tr>
 <td align="center"><img src="docs/recipes/salt_block.png" width="300"><br><sub>Salt Block</sub></td>
@@ -309,6 +320,10 @@ Every crafting-table recipe the mod adds, rendered as the grid + result (icons a
 <tr>
 <td align="center"><img src="docs/recipes/sea_urchin.png" width="300"><br><sub>Sea Urchin</sub></td>
 <td align="center"><img src="docs/recipes/seafood_stew.png" width="300"><br><sub>Seafood Stew</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/recipes/ships_wheel.png" width="300"><br><sub>Ships Wheel</sub></td>
+<td align="center"><img src="docs/recipes/tattered_sail.png" width="300"><br><sub>Tattered Sail ×2</sub></td>
 </tr>
 <tr>
 <td align="center"><img src="docs/recipes/tidal_axe.png" width="300"><br><sub>Tidal Axe</sub></td>
