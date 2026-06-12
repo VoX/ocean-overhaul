@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "oceanoverhaul:block/ships_wheel" },
+    "facing=south": { "model": "oceanoverhaul:block/ships_wheel", "y": 180 },
+    "facing=west": { "model": "oceanoverhaul:block/ships_wheel", "y": 270 },
+    "facing=east": { "model": "oceanoverhaul:block/ships_wheel", "y": 90 }
+  }
+}

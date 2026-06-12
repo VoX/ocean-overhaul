@@ -92,5 +92,9 @@
 	"item.oceanoverhaul.crab_carapace": "Crab Carapace",
 	"trim_material.oceanoverhaul.carapace": "Carapace Material",
 	"block.oceanoverhaul.living_abyssal_coral_block": "Living Abyssal Coral",
+	"block.oceanoverhaul.anchor": "Anchor",
+	"block.oceanoverhaul.ships_wheel": "Ship's Wheel",
+	"block.oceanoverhaul.rope": "Rope",
+	"block.oceanoverhaul.tattered_sail": "Tattered Sail",
 	"itemGroup.oceanoverhaul.ocean_overhaul": "Ocean Overhaul"
 }
